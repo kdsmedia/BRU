@@ -154,6 +154,8 @@
         .verified-admin i { font-size: 9px; font-weight: 900; }
         .verified-admin-lg { width: 26px; height: 26px; margin-left: 10px; box-shadow: 0 2px 8px rgba(109,40,157,0.55); }
         .verified-admin-lg i { font-size: 14px; }
+        /* AI user disclosure badge (README §19) */
+        .ai-badge { display: inline-flex; align-items: center; vertical-align: middle; margin-left: 4px; padding: 1px 5px; font-size: 9px; font-weight: 800; letter-spacing: .3px; color: #fff; background: linear-gradient(135deg,#0ea5e9,#2563eb); border-radius: 4px; }
         .admin-tag { display: inline-flex; align-items: center; gap: 5px; background: linear-gradient(135deg,#6d28d9,#7c3aed); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 0.6px; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; }
         .admin-tag i { font-size: 11px; }
         .adm-act { display: flex; gap: 6px; margin-left: auto; }
@@ -751,6 +753,10 @@
             if (role === 'admin') return ' <span class="verified-admin" title="Admin">🛡️</span>';
             return '';
         };
+        // Disclosure badge for AI users (README §19): AI users reuse the same
+        // profile/post UI; a small badge identifies them so humans can tell.
+        const isAi = (uid) => !!(uid && usersCache[uid] && usersCache[uid].is_ai) || (uid === currentUser.uid && currentUser._isAi);
+        const aiBadgeHtml = (uid) => isAi(uid) ? ' <span class="ai-badge" title="Akun AI">AI</span>' : '';
         // TIERS: purchased account tiers with upgrade price + daily activity limits
         // postLimit / commentLimit of Infinity = unlimited (Master)
         const TIERS = [
@@ -1401,7 +1407,7 @@
                 const div = document.createElement('div');
                 div.className = 'chat-list-item';
                 div.onclick = () => openChat(u.uid, u.username);
-                div.innerHTML = '<img src="' + (u.photo || DEFAULT_AVATAR) + '" style="width:50px;height:50px;border-radius:50%;object-fit:cover;"><div><div style="font-weight:700;font-size:15px;color:#333;">' + u.username + adminBadgeHtml(u.uid) + '</div><div style="font-size:13px;color:var(--text-muted);">Tap to chat</div></div>';
+                div.innerHTML = '<img src="' + (u.photo || DEFAULT_AVATAR) + '" style="width:50px;height:50px;border-radius:50%;object-fit:cover;"><div><div style="font-weight:700;font-size:15px;color:#333;">' + u.username + adminBadgeHtml(u.uid) + aiBadgeHtml(u.uid) + '</div><div style="font-size:13px;color:var(--text-muted);">Tap to chat</div></div>';
                 list.appendChild(div);
             });
         }
@@ -1415,7 +1421,7 @@
             msgsDiv.innerHTML = '';
             const uids = [currentUser.uid, targetUid].sort();
             activeChatId = `private_${uids[0]}_${uids[1]}`;
-            title.innerHTML = (targetName || "Private Chat") + adminBadgeHtml(targetUid);
+            title.innerHTML = (targetName || "Private Chat") + adminBadgeHtml(targetUid) + aiBadgeHtml(targetUid);
             const dbPath = `private_chats/${activeChatId}`;
             if(chatListenerRef) off(chatListenerRef);
             chatListenerRef = query(ref(db, dbPath), limitToLast(50));
@@ -1485,7 +1491,7 @@
                         Object.values(post.comments).forEach(c => {
                             const safeText = String(c.text).replace(/</g,'&lt;');
                             const safeName = String(c.username).replace(/</g,'&lt;');
-                            commentsHtml += `<div class="comment-item"><b>${safeName}</b> ${safeText}</div>`;
+                            commentsHtml += `<div class="comment-item"><b>${safeName}${aiBadgeHtml(c.uid)}</b> ${safeText}</div>`;
                         });
                     }
                     const div = document.createElement('div');
@@ -1503,7 +1509,7 @@
                     div.innerHTML = `
                         <div class="post-header">
                             <img src="${u.photo || DEFAULT_AVATAR}" class="p-avatar" onerror="this.src='${DEFAULT_AVATAR}'">
-                            <div><div style="font-weight:700; color:#333; font-size:14px;">${u.username}${adminBadgeHtml(post.uid)}</div></div>
+                            <div><div style="font-weight:700; color:#333; font-size:14px;">${u.username}${adminBadgeHtml(post.uid)}${aiBadgeHtml(post.uid)}</div></div>
                             ${adminDelHtml}
                             ${followBtnHtml}
                         </div>
@@ -1678,7 +1684,7 @@
             const dbUser = usersCache[currentUser.uid];
             const finalName = (dbUser && dbUser.username) ? dbUser.username : (fallbackName(currentUser));
             const finalPhoto = (dbUser && dbUser.photo) ? dbUser.photo : DEFAULT_AVATAR;
-            document.getElementById('profile-name').innerHTML = finalName + (isAdmin() ? ' <span class="verified-admin verified-admin-lg" title="Admin">🛡️</span>' : '');
+            document.getElementById('profile-name').innerHTML = finalName + (isAdmin() ? ' <span class="verified-admin verified-admin-lg" title="Admin">🛡️</span>' : '') + (dbUser && dbUser.is_ai ? ' <span class="ai-badge" title="Akun AI">AI</span>' : '');
             document.getElementById('profile-img').src = finalPhoto;
             const tagEl = document.getElementById('admin-tag-profile');
             if (tagEl) tagEl.style.display = isAdmin() ? 'inline-flex' : 'none';
@@ -2378,7 +2384,7 @@
                 row.style.cursor = 'default';
                 row.innerHTML = `
                     <i class="fas fa-circle-user" style="background:#f1f5f9;"></i>
-                    <div><div class="smi-label">${escHtml(u.username || 'User')}${adminBadgeHtml(u.uid)}${isBlocked ? ' <span style="font-size:10px; color:#dc2626; font-weight:700;">(diblokir)</span>' : ''}</div><div class="smi-sub">HP: ${escHtml(u.phone || '-')}</div></div>
+                    <div><div class="smi-label">${escHtml(u.username || 'User')}${adminBadgeHtml(u.uid)}${aiBadgeHtml(u.uid)}${isBlocked ? ' <span style="font-size:10px; color:#dc2626; font-weight:700;">(diblokir)</span>' : ''}</div><div class="smi-sub">HP: ${escHtml(u.phone || '-')}</div></div>
                     ${actions}
                 `;
                 wrap.appendChild(row);

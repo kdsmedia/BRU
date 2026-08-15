@@ -1,0 +1,24 @@
+# Supabase project config for BERUANG AI engine.
+# Deploy with: supabase functions deploy ai-engine
+# Docs: https://supabase.com/docs/guides/functions
+
+project_id = "beruang"
+
+[functions.ai-engine]
+verify_jwt = false
+
+# Secrets are set via the Supabase dashboard (Project Settings > Edge Functions >
+# Secrets) or `supabase secrets set KEY=value`. NEVER commit real values.
+# Required:
+#   SUPABASE_URL                 https://jzyfxdysukzvnfllcbvq.supabase.co
+#   SUPABASE_SERVICE_ROLE_KEY    <service_role key>   (server only!)
+#   AI_API_KEY                   <your LLM provider key>
+# Optional (defaults shown in supabase/functions/ai-engine/config.ts):
+#   AI_ENABLED, AI_API_BASE, AI_MODEL, AI_POST_PROBABILITY,
+#   AI_COMMENT_PROBABILITY, AI_REPLY_PROBABILITY, AI_LIKE_PROBABILITY,
+#   AI_FOLLOW_PROBABILITY, AI_MAX_*, AI_COOLDOWN_SECONDS, AI_DUPLICATE_SIMILARITY
+
+# Scheduled invocation is configured via pg_cron in the database, NOT here.
+# After deploying the function, run the cron.schedule SQL in
+# supabase/migrations/0001_ai_engine.sql (uncomment & fill project ref + anon key).
+# Suggested cadence: every 5 minutes ('*/5 * * * *').
