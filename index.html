@@ -81,6 +81,16 @@
         .comment-input-box button { border: none; background: transparent; color: var(--bg-nav); font-weight: 600; cursor: pointer; font-size: 13px; }
         .upload-area { margin: 15px; height: 140px; border: 2px dashed #cbd5e1; border-radius: 18px; display: flex; align-items: center; justify-content: center; flex-direction: column; cursor: pointer; position: relative; overflow: hidden; background: #f8fafc; transition: 0.3s; }
         .upload-area:active { background: #f1f5f9; border-color: var(--bg-nav); }
+        /* Inline AdMob banner placeholders (in-content ad slots). On native the
+           live ad is shown as a bottom overlay by the ADMOB module; these slots
+           stay as labeled containers. */
+        .ad-slot { margin: 12px; border-radius: 14px; min-height: 90px; background: repeating-linear-gradient(45deg,#f1f5f9,#f1f5f9 10px,#eef2f7 10px,#eef2f7 20px); border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+        .ad-slot-feed { margin: 12px 12px 22px; }
+        .ad-slot-chat { margin: 4px 0 10px; min-height: 60px; }
+        /* When a native bottom banner overlay is active, add bottom padding so
+           the nav-dock / content is not covered. */
+        body.has-native-banner .nav-dock { bottom: 60px; }
+        body.has-native-banner #app-container { padding-bottom: 60px; }
         .upload-preview { width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0; display: none; }
         textarea { width: 100%; background: #fff; border: 2px solid #e2e8f0; padding: 15px; color: #333; border-radius: 15px; resize: none; margin-bottom: 15px; font-size: 14.5px; font-family: 'Poppins'; }
         textarea:focus { border-color: var(--bg-nav); outline: none; }
@@ -658,6 +668,83 @@
         let scannerStream = null;
         let scannerRAF = null;
         let pendingTransferRecipient = null; // {uid, username, photo, acctId}
+
+        // ===== ADMOB CONFIG (Capacitor native: @capacitor-community/admob) =====
+        // Real unit IDs. On web (browser dev) the plugin is absent, so the ADMOB
+        // module gracefully degrades: banner slots render as styled placeholders
+        // and the rewarded flow grants the bonus quota directly for testing.
+        const ADMOB = {
+            APP_ID:      'ca-app-pub-6881903056221433~1794482255',
+            BANNER_ID:   'ca-app-pub-6881903056221433/6548115489',
+            REWARDED_ID: 'ca-app-pub-6881903056221433/9174278828',
+            _initialized: false,
+            _bannerShown: false,
+            // True only when running inside a Capacitor native shell with the plugin.
+            isNative() {
+                return typeof window.Capacitor !== 'undefined'
+                    && !!window.Capacitor.isNativeAvailable
+                    && !!(window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob);
+            },
+            async init() {
+                if (this._initialized || !this.isNative()) return;
+                try {
+                    const { AdMob } = window.Capacitor.Plugins;
+                    await AdMob.initialize({ initializeForTesting: false });
+                    this._initialized = true;
+                    window.__dbg && window.__dbg('AdMob initialized');
+                } catch (e) { console.error('AdMob init failed', e); }
+            },
+            // Show the native banner as an overlay at the bottom of the screen.
+            async showBanner() {
+                if (!this.isNative()) return;
+                if (this._bannerShown) return;
+                try {
+                    const { AdMob } = window.Capacitor.Plugins;
+                    await AdMob.showBanner({ adId: this.BANNER_ID, position: 'BOTTOM_CENTER' });
+                    this._bannerShown = true;
+                    document.body.classList.add('has-native-banner');
+                } catch (e) { console.error('AdMob showBanner failed', e); }
+            },
+            async hideBanner() {
+                if (!this.isNative() || !this._bannerShown) return;
+                try {
+                    const { AdMob } = window.Capacitor.Plugins;
+                    await AdMob.hideBanner();
+                    this._bannerShown = false;
+                    document.body.classList.remove('has-native-banner');
+                } catch (e) { console.error('AdMob hideBanner failed', e); }
+            },
+            // Show a rewarded ad. Resolves { rewarded: true } only when the user
+            // watched it to completion (no skip). On web, resolves true immediately.
+            showRewarded() {
+                return new Promise((resolve) => {
+                    if (!this.isNative()) { resolve({ rewarded: true }); return; }
+                    try {
+                        const { AdMob } = window.Capacitor.Plugins;
+                        AdMob.prepareRewardVideoAd({ adId: this.REWARDED_ID })
+                            .then(() => AdMob.showRewardVideoAd())
+                            .catch((e) => { console.error('AdMob rewarded failed', e); resolve({ rewarded: false }); });
+                        AdMob.addListener('onRewarded', () => {
+                            // onRewarded only fires after a completed (no-skip) view.
+                            resolve({ rewarded: true });
+                        });
+                        AdMob.addListener('onRewardedVideoAdClosed', () => {
+                            // Resolve false if closed without reward event firing.
+                            setTimeout(() => resolve({ rewarded: false }), 0);
+                        });
+                    } catch (e) {
+                        console.error('AdMob rewarded exception', e);
+                        resolve({ rewarded: false });
+                    }
+                });
+            },
+            // Inline ad-slot markup used for in-content banner placements.
+            // On native these are styled placeholders (the live ad is the overlay);
+            // on web they are labeled "Ad" placeholders.
+            slotHtml(label) {
+                return `<div class="ad-slot" data-ad-slot="${label}"><span>Iklan</span></div>`;
+            }
+        };
 
         // ===== POINTS CONFIG =====
         const POINTS = { COMMENT: 50, POST: 20, FOLLOW: 10, LIKE: 2 };
