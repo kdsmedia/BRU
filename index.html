@@ -1577,11 +1577,16 @@
             const inp = document.getElementById(`inp-${pid}`);
             const text = inp.value.trim();
             if(!text) return;
-            const c = checkLimit('comments');
+            let c = checkLimit('comments');
             if (!c.ok) {
                 const tier = getTier(myTier);
-                showToast(`Batas komentar harian tercapai (${c.limit}x untuk ${tier.name}). Upgrade akun untuk lebih.`);
-                return;
+                // Offer a rewarded ad for +1 comment chance.
+                const granted = await promptRewardedForQuota('comments');
+                if (!granted) {
+                    showToast(`Batas komentar harian tercapai (${c.limit}x untuk ${tier.name}). Upgrade akun untuk lebih.`);
+                    return;
+                }
+                c = checkLimit('comments'); // recheck after grant
             }
             const name = fallbackName(currentUser);
             push(ref(db, `posts/${pid}/comments`), { text: text, uid: currentUser.uid, username: name, timestamp: Date.now() });
@@ -1589,7 +1594,7 @@
             inp.value = '';
             await recordUsage('comments');
             await awardPoints(currentUser.uid, POINTS.COMMENT, `comment ${pid}`);
-            showToast(`+${POINTS.COMMENT} poin (berkomentar) · sisa ${c.limit === Infinity ? '∞' : (c.limit - c.used - 1)} hari ini`);
+            showToast(`+${POINTS.COMMENT} poin (berkomentar) · sisa ${c.limit === Infinity ? '∞' : (c.effective - c.used - 1)} hari ini`);
         };
 
         window.previewUpload = async (input) => {
@@ -1624,8 +1629,12 @@
             const c = checkLimit('posts');
             if (!c.ok) {
                 const tier = getTier(myTier);
-                showToast(`Batas posting harian tercapai (${c.limit}x untuk ${tier.name}). Upgrade akun untuk lebih.`);
-                return;
+                // Offer a rewarded ad for +1 post chance.
+                const granted = await promptRewardedForQuota('posts');
+                if (!granted) {
+                    showToast(`Batas posting harian tercapai (${c.limit}x untuk ${tier.name}). Upgrade akun untuk lebih.`);
+                    return;
+                }
             }
             document.getElementById('post-btn-text').style.display = 'none';
             document.getElementById('post-loader').style.display = 'block';
@@ -1644,7 +1653,8 @@
                 try { await _refreshFeed(); } catch (_) {}
                 await recordUsage('posts');
                 await awardPoints(currentUser.uid, POINTS.POST, `post`);
-                showToast(`+${POINTS.POST} poin (posting) · sisa ${c.limit === Infinity ? '∞' : (c.limit - c.used - 1)} hari ini`);
+                const after = checkLimit('posts');
+                showToast(`+${POINTS.POST} poin (posting) · sisa ${after.limit === Infinity ? '∞' : (after.effective - after.used)} hari ini`);
             } catch(e) { alert(e.message); }
             document.getElementById('post-btn-text').style.display = 'block';
             document.getElementById('post-loader').style.display = 'none';
