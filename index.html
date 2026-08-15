@@ -285,6 +285,8 @@
         <div id="view-notif" class="view">
             <div class="header"><span style="font-size: 18px; font-weight: 700; color:#333">Activity</span></div>
             <div id="notif-list"></div>
+            <!-- AdMob banner slot: below Activity -->
+            <div class="ad-slot" data-ad-slot="activity-bottom"><span>Iklan</span></div>
         </div>
 
         <!-- PROFILE -->
@@ -320,6 +322,9 @@
                 </div>
             </div>
 
+            <!-- AdMob banner slot: below wallet/balance on Profile -->
+            <div class="ad-slot" data-ad-slot="profile-balance"><span>Iklan</span></div>
+
             <div class="grid-container" id="profile-grid"></div>
         </div>
 
@@ -340,6 +345,8 @@
                 <div style="width: 24px;"></div>
             </div>
             <div id="chat-msgs" class="chat-messages"></div>
+            <!-- AdMob banner slot: inside private chat -->
+            <div class="ad-slot ad-slot-chat" data-ad-slot="private-chat"><span>Iklan</span></div>
             <div class="chat-input-bar">
                 <input type="text" id="chat-input" class="auth-input" placeholder="Type a message..." style="margin:0; border-radius: 30px; background: #f8fafc;">
                 <button class="btn-main" style="width: auto; margin:0; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;" onclick="sendMsg()">
@@ -741,8 +748,8 @@
             // Inline ad-slot markup used for in-content banner placements.
             // On native these are styled placeholders (the live ad is the overlay);
             // on web they are labeled "Ad" placeholders.
-            slotHtml(label) {
-                return `<div class="ad-slot" data-ad-slot="${label}"><span>Iklan</span></div>`;
+            slotHtml(label, extraClass) {
+                return `<div class="ad-slot ${extraClass || ''}" data-ad-slot="${label}"><span>Iklan</span></div>`;
             }
         };
 
@@ -1230,6 +1237,9 @@
             listenMyWallet();
             loadProfile();
             initPullToRefresh();
+            // Initialize AdMob (no-op on web) and show the bottom banner on the
+            // starting view. Inline ad slots are rendered in the views themselves.
+            ADMOB.init().then(() => ADMOB.showBanner());
         }
 
         // ===== PULL-TO-REFRESH =====
@@ -1326,6 +1336,11 @@
                 chatCount = 0;
                 document.getElementById('badge-chat').classList.add('hidden');
             }
+            // Show the native bottom banner on content views; hide on the upload
+            // screen so it never interferes with image picking / caption input.
+            // (Inline ad-slot placeholders remain visible regardless.)
+            if (viewId === 'view-upload') ADMOB.hideBanner();
+            else ADMOB.showBanner();
         };
 
         const processImage = (file, maxWidth = 800, quality = 0.7) => {
@@ -1474,7 +1489,7 @@
             container.innerHTML = "";
             if(!data) { container.innerHTML = "<div style='text-align:center; margin-top:50px; color:gray; font-size:14px;'>Nothing here yet.</div>"; return; }
             const posts = Object.entries(data).reverse();
-            posts.forEach(([pid, post]) => {
+            posts.forEach(([pid, post], i) => {
                     const u = usersCache[post.uid] || {username: 'Loading...', photo: DEFAULT_AVATAR};
                     const isLiked = post.likes && post.likes[currentUser.uid];
                     const likeCount = post.likes ? Object.keys(post.likes).length : 0;
@@ -1530,6 +1545,12 @@
                         </div>
                     `;
                     container.appendChild(div);
+                    // Insert an AdMob banner slot between every 5 posts.
+                    if ((i + 1) % 5 === 0) {
+                        const ad = document.createElement('div');
+                        ad.innerHTML = ADMOB.slotHtml('feed-' + (i + 1), 'ad-slot-feed');
+                        container.appendChild(ad.firstElementChild);
+                    }
                 });
         }
 
