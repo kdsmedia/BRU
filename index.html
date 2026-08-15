@@ -284,7 +284,7 @@
                 <img id="profile-img" src="" class="p-big-img" onclick="document.getElementById('profile-file').click()">
                 <h2 id="profile-name" style="margin: 0; font-size: 22px; color: #1a1a1a;">Loading...</h2>
                 <div id="rank-pill" class="rank-badge-pill"></div>
-                <div id="admin-tag-profile" class="admin-tag" style="margin-top:8px; display:none;">🛡️ Master / Admin</div>
+                <div id="admin-tag-profile" class="admin-tag" style="margin-top:8px; display:none;">🛡️ Admin</div>
                 <div style="display:flex; gap:8px; justify-content:center; margin-top: 12px;">
                     <button class="btn-sec" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;" onclick="toggleEditName()">Edit Name</button>
                     <button class="btn-sec" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;" onclick="openEditProfileModal()">Full Profile</button>
@@ -681,7 +681,7 @@
         // Special shield badge for admin accounts (distinct from regular users)
         const adminBadgeHtml = (uid) => {
             const role = (uid && usersCache[uid] && usersCache[uid].role) || (uid === currentUser.uid ? myRole : '');
-            if (role === 'admin') return ' <span class="verified-admin" title="MASTER / ADMIN">🛡️</span>';
+            if (role === 'admin') return ' <span class="verified-admin" title="Admin">🛡️</span>';
             return '';
         };
         // TIERS: purchased account tiers with upgrade price + daily activity limits
@@ -1545,7 +1545,7 @@
             const dbUser = usersCache[currentUser.uid];
             const finalName = (dbUser && dbUser.username) ? dbUser.username : (fallbackName(currentUser));
             const finalPhoto = (dbUser && dbUser.photo) ? dbUser.photo : DEFAULT_AVATAR;
-            document.getElementById('profile-name').innerHTML = finalName + (isAdmin() ? ' <span class="verified-admin verified-admin-lg" title="MASTER / ADMIN"><i class="fas fa-check"></i></span>' : '');
+            document.getElementById('profile-name').innerHTML = finalName + (isAdmin() ? ' <span class="verified-admin verified-admin-lg" title="Admin">🛡️</span>' : '');
             document.getElementById('profile-img').src = finalPhoto;
             const tagEl = document.getElementById('admin-tag-profile');
             if (tagEl) tagEl.style.display = isAdmin() ? 'inline-flex' : 'none';
