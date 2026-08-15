@@ -109,14 +109,6 @@ begin
     ) then
         alter publication supabase_realtime add table public.nodes;
     end if;
-
-    -- ai_activity_logs (debug live AI activity)
-    if not exists (
-        select 1 from pg_publication_tables
-        where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'ai_activity_logs'
-    ) then
-        alter publication supabase_realtime add table public.ai_activity_logs;
-    end if;
 end $$;
 
 
@@ -245,6 +237,18 @@ create index if not exists ai_activity_logs_agent_idx  on public.ai_activity_log
 alter table public.ai_agents        enable row level security;
 alter table public.ai_memory        enable row level security;
 alter table public.ai_activity_logs enable row level security;
+
+-- Realtime untuk ai_activity_logs (dipindah ke sini karena tabelnya baru
+-- dibuat di atas — tidak bisa add ke publication sebelum tabel ada).
+do $$
+begin
+    if not exists (
+        select 1 from pg_publication_tables
+        where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'ai_activity_logs'
+    ) then
+        alter publication supabase_realtime add table public.ai_activity_logs;
+    end if;
+end $$;
 
 
 -- ############################################################
