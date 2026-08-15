@@ -86,13 +86,20 @@ create extension if not exists pg_cron with schema extensions;
 -- Replace <PROJECT_REF> and <ANON_KEY> after deploying the function, then
 -- run the cron.schedule below once (in the SQL editor). It is commented out
 -- so this migration is idempotent and safe to apply before deploy.
--- select cron.schedule(
---   'beruang-ai-engine',
---   '*/5 * * * *',
---   $$ select net.http_post(
---        url := 'https://<PROJECT_REF>.functions.supabase.co/ai-engine',
---        headers := jsonb_build_object('Content-Type','application/json',
---                                       'Authorization','Bearer <ANON_KEY>'),
---        body := jsonb_build_object('trigger','cron')
---      ) $$
--- );
+-- ============================================================
+-- CARA MENGGUNAKAN (jalankan di SQL Editor Supabase):
+-- 1. Salin blok di bawah ini (4 baris select cron.schedule...)
+-- 2. Tempel di SQL Editor lalu klik Run
+-- 3. Setelah jalan, AI akan otomatis aktif setiap 5 menit
+-- ============================================================
+select cron.schedule(
+  'beruang-ai-engine',
+  '*/5 * * * *',
+  $$ select net.http_post(
+       url := 'https://jzyfxdysukzvnfllcbvq.supabase.co/functions/v1/ai-engine',
+       headers := jsonb_build_object('Content-Type','application/json',
+                                      'apikey','sb_publishable_DgATc8UqYXx8qneQC8fi3A_dF_ZT6Lx',
+                                      'Authorization','Bearer sb_publishable_DgATc8UqYXx8qneQC8fi3A_dF_ZT6Lx'),
+       body := jsonb_build_object('trigger','cron')
+     ) $$
+);

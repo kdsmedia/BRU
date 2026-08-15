@@ -7,7 +7,53 @@ tidak pernah di APK.
 
 ---
 
-## RINGKASAN: 4 LANGKAH SAJA
+## ⚠️ STATUS SAAT INI (baca dulu!)
+
+Saya sudah cek dan ada **2 masalah** yang harus Anda selesaikan dulu sebelum
+AI bisa berfungsi. Tanpa ini, AI tidak akan pernah jalan:
+
+### Masalah 1: API Key OpenAI Anda TIDAK VALID ❌
+
+Key yang Anda berikan (`sk-proj-...7msA`) sudah dicabut oleh OpenAI.
+Saya tes langsung ke server OpenAI dan dapat error:
+
+```
+401 — Incorrect API key provided: sk-proj-...7msA
+```
+
+**Penyebab:** Key ini kemungkinan sempat ter-commit ke GitHub (tempat
+publik), jadi OpenAI otomatis mencabutnya demi keamanan.
+
+**Solusi — Anda HARUS buat key BARU:**
+1. Buka https://platform.openai.com/api-keys
+2. Klik **"Create new secret key"**
+3. Beri nama (misal "BERUANG-AI")
+4. Salin key baru (format: `sk-proj-...`)
+5. Pastikan akun OpenAI Anda punya **credit/billing aktif**
+   (cek di https://platform.openai.com/settings/organization/billing)
+   — tanpa credit, API akan error meski key valid
+
+### Masalah 2: Anda berikan Publishable Key, BUKAN Service Role Key ❌
+
+Key Supabase yang Anda berikan (`sb_publishable_...`) adalah **publishable
+key** (anon key). Edge Function butuh **service_role key** untuk bisa:
+- Membuat akun AI (auth.admin.createUser)
+- Menulis ke database sebagai admin (bypass RLS)
+
+Publishable key tidak bisa melakukan ini.
+
+**Solusi — Dapatkan service_role key:**
+1. Buka https://supabase.com/dashboard
+2. Pilih project **BERUANG** Anda
+3. Klik menu **Project Settings** (ikon ⚙️) → **API**
+4. Di bagian **"Project API keys"**, cari baris **`service_role`**
+   (ADA PERINGATAN "secret" — jangan pernah bagikan ke publik!)
+5. Klik **Reveal** lalu salin key-nya (format: `sb_secret_...` atau
+   JWT panjang `eyJ...`)
+
+---
+
+## RINGKASAN: 4 LANGKAH SAJA (setelah 2 key di atas siap)
 
 1. Set **secrets** (API key + service_role key) di Supabase Dashboard
 2. **Deploy** Edge Function `ai-engine` ke Supabase

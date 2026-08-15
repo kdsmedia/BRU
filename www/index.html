@@ -247,7 +247,7 @@
             <div class="header">
                 <span class="gradient-text" style="font-size: 20px; letter-spacing: -0.5px;">BERUANG</span>
                 <div style="display:flex; gap:16px; align-items:center;">
-                    <i class="fas fa-qrcode" style="font-size: 20px; color: #333; cursor: pointer;" onclick="openQRScanner()" title="Scan & Transfer Poin"></i>
+                    <i class="fas fa-qrcode" style="font-size: 20px; color: #333; cursor: pointer;" onclick="openQRScanner()" title="Pindai & Transfer Poin"></i>
                     <i class="far fa-paper-plane" style="font-size: 20px; color: #333; cursor: pointer;" onclick="nav('view-chat')"></i>
                 </div>
             </div>
@@ -299,11 +299,11 @@
                 <div id="profile-own-actions" style="display:flex; gap:8px; justify-content:center; margin-top: 12px;">
                     <button class="btn-sec" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;" onclick="toggleEditName()">Ubah Nama</button>
                     <button class="btn-sec" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;" onclick="openEditProfileModal()">Profil Lengkap</button>
-                    <button class="btn-sec" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600; border-color: var(--accent-red); color: var(--accent-red);" onclick="openUpgradeModal()">Upgrade Akun</button>
+                    <button class="btn-sec" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600; border-color: var(--accent-red); color: var(--accent-red);" onclick="openUpgradeModal()">Naik Kelas</button>
                 </div>
                 <div id="profile-visit-actions" class="hidden" style="display:flex; gap:8px; justify-content:center; margin-top: 12px;">
                     <button id="profile-follow-btn" class="btn-main" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;" onclick="profileToggleFollow()">Ikuti</button>
-                    <button class="btn-sec" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;" onclick="profileStartChat()"><i class="fas fa-comment-dots" style="margin-right:4px;"></i>Chat</button>
+                    <button class="btn-sec" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;" onclick="profileStartChat()"><i class="fas fa-comment-dots" style="margin-right:4px;"></i>Obrolan</button>
                 </div>
                 <input id="edit-name-input" class="auth-input hidden" style="margin-top: 15px; text-align: center;">
                 <div class="stats-row">
@@ -319,9 +319,9 @@
                 <div class="wallet-amount"><span id="wallet-balance">0</span> <span>poin</span></div>
                 <div class="wallet-acct">ID Akun: <b id="wallet-acct-id">000000</b> <i class="fas fa-copy" style="cursor:pointer; margin-left:4px; opacity:0.85;" title="Salin ID Akun" onclick="copyAcctId()"></i></div>
                 <div class="wallet-actions">
-                    <button class="wallet-btn primary" onclick="openMyQRModal()"><i class="fas fa-qrcode"></i>Kode QR Saya</button>
-                    <button class="wallet-btn" onclick="openQRScanner()"><i class="fas fa-camera"></i>Scan Transfer</button>
-                    <button class="wallet-btn" onclick="openTxnHistoryModal()"><i class="fas fa-clock-rotate-left"></i>Riwayat</button>
+                    <button class="wallet-btn primary" onclick="openMyQRModal()"><i class="fas fa-qrcode"></i>QR SAYA</button>
+                    <button class="wallet-btn" onclick="openQRScanner()"><i class="fas fa-camera"></i>TRANSFER</button>
+                    <button class="wallet-btn" onclick="openTxnHistoryModal()"><i class="fas fa-clock-rotate-left"></i>RIWAYAT</button>
                 </div>
             </div>
 
@@ -341,7 +341,7 @@
         <div id="chat-overlay" class="chat-window hidden">
             <div class="header" style="background: #fff; border-bottom: 1px solid #eee;">
                 <i class="fas fa-arrow-left" onclick="closeChat()" style="font-size: 22px; cursor: pointer; color:#333;"></i>
-                <span id="chat-title" style="font-size: 18px; font-weight: 600; color:#333;">Chat</span>
+                <span id="chat-title" style="font-size: 18px; font-weight: 600; color:#333;">Obrolan</span>
                 <i class="fas fa-trash-alt" onclick="clearChat()" title="Hapus percakapan" style="font-size: 18px; cursor: pointer; color:#ef4444;"></i>
             </div>
             <div id="chat-msgs" class="chat-messages"></div>
@@ -1412,7 +1412,8 @@
             items.forEach(i => i.classList.remove('active'));
             const map = {'view-home':0, 'view-chat':1, 'view-upload':2, 'view-notif':3, 'view-profile':4};
             if(items[map[viewId]]) items[map[viewId]].classList.add('active');
-            if(viewId === 'view-profile') loadProfile(null);   // dock tab always shows own profile
+            if(viewId === 'view-profile' && !_visitingProfile) loadProfile(null);   // dock tab shows own profile
+            if(viewId === 'view-profile') _visitingProfile = false;
             if(viewId === 'view-notif') {
                 notifCount = 0;
                 document.getElementById('badge-notif').classList.add('hidden');
@@ -1715,7 +1716,7 @@
                 // Offer a rewarded ad for +1 comment chance.
                 const granted = await promptRewardedForQuota('comments');
                 if (!granted) {
-                    showToast(`Batas komentar harian tercapai (${c.limit}x untuk ${tier.name}). Upgrade akun untuk lebih.`);
+                    showToast(`Batas komentar harian tercapai (${c.limit}x untuk ${tier.name}). Naik kelas akun untuk lebih.`);
                     return;
                 }
                 c = checkLimit('comments'); // recheck after grant
@@ -1764,7 +1765,7 @@
                 // Offer a rewarded ad for +1 post chance.
                 const granted = await promptRewardedForQuota('posts');
                 if (!granted) {
-                    showToast(`Batas posting harian tercapai (${c.limit}x untuk ${tier.name}). Upgrade akun untuk lebih.`);
+                    showToast(`Batas posting harian tercapai (${c.limit}x untuk ${tier.name}). Naik kelas akun untuk lebih.`);
                     return;
                 }
             }
@@ -1810,6 +1811,7 @@
         };
 
         let viewingProfileUid = null;   // when set, the profile view shows this user instead of "self"
+        let _visitingProfile = false;  // flag: navigating to another user's profile (suppress own-profile reload in nav)
 
         // Load the profile view. With no argument (or null) it shows the current
         // user; with a uid it shows that user's public profile (visit profile).
@@ -1864,9 +1866,10 @@
         // Open another user's public profile from anywhere in the app.
         window.visitProfile = (uid) => {
             if (!uid) return;
-            if (uid === currentUser.uid) { nav('view-profile'); return; }
-            loadProfile(uid);
+            if (uid === currentUser.uid) { _visitingProfile = false; nav('view-profile'); return; }
+            _visitingProfile = true;
             nav('view-profile');
+            loadProfile(uid);
         };
 
         // Image click: edit photo on own profile, open the image on others.
@@ -1880,7 +1883,7 @@
             const btn = document.getElementById('profile-follow-btn');
             if (!btn) return;
             const following = followingCache[viewingProfileUid];
-            btn.innerText = following ? 'Following' : 'Follow';
+            btn.innerText = following ? 'Mengikuti' : 'Ikuti';
             btn.classList.toggle('following', !!following);
         }
         window.profileToggleFollow = () => { if (viewingProfileUid) toggleFollow(viewingProfileUid); };
@@ -2078,7 +2081,7 @@
             <p>Dilarang melakukan tindakan penyalahgunaan, termasuk farming poin otomatis, akun ganda untuk manipulasi referral, atau spam.</p>
             <h4>3. Transaksi</h4>
             <p>Transfer poin bersifat final. Konfirmasi penerima sebelum mengirim. Pembukaan PIN adalah tanggung jawab pengguna.</p>
-            <h4>4. Tier &amp; Upgrade</h4>
+            <h4>4. Tier &amp; Naik Kelas</h4>
             <p>Pembelian upgrade tier tidak dapat dikembalikan (non-refundable).</p>
             <h4>5. Larangan</h4>
             <p>Kami berhak menonaktifkan akun yang melanggar syarat ini tanpa pemberitahuan terlebih dahulu.</p>
@@ -2376,7 +2379,7 @@
                 } else if (isOwned) {
                     actionHtml = `<button class="btn-main" style="width:auto; margin:0; padding:6px 14px; font-size:12px;" onclick="switchTier('${t.name}')">Gunakan</button>`;
                 } else if (canBuy) {
-                    actionHtml = `<button class="btn-main" style="width:auto; margin:0; padding:6px 14px; font-size:12px;" onclick="confirmBuyTier('${t.name}')">Upgrade</button>`;
+                    actionHtml = `<button class="btn-main" style="width:auto; margin:0; padding:6px 14px; font-size:12px;" onclick="confirmBuyTier('${t.name}')">Naik Kelas</button>`;
                 } else {
                     actionHtml = `<span style="font-size:12px; color:var(--text-muted);">Poin kurang</span>`;
                 }
@@ -2394,7 +2397,7 @@
                 `;
             });
             openModal(`
-                <div class="modal-title"><i class="fas fa-crown"></i> Upgrade Akun</div>
+                <div class="modal-title"><i class="fas fa-crown"></i> Naik Kelas Akun</div>
                 <div class="modal-sub">Tingkatkan akun untuk batas aktivitas harian lebih besar. Saldo Anda: <b>${myPoints.toLocaleString('id-ID')}</b> poin.</div>
                 ${rows}
                 <p style="font-size:11px; color:var(--text-muted); text-align:center; margin-top:8px;">Batas harian direset setiap hari (00:00 UTC).</p>
@@ -2406,8 +2409,8 @@
             if (getTierIndex(tierName) <= getTierIndex(myTier)) return;
             if (myPoints < t.price) { showToast('Poin tidak cukup'); return; }
             openModal(`
-                <div class="modal-title">Konfirmasi Upgrade</div>
-                <div class="modal-sub">Anda akan upgrade ke <b>${t.name}</b> seharga <b>${t.price.toLocaleString('id-ID')}</b> poin.</div>
+                <div class="modal-title">Konfirmasi Naik Kelas</div>
+                <div class="modal-sub">Anda akan naik ke <b>${t.name}</b> seharga <b>${t.price.toLocaleString('id-ID')}</b> poin.</div>
                 <div class="recipient-box">
                     <div class="rank-badge-pill rank-${t.name}" style="margin:0; min-width:44px; justify-content:center;"><i class="fas ${t.icon}"></i></div>
                     <div>
@@ -2434,7 +2437,7 @@
             if (res.committed === false || res.snapshot.val() === null) { errEl.innerText = 'Poin tidak cukup'; return; }
             await update(ref(db, `wallets/${currentUser.uid}`), { tier: t.name });
             await push(ref(db, `wallets/${currentUser.uid}/history`), { type: 'upgrade', amount: t.price, tier: t.name, timestamp: Date.now() });
-            showToast(`Upgrade ke ${t.name} berhasil!`);
+            showToast(`Naik ke ${t.name} berhasil!`);
             closeModal();
         };
 
@@ -2461,10 +2464,10 @@
                 list.innerHTML = '';
                 Object.values(data).reverse().forEach(t => {
                     let label = '', sub = '', cls = '', sign = '';
-                    if (t.type === 'reward') { label = `Reward: ${escHtml(t.reason||'aktivitas')}`; cls = 'in'; sign = '+'; }
+                    if (t.type === 'reward') { label = `Hadiah: ${escHtml(t.reason||'aktivitas')}`; cls = 'in'; sign = '+'; }
                     else if (t.type === 'transfer_in') { label = `Diterima dari ${escHtml(t.fromName||'Pengguna')}`; sub = t.fromAcctId ? `ID: ${escHtml(t.fromAcctId)}` : ''; cls = 'in'; sign = '+'; }
                     else if (t.type === 'transfer_out') { label = `Dikirim ke ${escHtml(t.toName||'Pengguna')}`; sub = t.toAcctId ? `ID: ${escHtml(t.toAcctId)}` : ''; cls = 'out'; sign = '-'; }
-                    else if (t.type === 'upgrade') { label = `Upgrade akun ke ${escHtml(t.tier||'tier')}`; cls = 'out'; sign = '-'; }
+                    else if (t.type === 'upgrade') { label = `Naik kelas ke ${escHtml(t.tier||'kelas')}`; cls = 'out'; sign = '-'; }
                     const d = new Date(t.timestamp);
                     list.innerHTML += `
                         <div class="txn-history-item">
