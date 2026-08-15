@@ -79,7 +79,7 @@
         .comment-input-box { display: flex; gap: 8px; margin-top: 8px; }
         .comment-input-box input { flex: 1; border: none; background: #f1f5f9; padding: 10px 15px; border-radius: 20px; font-size: 13px; outline: none; }
         .comment-input-box button { border: none; background: transparent; color: var(--bg-nav); font-weight: 600; cursor: pointer; font-size: 13px; }
-        .upload-area { margin: 15px; height: 300px; border: 2px dashed #cbd5e1; border-radius: 25px; display: flex; align-items: center; justify-content: center; flex-direction: column; cursor: pointer; position: relative; overflow: hidden; background: #f8fafc; transition: 0.3s; }
+        .upload-area { margin: 15px; height: 140px; border: 2px dashed #cbd5e1; border-radius: 18px; display: flex; align-items: center; justify-content: center; flex-direction: column; cursor: pointer; position: relative; overflow: hidden; background: #f8fafc; transition: 0.3s; }
         .upload-area:active { background: #f1f5f9; border-color: var(--bg-nav); }
         .upload-preview { width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0; display: none; }
         textarea { width: 100%; background: #fff; border: 2px solid #e2e8f0; padding: 15px; color: #333; border-radius: 15px; resize: none; margin-bottom: 15px; font-size: 14.5px; font-family: 'Poppins'; }
@@ -259,8 +259,8 @@
             <div style="padding: 20px;">
                 <div class="upload-area" onclick="document.getElementById('post-file').click()">
                     <img id="upload-preview-img" class="upload-preview">
-                    <i class="fas fa-cloud-upload-alt" style="font-size: 40px; color: #cbd5e1; margin-bottom: 10px;"></i>
-                    <span style="color: #94a3b8; font-size: 14px;">Tap to upload image (optional)</span>
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 24px; color: #cbd5e1; margin-bottom: 6px;"></i>
+                    <span style="color: #94a3b8; font-size: 12px;">Tap to upload image (optional)</span>
                 </div>
                 <i id="remove-img-btn" class="fas fa-times-circle" title="Hapus gambar" onclick="event.stopPropagation(); clearUploadImage()" style="display:none; position:fixed; right:34px; bottom:230px; font-size:28px; color:#ef4444; background:#fff; border-radius:50%; z-index:1200; box-shadow:0 2px 8px rgba(0,0,0,0.2);"></i>
                 <textarea id="post-caption" rows="3" placeholder="Write a caption..."></textarea>
