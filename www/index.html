@@ -1,0 +1,2518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>BERUANG - Social</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #f8fafc;
+            --bg-nav: #eab308;
+            --bg-card: #ffffff;
+            --accent-red: #ff0000;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --shadow-soft: 0 10px 30px rgba(0,0,0,0.06);
+            --radius-card: 20px;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        html, body { height: 100%; }
+        body { margin: 0; background-color: var(--bg-body); color: var(--text-main); height: 100vh; height: 100dvh; overflow: hidden; font-size: 14.5px; }
+        .hidden { display: none !important; }
+        .gradient-text { background: linear-gradient(to right, var(--bg-nav), var(--accent-red)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700; }
+
+        #auth-view { height: 100vh; height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, #fffbeb, #fef3c7); padding: calc(20px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom)); z-index: 2000; position: fixed; inset: 0; }
+        .auth-card { background: var(--bg-card); padding: 2rem; border-radius: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); width: 100%; max-width: 400px; text-align: center; animation: fadeIn 0.3s ease-in-out; }
+        .logo-text-lg { font-size: 2rem; font-weight: 700; background: linear-gradient(to right, var(--bg-nav), var(--accent-red)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem; }
+        .auth-input-wrapper { margin-bottom: 1rem; text-align: left; }
+        .auth-input { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 12px; font-family: inherit; outline: none; transition: 0.3s; font-size: 14px; }
+        .auth-input:focus { border-color: var(--bg-nav); }
+        .btn-primary { background: var(--bg-nav); color: #000; font-weight: 600; padding: 12px; border-radius: 12px; width: 100%; font-size: 1rem; margin-bottom: 10px; border: none; cursor: pointer; transition: transform 0.1s; }
+        .btn-primary:active { transform: scale(0.95); }
+        .auth-note { font-size: 0.8rem; color: var(--text-muted); margin-top: 10px; }
+
+        /* Auth tabs (Login / Daftar) */
+        .auth-tabs { display: flex; background: #f1f5f9; border-radius: 12px; padding: 4px; margin-bottom: 18px; }
+        .auth-tab { flex: 1; text-align: center; padding: 9px; border-radius: 9px; font-size: 14px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: 0.25s; border: none; background: transparent; }
+        .auth-tab.active { background: #fff; color: var(--text-main); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+
+        #app-container { height: 100%; display: flex; flex-direction: column; position: relative; }
+        .view { height: 100%; overflow-y: auto; padding-bottom: calc(85px + env(safe-area-inset-bottom)); display: none; scroll-behavior: smooth; }
+        .view.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .nav-dock { position: fixed; bottom: 0; left: 0; width: 100%; height: calc(65px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); display: flex; justify-content: space-around; align-items: center; z-index: 1000; background: var(--bg-nav); box-shadow: 0 -10px 25px rgba(0,0,0,0.05); border-top-left-radius: 20px; border-top-right-radius: 20px; }
+        .nav-item { color: rgba(255,255,255,0.7); padding: 10px; transition: 0.3s; display: flex; flex-direction: column; align-items: center; position: relative; cursor: pointer; }
+        .nav-item i { font-size: 22px; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .nav-item.active i { transform: scale(1.1); text-shadow: 0 0 10px rgba(255,255,255,0.6); }
+        .nav-center-btn { background: var(--accent-red); width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transform: translateY(-20px); box-shadow: 0 8px 20px rgba(255,0,0,0.3); border: 4px solid #fff; transition: transform 0.2s; }
+        .nav-center-btn:active { transform: translateY(-15px) scale(0.95); }
+        .nav-center-btn i { font-size: 24px !important; color: white !important; }
+        .badge { position: absolute; top: 4px; right: 4px; background-color: var(--accent-red); color: white; font-size: 10px; font-weight: bold; height: 16px; min-width: 16px; border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 0 4px; border: 2px solid var(--bg-nav); }
+
+        .header { padding: calc(12px + env(safe-area-inset-top)) 20px 12px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 90; background: rgba(255,255,255,0.98); border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .stories-wrapper { display: flex; gap: 12px; overflow-x: auto; padding: 15px 20px; scrollbar-width: none; background: #fff; margin-bottom: 8px; border-bottom: 1px solid #f0f0f0; }
+        .story-card { width: 65px; height: 65px; border-radius: 50%; position: relative; overflow: hidden; border: 2px solid var(--bg-nav); padding: 2px; flex-shrink: 0; }
+        .story-card img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+        .story-card.add { background: #fff; border: 2px dashed var(--bg-nav); display: flex; align-items: center; justify-content: center; color: var(--bg-nav); }
+        .post-card { margin: 12px 12px 22px 12px; padding: 0; border-radius: 18px; box-shadow: 0 4px 18px rgba(15,23,42,0.07); background: white; overflow: hidden; border: 1px solid #e9eef5; }
+        .post-header { display: flex; align-items: center; gap: 12px; padding: 13px 15px; }
+        .p-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid #eaeef3; flex-shrink: 0; }
+        .post-img { width: 100%; max-height: 560px; object-fit: cover; display: block; background: #f1f5f9; }
+        .post-text-only { padding: 0 15px 14px 15px; font-size: 15px; line-height: 1.5; color: var(--text-main); white-space: pre-wrap; word-break: break-word; }
+        .post-actions { display: flex; gap: 20px; padding: 10px 15px 4px 15px; border-top: 1px solid #f3f5f8; margin-top: 0; justify-content: flex-end; }
+        .action-btn { font-size: 23px; color: var(--text-main); cursor: pointer; transition: transform 0.2s; }
+        .action-btn:active { transform: scale(0.88); }
+        .action-btn.liked { color: var(--accent-red); }
+        .post-likes-count { font-size: 12.5px; color: var(--text-muted); padding: 0 15px; font-weight: 600; }
+        .caption-area { padding: 6px 15px 12px 15px; color: var(--text-muted); font-size: 13.5px; line-height: 1.45; word-break: break-word; }
+        .caption-area b { color: var(--text-main); margin-right: 6px; font-weight: 600; }
+        .btn-follow { padding: 6px 16px; font-size: 12px; font-weight: 700; border-radius: 15px; border: none; cursor: pointer; margin-left: auto; transition: 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-follow.not-following { background: var(--accent-red); color: white; box-shadow: 0 4px 10px rgba(255,0,0,0.3); }
+        .btn-follow.following { background: #f1f5f9; color: var(--text-muted); border: 1px solid #e2e8f0; }
+        .comment-section { padding: 0 15px 15px 15px; }
+        .comment-toggle { font-size: 13px; color: #94a3b8; cursor: pointer; margin-bottom: 8px; display: inline-block; font-weight: 500; }
+        .comment-item { font-size: 13px; margin-bottom: 4px; color: var(--text-muted); }
+        .comment-input-box { display: flex; gap: 8px; margin-top: 8px; }
+        .comment-input-box input { flex: 1; border: none; background: #f1f5f9; padding: 10px 15px; border-radius: 20px; font-size: 13px; outline: none; }
+        .comment-input-box button { border: none; background: transparent; color: var(--bg-nav); font-weight: 600; cursor: pointer; font-size: 13px; }
+        .upload-area { margin: 15px; height: 140px; border: 2px dashed #cbd5e1; border-radius: 18px; display: flex; align-items: center; justify-content: center; flex-direction: column; cursor: pointer; position: relative; overflow: hidden; background: #f8fafc; transition: 0.3s; }
+        .upload-area:active { background: #f1f5f9; border-color: var(--bg-nav); }
+        /* When a native bottom banner overlay is active, add bottom padding so
+           the nav-dock / content is not covered. */
+        body.has-native-banner .nav-dock { bottom: 60px; }
+        body.has-native-banner #app-container { padding-bottom: 60px; }
+        .upload-preview { width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0; display: none; }
+        textarea { width: 100%; background: #fff; border: 2px solid #e2e8f0; padding: 15px; color: #333; border-radius: 15px; resize: none; margin-bottom: 15px; font-size: 14.5px; font-family: 'Poppins'; }
+        textarea:focus { border-color: var(--bg-nav); outline: none; }
+        .btn-main { width: 100%; padding: 14px; border: none; border-radius: 14px; background: var(--bg-nav); color: white; font-weight: 600; cursor: pointer; transition: transform 0.2s; font-size: 15px; margin-top: 15px; box-shadow: 0 4px 15px rgba(234,179,8,0.4); }
+        .chat-list-container { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .chat-list-item { padding: 12px; display: flex; align-items: center; gap: 12px; border-radius: 15px; cursor: pointer; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.03); transition: 0.2s; }
+        .chat-window { position: fixed; inset: 0; z-index: 2100; background: var(--bg-body); display: flex; flex-direction: column; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; background: #fff; }
+        .bubble { padding: 10px 15px; border-radius: 18px; max-width: 75%; font-size: 14px; position: relative; line-height: 1.4; }
+        .bubble.mine { align-self: flex-end; background: var(--bg-nav); color: white; border-bottom-right-radius: 4px; box-shadow: 0 4px 10px rgba(234,179,8,0.3); }
+        .bubble.theirs { align-self: flex-start; background: #f1f5f9; color: #333; border-bottom-left-radius: 4px; }
+        .chat-input-bar { padding: 12px 12px calc(12px + env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid #eee; display: flex; gap: 10px; align-items: center; }
+
+        .profile-head { padding: 30px 20px; text-align: center; background: #fff; margin-bottom: 15px; border-bottom-left-radius: 25px; border-bottom-right-radius: 25px; box-shadow: var(--shadow-soft); }
+        .p-big-img { width: 100px; height: 100px; border-radius: 50%; border: 4px solid white; object-fit: cover; margin-bottom: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        .stats-row { display: flex; justify-content: center; gap: 30px; margin: 20px 0; }
+        .stat-num { font-size: 18px; font-weight: 700; color: var(--text-main); display: block; }
+        .stat-label { font-size: 12px; color: var(--text-muted); }
+        .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: #fff; padding-top: 2px; }
+        .grid-item { aspect-ratio: 1; width: 100%; object-fit: cover; cursor: pointer; }
+        .grid-item-text { display: flex; align-items: center; justify-content: center; background: #f1f5f9; color: #94a3b8; font-size: 22px; }
+        .settings-btn { position: absolute; top: calc(20px + env(safe-area-inset-top)); left: 20px; color: var(--text-muted); cursor: pointer; font-size: 26px; transition: transform 0.3s; z-index: 10; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
+        .settings-btn:active { transform: rotate(90deg); }
+        .btn-logout { width: 100%; padding: 13px; border: none; border-radius: 14px; background: #fee2e2; color: var(--accent-red); font-weight: 700; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.1s; }
+        .btn-logout:active { transform: scale(0.96); }
+
+        /* Pull-to-refresh */
+        #ptr-indicator { position: fixed; top: calc(env(safe-area-inset-top) + 8px); left: 50%; transform: translateX(-50%) translateY(-60px); width: 40px; height: 40px; border-radius: 50%; background: #fff; box-shadow: 0 4px 14px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; z-index: 1500; transition: transform 0.2s ease, opacity 0.2s ease; opacity: 0; pointer-events: none; }
+        #ptr-indicator i { font-size: 18px; color: var(--bg-nav); }
+        #ptr-indicator.ptr-active { opacity: 1; }
+        #ptr-indicator.ptr-rotate i { animation: spin 0.8s linear infinite; }
+        .settings-menu-item { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 14px; cursor: pointer; transition: background 0.2s; }
+        .settings-menu-item:active { background: #f1f5f9; }
+        .settings-menu-item i { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; background: #f1f5f9; color: var(--text-main); }
+        .settings-menu-item .smi-label { font-size: 14px; font-weight: 600; color: var(--text-main); }
+        .settings-menu-item .smi-sub { font-size: 12px; color: var(--text-muted); }
+        .info-body { font-size: 13.5px; line-height: 1.7; color: var(--text-main); }
+        .info-body h4 { margin: 16px 0 6px; font-size: 14px; color: var(--text-main); }
+        .info-body p { margin: 0 0 10px; color: var(--text-muted); }
+        .btn-sec { background: transparent; border: 2px solid var(--bg-nav); color: var(--bg-nav); box-shadow: none; }
+        .notif-row { padding: 15px 20px; display: flex; gap: 12px; align-items: center; border-bottom: 1px solid #f1f5f9; background: #fff; }
+        .notif-icon { width: 40px; height: 40px; border-radius: 50%; background: #fffbeb; color: #ca8a04; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .loader { width: 20px; height: 20px; border: 3px solid rgba(0,0,0,0.2); border-radius: 50%; border-top-color: #000; animation: spin 1s ease-in-out infinite; display: none; margin: 0 auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* WALLET / POINTS / QR / TRANSFER */
+        .wallet-card { margin: 0 12px 15px; padding: 18px; border-radius: 20px; background: linear-gradient(135deg, #1e293b, #334155); color: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.15); position: relative; overflow: hidden; }
+        .wallet-card::after { content: ''; position: absolute; right: -30px; top: -30px; width: 120px; height: 120px; background: rgba(234,179,8,0.15); border-radius: 50%; }
+        .wallet-label { font-size: 12px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; }
+        .wallet-amount { font-size: 32px; font-weight: 700; margin: 4px 0 2px; }
+        .wallet-amount span:last-child { font-size: 14px; font-weight: 500; opacity: 0.8; }
+        .wallet-acct { font-size: 12px; opacity: 0.8; margin-top: 6px; font-family: monospace; }
+        .wallet-actions { display: flex; gap: 10px; margin-top: 16px; }
+        .wallet-btn { flex: 1; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 10px; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: 0.2s; }
+        .wallet-btn:active { transform: scale(0.96); }
+        .wallet-btn i { font-size: 16px; }
+        .wallet-btn.primary { background: var(--bg-nav); color: #000; border-color: var(--bg-nav); }
+        .rank-badge-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-top: 10px; }
+        .rank-Star { background: #f1f5f9; color: #64748b; }
+        .rank-Bronze { background: #fed7aa; color: #9a3412; }
+        .rank-Silver { background: #e2e8f0; color: #475569; }
+        .rank-Gold { background: #fef3c7; color: #b45309; }
+        .rank-Master { background: #ede9fe; color: #6d28d9; }
+        .rank-badge-pill i { font-size: 13px; }
+        /* MASTER/ADMIN verified checkmark badge — distinct from regular users */
+        .verified-admin { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: linear-gradient(135deg,#7c3aed,#6d28d9); color: #fff; vertical-align: middle; margin-left: 4px; box-shadow: 0 1px 4px rgba(109,40,157,0.5); flex-shrink: 0; }
+        .verified-admin i { font-size: 9px; font-weight: 900; }
+        .verified-admin-lg { width: 26px; height: 26px; margin-left: 10px; box-shadow: 0 2px 8px rgba(109,40,157,0.55); }
+        .verified-admin-lg i { font-size: 14px; }
+        .admin-tag { display: inline-flex; align-items: center; gap: 5px; background: linear-gradient(135deg,#6d28d9,#7c3aed); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 0.6px; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; }
+        .admin-tag i { font-size: 11px; }
+        .adm-act { display: flex; gap: 6px; margin-left: auto; }
+        .adm-act-btn { width: 34px; height: 34px; border: none; border-radius: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .adm-del { background: #fee2e2; color: #dc2626; }
+        .adm-block { background: #fef3c7; color: #b45309; }
+        .adm-unblock { background: #dcfce7; color: #16a34a; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 2200; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.25s ease; }
+        .modal-card { background: #fff; border-radius: 22px; width: 100%; max-width: 380px; max-height: 90vh; overflow-y: auto; padding: 22px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); position: relative; }
+        .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+        .modal-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 18px; }
+        .modal-close { position: absolute; top: 12px; right: 12px; color: var(--text-muted); cursor: pointer; font-size: 24px; background: rgba(0,0,0,0.05); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 10; -webkit-tap-highlight-color: transparent; }
+        .modal-close:active { background: rgba(0,0,0,0.12); }
+        .field-label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; display: block; }
+        .field-group { margin-bottom: 14px; }
+        .qr-box { background: #fff; padding: 16px; border-radius: 16px; display: inline-block; margin: 8px 0; border: 1px solid #e2e8f0; }
+        .qr-box img, .qr-box canvas { display: block; }
+        .acct-id-big { font-size: 26px; font-weight: 700; letter-spacing: 4px; font-family: monospace; color: var(--text-main); margin: 8px 0; }
+        .recipient-box { background: #f1f5f9; border-radius: 14px; padding: 12px; display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+        .recipient-box img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+        .pin-dots { display: flex; gap: 12px; justify-content: center; margin: 18px 0; }
+        .pin-dots input { width: 50px; height: 60px; text-align: center; font-size: 24px; border: 2px solid var(--border); border-radius: 12px; outline: none; }
+        .pin-dots input:focus { border-color: var(--bg-nav); }
+        .scan-video-box { background: #000; border-radius: 16px; overflow: hidden; position: relative; aspect-ratio: 1; margin-bottom: 14px; display: flex; align-items: center; justify-content: center; }
+        .scan-video-box video { width: 100%; height: 100%; object-fit: cover; }
+        .scan-overlay-frame { position: absolute; width: 70%; height: 70%; border: 3px solid var(--bg-nav); border-radius: 12px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5); }
+        .txn-history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+        .txn-history-item:last-child { border-bottom: none; }
+        .txn-amount.in { color: #16a34a; font-weight: 700; }
+        .txn-amount.out { color: var(--accent-red); font-weight: 700; }
+        .radio-row { display: flex; gap: 8px; }
+        .radio-row label { flex: 1; border: 2px solid var(--border); border-radius: 12px; padding: 10px; text-align: center; font-size: 13px; cursor: pointer; }
+        .radio-row input { display: none; }
+        .radio-row input:checked + span { font-weight: 700; }
+        .radio-row label:has(input:checked) { border-color: var(--bg-nav); background: #fffbeb; }
+        .toast { position: fixed; bottom: calc(90px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); background: #1e293b; color: #fff; padding: 12px 20px; border-radius: 30px; font-size: 13px; z-index: 3000; box-shadow: 0 8px 20px rgba(0,0,0,0.25); animation: fadeIn 0.25s ease; }
+    </style>
+</head>
+<body>
+<pre id="dbglog" style="position:fixed;top:0;left:0;right:0;max-height:40vh;overflow:auto;background:#000;color:#0f0;font-size:11px;z-index:99999;padding:4px;white-space:pre-wrap;display:none"></pre>
+
+    <!-- AUTH SCREEN -->
+    <div id="auth-view">
+        <div class="auth-card">
+            <div class="logo-text-lg">BERUANG</div>
+            <p style="color:#666; margin-bottom:20px;">Connect & Share.</p>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Masuk</button>
+                <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Daftar</button>
+            </div>
+
+            <!-- LOGIN FORM -->
+            <div id="form-login">
+                <div class="auth-input-wrapper"><input type="tel" id="login-phone" class="auth-input" placeholder="Nomor HP (contoh: 081234567890)" inputmode="numeric" maxlength="15"></div>
+                <div class="auth-input-wrapper"><input type="password" id="login-password" class="auth-input" placeholder="Sandi"></div>
+                <button class="btn-primary" onclick="handleLogin()">
+                    <span id="login-text">Masuk</span>
+                    <div id="login-loader" class="loader"></div>
+                </button>
+            </div>
+
+            <!-- REGISTER FORM -->
+            <div id="form-register" style="display:none;">
+                <div class="auth-input-wrapper"><input type="text" id="reg-name" class="auth-input" placeholder="Nama Lengkap"></div>
+                <div class="auth-input-wrapper"><input type="tel" id="reg-phone" class="auth-input" placeholder="Nomor HP (contoh: 081234567890)" inputmode="numeric" maxlength="15"></div>
+                <div class="auth-input-wrapper"><input type="password" id="reg-password" class="auth-input" placeholder="Sandi"></div>
+                <div class="auth-input-wrapper"><input type="text" id="reg-referral" class="auth-input" placeholder="Kode Referral (opsional)" maxlength="6"></div>
+                <button class="btn-primary" onclick="handleRegister()">
+                    <span id="reg-text">Daftar</span>
+                    <div id="reg-loader" class="loader"></div>
+                </button>
+            </div>
+
+            <p id="error-msg" style="color: #ef4444; font-size: 13px; margin: 10px 0; min-height:18px;"></p>
+            <p class="auth-note">Masuk dengan nomor HP & sandi. Belum punya akun? Pilih Daftar.</p>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="app-container" class="hidden">
+
+        <!-- HOME VIEW -->
+        <div id="view-home" class="view active">
+            <div class="header">
+                <span class="gradient-text" style="font-size: 20px; letter-spacing: -0.5px;">BERUANG</span>
+                <div style="display:flex; gap:16px; align-items:center;">
+                    <i class="fas fa-qrcode" style="font-size: 20px; color: #333; cursor: pointer;" onclick="openQRScanner()" title="Scan & Transfer"></i>
+                    <i class="far fa-paper-plane" style="font-size: 20px; color: #333; cursor: pointer;" onclick="nav('view-chat')"></i>
+                </div>
+            </div>
+            <div class="stories-wrapper" id="stories-container">
+                <div class="story-card add" onclick="document.getElementById('story-file').click()"><i class="fas fa-plus" style="font-size: 20px;"></i></div>
+            </div>
+            <div id="feed-container"></div>
+        </div>
+
+        <!-- SEARCH / CHAT -->
+        <div id="view-chat" class="view">
+            <div class="header"><span style="font-size: 18px; font-weight: 700; color:#333">Messages</span></div>
+            <div id="chat-list" class="chat-list-container"></div>
+        </div>
+
+        <!-- UPLOAD -->
+        <div id="view-upload" class="view">
+            <div class="header"><span style="font-size: 18px; font-weight: 700; color:#333">New Post</span></div>
+            <div style="padding: 20px;">
+                <div class="upload-area" onclick="document.getElementById('post-file').click()">
+                    <img id="upload-preview-img" class="upload-preview">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 24px; color: #cbd5e1; margin-bottom: 6px;"></i>
+                    <span style="color: #94a3b8; font-size: 12px;">Tap to upload image (optional)</span>
+                </div>
+                <i id="remove-img-btn" class="fas fa-times-circle" title="Hapus gambar" onclick="event.stopPropagation(); clearUploadImage()" style="display:none; position:fixed; right:34px; bottom:230px; font-size:28px; color:#ef4444; background:#fff; border-radius:50%; z-index:1200; box-shadow:0 2px 8px rgba(0,0,0,0.2);"></i>
+                <textarea id="post-caption" rows="3" placeholder="Write a caption..."></textarea>
+                <button class="btn-main" onclick="uploadPost()">
+                    <span id="post-btn-text">Publish Post</span>
+                    <div id="post-loader" class="loader" style="border-color: rgba(255,255,255,0.3); border-top-color: #fff;"></div>
+                </button>
+            </div>
+        </div>
+
+        <!-- NOTIFICATIONS -->
+        <div id="view-notif" class="view">
+            <div class="header"><span style="font-size: 18px; font-weight: 700; color:#333">Activity</span></div>
+            <div id="notif-list"></div>
+        </div>
+
+        <!-- PROFILE -->
+        <div id="view-profile" class="view">
+            <i class="fas fa-cog settings-btn" onclick="openSettingsModal()" title="Pengaturan Akun"></i>
+            <div class="profile-head">
+                <img id="profile-img" src="" class="p-big-img" onclick="document.getElementById('profile-file').click()">
+                <h2 id="profile-name" style="margin: 0; font-size: 22px; color: #1a1a1a;">Loading...</h2>
+                <div id="rank-pill" class="rank-badge-pill"></div>
+                <div id="admin-tag-profile" class="admin-tag" style="margin-top:8px; display:none;">🛡️ Admin</div>
+                <div style="display:flex; gap:8px; justify-content:center; margin-top: 12px;">
+                    <button class="btn-sec" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;" onclick="toggleEditName()">Edit Name</button>
+                    <button class="btn-sec" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;" onclick="openEditProfileModal()">Full Profile</button>
+                    <button class="btn-sec" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600; border-color: var(--accent-red); color: var(--accent-red);" onclick="openUpgradeModal()">Upgrade Akun</button>
+                </div>
+                <input id="edit-name-input" class="auth-input hidden" style="margin-top: 15px; text-align: center;">
+                <div class="stats-row">
+                    <div class="stat-box"><span class="stat-num" id="stat-posts">0</span><span class="stat-label">Posts</span></div>
+                    <div class="stat-box"><span class="stat-num" id="stat-followers">0</span><span class="stat-label">Followers</span></div>
+                    <div class="stat-box"><span class="stat-num" id="stat-following">0</span><span class="stat-label">Following</span></div>
+                </div>
+            </div>
+
+            <!-- WALLET CARD -->
+            <div class="wallet-card">
+                <div class="wallet-label">Points Balance</div>
+                <div class="wallet-amount"><span id="wallet-balance">0</span> <span>poin</span></div>
+                <div class="wallet-acct">ID Akun: <b id="wallet-acct-id">000000</b> <i class="fas fa-copy" style="cursor:pointer; margin-left:4px; opacity:0.85;" title="Salin ID Akun" onclick="copyAcctId()"></i></div>
+                <div class="wallet-actions">
+                    <button class="wallet-btn primary" onclick="openMyQRModal()"><i class="fas fa-qrcode"></i>Kode QR Saya</button>
+                    <button class="wallet-btn" onclick="openQRScanner()"><i class="fas fa-camera"></i>Scan Transfer</button>
+                    <button class="wallet-btn" onclick="openTxnHistoryModal()"><i class="fas fa-clock-rotate-left"></i>Riwayat</button>
+                </div>
+            </div>
+
+            <div class="grid-container" id="profile-grid"></div>
+        </div>
+
+        <!-- NAVIGATION DOCK -->
+        <div class="nav-dock">
+            <div class="nav-item active" onclick="nav('view-home')"><i class="fas fa-home"></i></div>
+            <div class="nav-item" onclick="nav('view-chat')"><i class="fas fa-comment-dots"></i><span id="badge-chat" class="badge hidden">0</span></div>
+            <div class="nav-item" onclick="nav('view-upload')" style="overflow: visible;"><div class="nav-center-btn"><i class="fas fa-plus"></i></div></div>
+            <div class="nav-item" onclick="nav('view-notif')"><i class="fas fa-heart"></i><span id="badge-notif" class="badge hidden">0</span></div>
+            <div class="nav-item" onclick="nav('view-profile')"><i class="fas fa-user"></i></div>
+        </div>
+
+        <!-- CHAT OVERLAY -->
+        <div id="chat-overlay" class="chat-window hidden">
+            <div class="header" style="background: #fff; border-bottom: 1px solid #eee;">
+                <i class="fas fa-arrow-left" onclick="closeChat()" style="font-size: 22px; cursor: pointer; color:#333;"></i>
+                <span id="chat-title" style="font-size: 18px; font-weight: 600; color:#333;">Chat</span>
+                <div style="width: 24px;"></div>
+            </div>
+            <div id="chat-msgs" class="chat-messages"></div>
+            <div class="chat-input-bar">
+                <input type="text" id="chat-input" class="auth-input" placeholder="Type a message..." style="margin:0; border-radius: 30px; background: #f8fafc;">
+                <button class="btn-main" style="width: auto; margin:0; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;" onclick="sendMsg()">
+                    <i class="fas fa-paper-plane" style="font-size: 16px;"></i>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- HIDDEN INPUTS & CANVAS -->
+    <input type="file" id="post-file" class="hidden" accept="image/*" onchange="previewUpload(this)">
+    <input type="file" id="story-file" class="hidden" accept="image/*" onchange="uploadStory(this)">
+    <input type="file" id="profile-file" class="hidden" accept="image/*" onchange="uploadProfilePic(this)">
+    <canvas id="compressor" class="hidden"></canvas>
+
+    <!-- MODALS CONTAINER -->
+    <div id="modal-root"></div>
+
+    <!-- Pull-to-refresh indicator -->
+    <div id="ptr-indicator"><i class="fas fa-arrow-down"></i></div>
+
+    <!-- QR generation + scanning libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+
+    <!-- SUPABASE & LOGIC -->
+    <!-- Migration note: this app now uses Supabase (Postgres + Realtime) instead of Firebase.
+         A thin adapter below re-implements the Firebase Realtime Database API the app relies on
+         (ref, get, set, push, update, remove, onValue, off, query, limitToLast, orderByKey,
+         runTransaction) on top of a single generic `nodes` table:
+              nodes(path TEXT PRIMARY KEY, value JSONB, ts BIGINT)
+         Every data node is stored as one row keyed by its slash path; JSON trees are flattened
+         into leaf rows and reconstructed on read. Auth uses Supabase email/password with the
+         same phone->synthetic-email mapping. See SQL_SETUP note at the bottom of this file. -->
+    <script type="module">
+        window.__dbgArr = [];
+        // Debug overlay: only visible when URL has ?debug=1 (or localStorage flag).
+        // In production builds the log stays hidden so it never clutters the UI.
+        const __dbgEnabled = new URLSearchParams(location.search).get('debug') === '1';
+        window.__dbg = (msg) => { window.__dbgArr.push(msg); try { localStorage.setItem('__dbg', (localStorage.getItem('__dbg')||'') + msg + '\n'); } catch(_){} if (!__dbgEnabled) return; const d = document.getElementById('dbglog'); if (d) { d.style.display='block'; d.textContent += msg + '\n'; } };
+        window.addEventListener('error', e => window.__dbg('JS ERROR: ' + (e.error ? (e.error.stack||e.error.message) : e.message)));
+        window.addEventListener('unhandledrejection', e => window.__dbg('PROMISE REJECT: ' + (e.reason && e.reason.stack ? e.reason.stack : (e.reason && e.reason.message ? e.reason.message : String(e.reason)))));
+        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+        // ===== SUPABASE CONFIG =====
+        const SUPABASE_URL = "https://jzyfxdysukzvnfllcbvq.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_DgATc8UqYXx8qneQC8fi3A_dF_ZT6Lx";
+        const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+        });
+
+        // ============================================================
+        //  Firebase RTDB -> Supabase adapter
+        // ============================================================
+        // Table: nodes(path text primary key, value jsonb, ts bigint)
+        // RPCs (create once in SQL, see bottom of file):
+        //   cas_update(path text, expected_ts bigint, new_value jsonb, new_ts bigint)
+        //     -> integer (1 if updated, 0 if concurrent change)
+
+        const _escLike = (s) => String(s).replace(/\\/g,'\\\\').replace(/%/g,'\\%').replace(/_/g,'\\_');
+        // PostgREST `.or()` raw filter: match exact path OR descendants.
+        // Do NOT encodeURIComponent here — Supabase JS `.or()` URL-encodes the value
+        // automatically. Do NOT use _escLike either — we need `%` as a SQL wildcard,
+        // not a literal. Pattern: (path.eq.<path>,path.like.<path>/%)
+        const _pathOrChildren = (path) => `path.eq.${path},path.like.${path}/%`;
+
+        // Flatten a JSON value into {path: value} leaf entries (objects recurse).
+        function _flatten(obj, prefix, out) {
+            if (obj === null || obj === undefined) return;
+            if (typeof obj === 'object' && !Array.isArray(obj)) {
+                const keys = Object.keys(obj);
+                if (keys.length === 0) { out[prefix] = null; return; }
+                for (const k of keys) {
+                    const p = prefix === '' ? k : prefix + '/' + k;
+                    _flatten(obj[k], p, out);
+                }
+            } else {
+                out[prefix] = obj;
+            }
+        }
+
+        // Reconstruct a nested object from rows whose paths begin with `prefix`.
+        function _buildTree(rows, prefix) {
+            const root = {};
+            for (const r of rows) {
+                let rel = r.path;
+                if (prefix) {
+                    if (r.path === prefix) { // exact leaf at path
+                        root.__exact = r.value;
+                        continue;
+                    }
+                    if (!r.path.startsWith(prefix + '/')) continue;
+                    rel = r.path.slice(prefix.length + 1);
+                }
+                const parts = rel.split('/');
+                let node = root;
+                for (let i = 0; i < parts.length - 1; i++) {
+                    node[parts[i]] = node[parts[i]] || {};
+                    node = node[parts[i]];
+                }
+                node[parts[parts.length - 1]] = r.value;
+            }
+            if (root.__exact !== undefined) return root.__exact;
+            return Object.keys(root).length ? root : null;
+        }
+
+        function _snap(value) {
+            return { exists() { return value !== null && value !== undefined; }, val() { return value; } };
+        }
+
+        // Read the reconstructed value at a path.
+        async function _readValue(path) {
+            const { data, error } = await sb.from('nodes')
+                .select('path,value')
+                .or(_pathOrChildren(path));
+            if (error) { console.error('read error', path, error); return null; }
+            return _buildTree(data || [], path);
+        }
+
+        async function _writeLeaves(leaves) {
+            if (!leaves || Object.keys(leaves).length === 0) return;
+            const rows = Object.keys(leaves).map(p => ({
+                path: p, value: JSON.parse(JSON.stringify(leaves[p] === undefined ? null : leaves[p])), ts: Date.now()
+            }));
+            const { error } = await sb.from('nodes').upsert(rows, { onConflict: 'path' });
+            if (error) { console.error('write error', error); throw new Error('write error: ' + JSON.stringify(error)); }
+        }
+
+        // A "ref" is just a tagged path object.
+        function ref(_db, path) { return { __ref: true, path: path || '' }; }
+        async function get(r) { const v = await _readValue(r.path); return _snap(v); }
+        async function set(r, value) {
+            const path = r.path;
+            // delete existing node and all descendants
+            const { error: de } = await sb.from('nodes')
+                .delete()
+                .or(_pathOrChildren(path));
+            if (de) console.error('set delete error', de);
+            if (value === null || value === undefined) return;
+            const leaves = {};
+            _flatten(value, path, leaves);
+            await _writeLeaves(leaves);
+        }
+        async function update(r, patch) {
+            const leaves = {};
+            _flatten(patch, r.path, leaves);
+            await _writeLeaves(leaves);
+        }
+        async function push(r, value) {
+            const id = _genId();
+            const childPath = r.path + '/' + id;
+            await set(ref(null, childPath), value);
+            return ref(null, childPath);
+        }
+        async function remove(r) {
+            const { error } = await sb.from('nodes')
+                .delete()
+                .or(_pathOrChildren(r.path));
+            if (error) console.error('remove error', error);
+        }
+
+        // query constraints
+        function query(r, ..._constraints) { return r; }
+        function limitToLast(_n) { return { kind: 'limitToLast', n: _n }; }
+        function orderByKey() { return { kind: 'orderByKey' }; }
+
+        // Realtime subscriptions
+        const _subs = new Map(); // path -> { channel, cbs:Set }
+        function onValue(r, cb) {
+            const path = r.path;
+            const existing = _subs.get(path);
+            if (existing) {
+                // Already subscribed for this path: reuse the channel, just register this cb + re-read.
+                existing.cbs.add(cb);
+                _readValue(path).then(v => cb(_snap(v)));
+                return () => { existing.cbs.delete(cb); };
+            }
+            // initial
+            _readValue(path).then(v => cb(_snap(v)));
+            const rtFilter = `path=like.${path}/%`;
+            let timer = null;
+            const schedule = () => {
+                if (timer) return;
+                timer = setTimeout(async () => { timer = null; const v = await _readValue(path); cb(_snap(v)); }, 120);
+            };
+            const cbs = new Set([cb]);
+            const dispatch = (v) => { cbs.forEach(fn => { try { fn(_snap(v)); } catch (e) { console.error('onValue cb err', e); } }); };
+            const dispatchSchedule = () => {
+                if (timer) return;
+                timer = setTimeout(async () => { timer = null; const v = await _readValue(path); dispatch(v); }, 120);
+            };
+            const channel = sb.channel('rt:' + path)
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'nodes', filter: rtFilter }, dispatchSchedule)
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'nodes', filter: `path=eq.${path}` }, dispatchSchedule)
+                .subscribe();
+            _subs.set(path, { channel, cbs });
+            return () => { cbs.delete(cb); };
+        }
+        function off(r) {
+            const path = r.path;
+            const s = _subs.get(path);
+            if (s) { try { sb.removeChannel(s.channel); } catch (e) {} _subs.delete(path); }
+        }
+
+        // Atomic optimistic transactions (used for wallet balance increments/decrements).
+        // Requires RPC cas_update(path, expected_ts, new_value, new_ts) -> int
+        async function runTransaction(r, fn) {
+            const path = r.path;
+            for (let attempt = 0; attempt < 8; attempt++) {
+                const { data: row } = await sb.from('nodes').select('value,ts').eq('path', path).maybeSingle();
+                const cur = row ? row.value : null;
+                const curTs = row ? Number(row.ts) || 0 : 0;
+                const newVal = fn(cur === null ? 0 : cur);
+                if (newVal === undefined) return { committed: false, snapshot: _snap(null) };
+                const ts = Date.now();
+                const { data, error } = await sb.rpc('cas_update', {
+                    p_path: path, p_expected_ts: curTs, p_new_value: newVal, p_new_ts: ts
+                });
+                if (error) { console.error('txn rpc error', error); return { committed: false, snapshot: _snap(null) }; }
+                if (data === 1) return { committed: true, snapshot: _snap(newVal) };
+                // concurrent change -> retry
+            }
+            return { committed: false, snapshot: _snap(null) };
+        }
+
+        // Sortable push-id generator (time-ordered), roughly Firebase-like ordering.
+        function _genId() {
+            const t = Date.now().toString(36).padStart(9, '0');
+            const r = Math.random().toString(36).slice(2, 8);
+            return t + '-' + r;
+        }
+
+        // Object handle (kept for API compatibility; ref(db,...) ignores it)
+        const db = { __supabase: true };
+
+        // ============================================================
+        //  Auth adapter (Supabase email/password)
+        // ============================================================
+        const auth = { __supabase: true };
+
+        // Wrap a Supabase user object into the shape the app expects (uid/email/displayName).
+        function _wrapUser(u) {
+            if (!u) return null;
+            const meta = u.user_metadata || {};
+            return {
+                uid: u.id,
+                id: u.id,
+                email: u.email,
+                displayName: meta.display_name || meta.displayName || (u.email ? u.email.split('@')[0] : 'User'),
+                photoURL: meta.photo_url || meta.photoURL || null,
+                _raw: u
+            };
+        }
+
+        async function signInWithEmailAndPassword(_auth, email, pass) {
+            const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+            if (error) throw error;
+        }
+
+        async function createUserWithEmailAndPassword(_auth, email, pass) {
+            window.__dbg && window.__dbg('createUser ENTER email=' + email);
+            let data, error;
+            try {
+                const r = await sb.auth.signUp({ email, password: pass });
+                data = r.data; error = r.error;
+                window.__dbg && window.__dbg('signUp done err=' + (error?error.message:'none') + ' hasUser=' + !!(data&&data.user));
+            } catch (e) {
+                window.__dbg && window.__dbg('signUp THROW: ' + (e&&e.message));
+                throw e;
+            }
+            if (error) {
+                // Map Supabase duplicate-registration to the Firebase code the app checks.
+                const dup = /already registered|already been registered|exists/i.test(error.message || '');
+                const e = new Error(error.message);
+                if (dup) e.code = 'auth/email-already-in-use';
+                throw e;
+            }
+            // Establish a session immediately (requires email confirmation to be OFF in Supabase).
+            try { await sb.auth.signInWithPassword({ email, password: pass }); } catch (_) {}
+            return { user: _wrapUser(data && data.user ? data.user : {}) };
+        }
+
+        async function updateProfile(user, { displayName, photoURL }) {
+            const data = {};
+            if (displayName !== undefined) data.display_name = displayName;
+            if (photoURL !== undefined) data.photo_url = photoURL;
+            await sb.auth.updateUser({ data });
+        }
+
+        async function signOut(_auth) { await sb.auth.signOut(); }
+
+        function onAuthStateChanged(_auth, cb) {
+            // initial session
+            sb.auth.getSession().then(({ data }) => {
+                const w = data && data.session && data.session.user ? _wrapUser(data.session.user) : null;
+                cb(w);
+            });
+            const { data: sub } = sb.auth.onAuthStateChange((_event, session) => {
+                cb(session && session.user ? _wrapUser(session.user) : null);
+            });
+            // keep a reference so the subscription isn't GC'd
+            _authSub = sub;
+        }
+        let _authSub = null;
+
+
+        const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/847/847969.png";
+        let currentUser = null;
+        let usersCache = {};
+        let followingCache = {};
+
+        let activeChatId = null;
+        let chatListenerRef = null;
+
+        let notifCount = 0;
+        let chatCount = 0;
+        let currentView = 'view-home';
+
+        // --- Wallet / Points / Account state ---
+        let myPoints = 0;
+        let myAcctId = '000000';
+        let myTier = 'Star';
+        let myRole = 'user'; // 'user' | 'admin'
+        let myUsage = { date: '', posts: 0, comments: 0, adGrants: { posts: 0, comments: 0 } }; // daily counters
+        let scannerStream = null;
+        let scannerRAF = null;
+        let pendingTransferRecipient = null; // {uid, username, photo, acctId}
+
+        // ===== ADMOB CONFIG (Capacitor native: @capacitor-community/admob) =====
+        // Real production unit IDs. The banner is shown as a native bottom overlay
+        // via the plugin; the rewarded video grants +1 daily quota on completion.
+        const ADMOB = {
+            APP_ID:      'ca-app-pub-6881903056221433~1794482255',
+            BANNER_ID:   'ca-app-pub-6881903056221433/6548115489',
+            REWARDED_ID: 'ca-app-pub-6881903056221433/9174278828',
+            _initialized: false,
+            _bannerShown: false,
+            // True only when running inside a Capacitor native shell with the plugin.
+            isNative() {
+                return typeof window.Capacitor !== 'undefined'
+                    && !!window.Capacitor.isNativeAvailable
+                    && !!(window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob);
+            },
+            async init() {
+                if (this._initialized || !this.isNative()) return;
+                try {
+                    const { AdMob } = window.Capacitor.Plugins;
+                    await AdMob.initialize({ initializeForTesting: false });
+                    this._initialized = true;
+                    window.__dbg && window.__dbg('AdMob initialized');
+                } catch (e) { console.error('AdMob init failed', e); }
+            },
+            // Show the native banner as an overlay at the bottom of the screen.
+            async showBanner() {
+                if (!this.isNative()) return;
+                if (this._bannerShown) return;
+                try {
+                    const { AdMob } = window.Capacitor.Plugins;
+                    await AdMob.showBanner({ adId: this.BANNER_ID, position: 'BOTTOM_CENTER' });
+                    this._bannerShown = true;
+                    document.body.classList.add('has-native-banner');
+                } catch (e) { console.error('AdMob showBanner failed', e); }
+            },
+            async hideBanner() {
+                if (!this.isNative() || !this._bannerShown) return;
+                try {
+                    const { AdMob } = window.Capacitor.Plugins;
+                    await AdMob.hideBanner();
+                    this._bannerShown = false;
+                    document.body.classList.remove('has-native-banner');
+                } catch (e) { console.error('AdMob hideBanner failed', e); }
+            },
+            // Show a rewarded video. Resolves { rewarded: true } only when the user
+            // watched it to completion (onRewarded fires). Listeners are cleaned up
+            // after each call so they never accumulate. On non-native (web) there is
+            // no ad to show, so it resolves { rewarded: false }.
+            async showRewarded() {
+                if (!this.isNative()) return { rewarded: false };
+                const { AdMob } = window.Capacitor.Plugins;
+                try {
+                    await AdMob.prepareRewardVideoAd({ adId: this.REWARDED_ID });
+                    const rewarded = await new Promise((resolve) => {
+                        let settled = false;
+                        const done = (v) => { if (!settled) { settled = true; resolve(v); } };
+                        AdMob.addListener('onRewarded', () => done(true));
+                        AdMob.addListener('onRewardedVideoAdClosed', () => done(false));
+                        AdMob.showRewardVideoAd().catch(() => done(false));
+                    });
+                    try { await AdMob.removeAllListeners(); } catch (_) {}
+                    return { rewarded };
+                } catch (e) {
+                    console.error('AdMob rewarded failed', e);
+                    try { await AdMob.removeAllListeners(); } catch (_) {}
+                    return { rewarded: false };
+                }
+            }
+        };
+
+        // ===== POINTS CONFIG =====
+        const POINTS = { COMMENT: 50, POST: 20, FOLLOW: 10, LIKE: 2 };
+        // ===== ADMIN CONFIG =====
+        // The MASTER/ADMIN account. Matched by normalized phone digits on login/register;
+        // the matching user is auto-elevated to role 'admin' with a fixed Account ID.
+        const ADMIN = {
+            PHONES: ['085813899649'],
+            ACCT_ID: '140693',
+            NAME: 'BERUANG'
+        };
+        const normalizePhone = (p) => String(p || '').replace(/\D/g, '');
+        const isAdmin = () => myRole === 'admin';
+        // Special shield badge for admin accounts (distinct from regular users)
+        const adminBadgeHtml = (uid) => {
+            const role = (uid && usersCache[uid] && usersCache[uid].role) || (uid === currentUser.uid ? myRole : '');
+            if (role === 'admin') return ' <span class="verified-admin" title="Admin">🛡️</span>';
+            return '';
+        };
+        // TIERS: purchased account tiers with upgrade price + daily activity limits
+        // postLimit / commentLimit of Infinity = unlimited (Master)
+        const TIERS = [
+            { name: 'Star',   price: 0,       postLimit: 5,        commentLimit: 5,        icon: 'fa-star',   color: '#64748b' },
+            { name: 'Bronze', price: 5000,    postLimit: 10,       commentLimit: 10,       icon: 'fa-medal',  color: '#9a3412' },
+            { name: 'Silver', price: 9000,    postLimit: 20,       commentLimit: 20,       icon: 'fa-award',  color: '#475569' },
+            { name: 'Gold',   price: 250000,  postLimit: 50,       commentLimit: 50,       icon: 'fa-trophy', color: '#b45309' },
+            { name: 'Master', price: 1000000, postLimit: Infinity, commentLimit: Infinity, icon: 'fa-crown',  color: '#6d28d9' }
+        ];
+
+        function getTier(name) {
+            return TIERS.find(t => t.name === name) || TIERS[0];
+        }
+        function getTierIndex(name) {
+            return TIERS.findIndex(t => t.name === name);
+        }
+        const todayStr = () => new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+        // ===== WALLET / ACCOUNT ID HELPERS =====
+        function genAcctId() {
+            let id = '';
+            do { id = String(Math.floor(100000 + Math.random() * 900000)); }
+            while (id.length !== 6);
+            return id;
+        }
+
+        async function isAcctIdTaken(id) {
+            const snap = await get(query(ref(db, 'account_index'), orderByKey()));
+            const idx = snap.val() || {};
+            for (const uid in idx) if (idx[uid] === id) return true;
+            return false;
+        }
+
+        async function genUniqueAcctId() {
+            for (let i = 0; i < 20; i++) {
+                const id = genAcctId();
+                if (!(await isAcctIdTaken(id))) return id;
+            }
+            return genAcctId();
+        }
+
+        // Ensure wallet + account id + profile fields exist for a user.
+        // Guarded against concurrent calls for the same uid (dedup promise)
+        // so simultaneous invocations from register + onAuthStateChanged
+        // don't create duplicate/competing account IDs.
+        const _walletEnsuring = new Map(); // uid -> Promise
+        // Wait until the Supabase client has an active session (token attached
+        // to all REST calls). Without this, writes can silently no-op because
+        // RLS blocks anon requests, even though upsert returns no error.
+        async function _ensureSessionReady() {
+            const { data } = await sb.auth.getSession();
+            if (data && data.session) return data.session;
+            // try refreshing the token from storage
+            try { const { data: r } = await sb.auth.refreshSession(); if (r && r.session) return r.session; } catch (_) {}
+            return null;
+        }
+        async function ensureWalletExists(uid, displayName) {
+            if (_walletEnsuring.has(uid)) return _walletEnsuring.get(uid);
+            const p = (async () => {
+                await _ensureSessionReady();
+                window.__dbg && window.__dbg('ensureWalletExists START uid=' + uid);
+                const wRef = ref(db, `wallets/${uid}`);
+                let snap;
+                try { snap = await get(wRef); } catch (ge) { window.__dbg('get wallet THROW: ' + ge.message); throw ge; }
+                window.__dbg && window.__dbg('wallet snap exists=' + snap.exists());
+                if (!snap.exists()) {
+                    const acctId = await genUniqueAcctId();
+                    window.__dbg && window.__dbg('genAcctId=' + acctId);
+                    const walletVal = { balance: 0, acctId: acctId, tier: 'Star', usage: { date: todayStr(), posts: 0, comments: 0 } };
+                    try { await set(wRef, walletVal); window.__dbg && window.__dbg('wallet SET OK'); }
+                    catch (e) { window.__dbg('wallet SET FAIL: ' + e.message); throw e; }
+                    try { await set(ref(db, `account_index/${uid}`), acctId); window.__dbg && window.__dbg('account_index SET OK'); }
+                    catch (e) { window.__dbg('acctidx SET FAIL: ' + e.message); throw e; }
+                } else {
+                    const w = snap.val();
+                    const patch = {};
+                    if (!w.tier) patch.tier = 'Star';
+                    if (!w.acctId) {
+                        const acctId = await genUniqueAcctId();
+                        patch.acctId = acctId;
+                        try { await set(ref(db, `account_index/${uid}`), acctId); } catch(_) {}
+                    }
+                    if (!w.usage) patch.usage = { date: todayStr(), posts: 0, comments: 0 };
+                    if (Object.keys(patch).length) await update(wRef, patch);
+                }
+                // ensure profile fields exist
+                const pRef = ref(db, `profiles/${uid}`);
+                const pSnap = await get(pRef);
+                if (!pSnap.exists()) {
+                    const name = displayName || fallbackName(currentUser);
+                    await set(pRef, { fullname: name, phone: '', email: '', gender: '' });
+                }
+            })();
+            _walletEnsuring.set(uid, p);
+            p.finally(() => _walletEnsuring.delete(uid));
+            return p;
+        }
+
+        // Listen to my own wallet
+        function listenMyWallet() {
+            if (!currentUser) return;
+            onValue(ref(db, `wallets/${currentUser.uid}`), snap => {
+                const w = snap.val() || { balance: 0, acctId: '000000', tier: 'Star', usage: { date: todayStr(), posts: 0, comments: 0 } };
+                myPoints = Number(w.balance) || 0;
+                myAcctId = w.acctId || '000000';
+                myTier = w.tier || 'Star';
+                myRole = w.role === 'admin' ? 'admin' : 'user';
+                // daily usage: reset if date changed
+                const u = w.usage || {};
+                const zeroGrants = { posts: 0, comments: 0 };
+                if (u.date !== todayStr()) {
+                    myUsage = { date: todayStr(), posts: 0, comments: 0, adGrants: { ...zeroGrants } };
+                } else {
+                    myUsage = {
+                        date: u.date,
+                        posts: Number(u.posts) || 0,
+                        comments: Number(u.comments) || 0,
+                        adGrants: (u.adGrants && typeof u.adGrants === 'object') ? { posts: Number(u.adGrants.posts)||0, comments: Number(u.adGrants.comments)||0 } : { ...zeroGrants }
+                    };
+                }
+                const balEl = document.getElementById('wallet-balance');
+                const idEl = document.getElementById('wallet-acct-id');
+                if (balEl) balEl.innerText = myPoints.toLocaleString('id-ID');
+                if (idEl) idEl.innerText = myAcctId;
+                renderRankPill(myTier);
+                if (currentView === 'view-profile') loadProfile();
+            });
+        }
+
+        window.copyAcctId = async () => {
+            try {
+                await navigator.clipboard.writeText(myAcctId);
+                showToast('ID Akun disalin: ' + myAcctId);
+            } catch (e) {
+                showToast('ID Akun Anda: ' + myAcctId);
+            }
+        };
+
+        function renderRankPill(tier) {
+            const el = document.getElementById('rank-pill');
+            if (!el) return;
+            const r = getTier(tier);
+            el.className = `rank-badge-pill rank-${r.name}`;
+            el.innerHTML = `<i class="fas ${r.icon}"></i> ${r.name}`;
+        }
+
+        // ===== DAILY USAGE / LIMIT CHECKS =====
+        // adGrants tracks extra post/comment chances earned via rewarded ads.
+        // It lives inside the daily usage object so it resets together with
+        // posts/comments when the date changes. Master tier is unlimited and
+        // never needs grants.
+        function _todayGrants(action) {
+            if (myUsage.date !== todayStr()) return 0;
+            return (myUsage.adGrants && myUsage.adGrants[action]) || 0;
+        }
+        // Returns { ok, used, limit, effective, grants } for 'posts' | 'comments'.
+        function checkLimit(action) {
+            const tier = getTier(myTier);
+            const limit = action === 'posts' ? tier.postLimit : tier.commentLimit;
+            const used = action === 'posts' ? myUsage.posts : myUsage.comments;
+            if (limit === Infinity) return { ok: true, used: used, limit: Infinity, effective: Infinity, grants: 0 };
+            const grants = _todayGrants(action);
+            const effective = limit + grants;
+            return { ok: used < effective, used: used, limit: limit, effective: effective, grants: grants };
+        }
+
+        // Increment today's counter for an action and persist (resets date if needed)
+        async function recordUsage(action) {
+            if (myUsage.date !== todayStr()) myUsage = { date: todayStr(), posts: 0, comments: 0, adGrants: { posts: 0, comments: 0 } };
+            if (action === 'posts') myUsage.posts += 1; else myUsage.comments += 1;
+            await update(ref(db, `wallets/${currentUser.uid}/usage`), {
+                date: myUsage.date, posts: myUsage.posts, comments: myUsage.comments
+            });
+        }
+
+        // Grant +1 extra chance for an action via a rewarded ad. Persisted so it
+        // survives reloads until used (resets with the daily usage date).
+        async function grantAdQuota(action) {
+            if (myUsage.date !== todayStr()) myUsage = { date: todayStr(), posts: 0, comments: 0, adGrants: { posts: 0, comments: 0 } };
+            if (!myUsage.adGrants) myUsage.adGrants = { posts: 0, comments: 0 };
+            myUsage.adGrants[action] = (myUsage.adGrants[action] || 0) + 1;
+            await update(ref(db, `wallets/${currentUser.uid}/usage`), {
+                date: myUsage.date, adGrants: myUsage.adGrants
+            });
+        }
+
+        // Offer a rewarded ad to earn +1 chance for the given action.
+        // Resolves true if a bonus chance was granted.
+        async function promptRewardedForQuota(action) {
+            const label = action === 'posts' ? 'postingan' : 'komentar';
+            const ok = await new Promise((res) => {
+                // Wrap resolve so it can only fire once; closeModal() also calls
+                // this with false when the modal is dismissed any other way.
+                window.__rqResolve = (v) => { if (window.__rqResolve) { window.__rqResolve = null; res(v); } };
+                openModal(`<div class="modal-title">Batas ${label} harian tercapai</div>
+                    <div style="margin-top:12px; font-size:14px; color:var(--text-muted); line-height:1.5;">
+                        Tonton iklan singkat untuk mendapatkan <b>+1 kesempatan ${label}</b> hari ini.
+                    </div>
+                    <div style="display:flex; gap:10px; margin-top:18px;">
+                        <button class="btn-sec" style="flex:1;" onclick="window.__rqResolve(false); closeModal();">Nanti saja</button>
+                        <button class="btn-main" style="flex:1; margin-top:0;" onclick="window.__rqResolve(true); closeModal();">Tonton Iklan</button>
+                    </div>`);
+            });
+            if (!ok) return false;
+            showToast('Memuat iklan...');
+            const { rewarded } = await ADMOB.showRewarded();
+            if (!rewarded) { showToast('Iklan tidak selesai. Coba lagi.'); return false; }
+            await grantAdQuota(action);
+            showToast(`+1 kesempatan ${label} ditambahkan!`);
+            return true;
+        }
+
+        // Award points atomically
+        async function awardPoints(uid, amount, reason) {
+            if (!uid || amount <= 0) return;
+            await runTransaction(ref(db, `wallets/${uid}/balance`), (cur) => {
+                return (cur || 0) + amount;
+            });
+            await push(ref(db, `wallets/${uid}/history`), {
+                type: 'reward', amount: amount, reason: reason || 'activity',
+                timestamp: Date.now()
+            });
+        }
+
+        // --- AUTH & LOGOUT ---
+        // Normalize a phone number into a safe synthetic email for Firebase Auth.
+        // Strips non-digits so "0812-3456.7890" -> "081234567890@beruang.phone"
+        function phoneToSyntheticEmail(raw) {
+            const digits = String(raw || '').replace(/\D/g, '');
+            return `${digits}@beruang.phone`;
+        }
+        function fallbackName(user) {
+            if (user && user.displayName) return user.displayName;
+            if (user && user.email) return user.email.split('@')[0];
+            return 'User';
+        }
+
+        // Referral bonus config: both referrer and new user get 500 poin
+        const REFERRAL_BONUS = { REFERRER: 500, NEW_USER: 500 };
+
+        // Look up a uid by 6-digit account id (referral code == account id)
+        async function findUidByAcctId(acctId) {
+            const snap = await get(query(ref(db, 'account_index'), orderByKey()));
+            const idx = snap.val() || {};
+            for (const uid in idx) if (idx[uid] === acctId) return uid;
+            return null;
+        }
+
+        // Apply referral linking + bonuses for a freshly registered user
+        async function applyReferral(newUid, referralCode) {
+            const code = String(referralCode || '').trim();
+            if (!code) return null;
+            const referrerUid = await findUidByAcctId(code);
+            if (!referrerUid || referrerUid === newUid) return null; // invalid or self-referral
+            await set(ref(db, `users/${newUid}/referredBy`), referrerUid);
+            await set(ref(db, `users/${referrerUid}/referrals/${newUid}`), true);
+            await awardPoints(referrerUid, REFERRAL_BONUS.REFERRER, `referral dari ${code}`);
+            await awardPoints(newUid, REFERRAL_BONUS.NEW_USER, `bonus referral`);
+            return referrerUid;
+        }
+
+        // Toggle between Login and Daftar forms
+        window.switchAuthTab = (which) => {
+            const isLogin = which === 'login';
+            document.getElementById('tab-login').classList.toggle('active', isLogin);
+            document.getElementById('tab-register').classList.toggle('active', !isLogin);
+            document.getElementById('form-login').style.display = isLogin ? 'block' : 'none';
+            document.getElementById('form-register').style.display = isLogin ? 'none' : 'block';
+            const errorP = document.getElementById('error-msg');
+            if (errorP) errorP.innerText = '';
+        };
+
+        window.handleLogin = async () => {
+            const phoneRaw = document.getElementById('login-phone').value.trim();
+            const pass = document.getElementById('login-password').value;
+            const btnText = document.getElementById('login-text');
+            const loader = document.getElementById('login-loader');
+            const errorP = document.getElementById('error-msg');
+            if(!phoneRaw || !pass) return;
+            const phoneDigits = phoneRaw.replace(/\D/g, '');
+            if (phoneDigits.length < 8) { errorP.innerText = 'Nomor HP tidak valid'; return; }
+            const email = phoneToSyntheticEmail(phoneRaw);
+            btnText.style.display = 'none';
+            loader.style.display = 'block';
+            errorP.innerText = '';
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+            } catch (e) {
+                errorP.innerText = 'Nomor HP atau sandi salah. Belum punya akun? Pilih Daftar.';
+                btnText.style.display = 'block';
+                loader.style.display = 'none';
+            }
+        };
+
+        window.handleRegister = async () => {
+            try { window.__dbg && window.__dbg('handleRegister ENTER'); } catch(_){}
+            const name = document.getElementById('reg-name').value.trim();
+            const phoneRaw = document.getElementById('reg-phone').value.trim();
+            const pass = document.getElementById('reg-password').value;
+            const referral = document.getElementById('reg-referral').value.trim();
+            const btnText = document.getElementById('reg-text');
+            const loader = document.getElementById('reg-loader');
+            const errorP = document.getElementById('error-msg');
+            if(!name) { errorP.innerText = 'Nama lengkap wajib diisi'; return; }
+            if(!phoneRaw || !pass) { errorP.innerText = 'Nomor HP dan sandi wajib diisi'; return; }
+            if(pass.length < 6) { errorP.innerText = 'Sandi minimal 6 karakter'; return; }
+            const phoneDigits = phoneRaw.replace(/\D/g, '');
+            if (phoneDigits.length < 8) { errorP.innerText = 'Nomor HP tidak valid'; return; }
+            const email = phoneToSyntheticEmail(phoneRaw);
+            btnText.style.display = 'none';
+            loader.style.display = 'block';
+            errorP.innerText = '';
+            try {
+                const res = await createUserWithEmailAndPassword(auth, email, pass);
+                window.__dbg('after createUser uid=' + (res && res.user && res.user.uid));
+                await updateProfile(res.user, { displayName: name, photoURL: DEFAULT_AVATAR });
+                window.__dbg('after updateProfile');
+                await ensureWalletExists(res.user.uid, name);
+                window.__dbg('after ensureWalletExists');
+                await update(ref(db, `users/${res.user.uid}`), { username: name, photo: DEFAULT_AVATAR, phone: phoneDigits, uid: res.user.uid });
+                window.__dbg('after update users');
+                if (referral) {
+                    try { await applyReferral(res.user.uid, referral); }
+                    catch (err) { console.error('referral failed', err); }
+                }
+            } catch (err) {
+                console.error('REGISTER ERROR', err);
+                alert('Register error: ' + (err && err.message ? err.message : err));
+                const msg = err.code === 'auth/email-already-in-use'
+                    ? 'Nomor HP sudah terdaftar. Silakan Masuk.'
+                    : err.message.replace('Firebase:', '');
+                errorP.innerText = msg;
+                btnText.style.display = 'block';
+                loader.style.display = 'none';
+            }
+        };
+
+        window.handleLogout = async () => {
+            try {
+                closeModal();
+            } catch (_) {}
+            try {
+                await signOut(auth);
+            } catch (e) {
+                window.__dbg('Logout error: ' + (e && e.message ? e.message : e));
+                showToast('Gagal logout: ' + (e && e.message ? e.message : 'kesalahan tidak diketahui'));
+                return;
+            }
+            // Reset local caches so a fresh login starts clean (onAuthStateChanged also clears _subs).
+            usersCache = {};
+            followingCache = {};
+            myTier = 'Star';
+            myRole = 'user';
+            myAcctId = '000000';
+            notifCount = 0;
+            chatCount = 0;
+            // Hide any open chat window.
+            const cw = document.getElementById('chat-window');
+            if (cw) cw.classList.add('hidden');
+            showToast('Anda telah keluar.');
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('auth-view').classList.add('hidden');
+                document.getElementById('app-container').classList.remove('hidden');
+                // Elevate MASTER/ADMIN first (sets role, acctId, tier) so that
+                // ensureWalletExists sees the admin account ID instead of
+                // generating a random one.
+                try { await bootstrapAdminAndCheckBlock(user); }
+                catch (e) { console.error('bootstrapAdmin on auth', e); }
+                // Ensure wallet + account ID exist for BOTH new and legacy users.
+                try { await ensureWalletExists(user.uid, user.displayName || fallbackName(user)); }
+                catch (e) { console.error('ensureWalletExists on auth', e); }
+                init();
+                // Re-read wallet once init() has registered the listener so the
+                // freshly-created wallet (if any) is reflected in the UI immediately.
+                try {
+                    const wSnap = await get(ref(db, `wallets/${user.uid}`));
+                    const w = wSnap.val() || {};
+                    myAcctId = w.acctId || '000000';
+                    myPoints = Number(w.balance) || 0;
+                    myTier = w.tier || 'Star';
+                    const idEl = document.getElementById('wallet-acct-id');
+                    const balEl = document.getElementById('wallet-balance');
+                    if (idEl) idEl.innerText = myAcctId;
+                    if (balEl) balEl.innerText = myPoints.toLocaleString('id-ID');
+                    renderRankPill(myTier);
+                } catch (_) {}
+            } else {
+                currentUser = null;
+                _initDone = false;
+                // tear down all realtime subscriptions so a fresh login re-subscribes cleanly
+                _subs.forEach((s) => { try { sb.removeChannel(s.channel); } catch (e) {} });
+                _subs.clear();
+                document.getElementById('auth-view').classList.remove('hidden');
+                document.getElementById('app-container').classList.add('hidden');
+                ['login', 'reg'].forEach(p => {
+                    const t = document.getElementById(p + '-text');
+                    const l = document.getElementById(p + '-loader');
+                    if (t) t.style.display = 'block';
+                    if (l) l.style.display = 'none';
+                });
+                switchAuthTab('login');
+                nav('view-home');
+            }
+        });
+
+        // Elevate the MASTER/ADMIN account on login/register, and enforce block.
+        async function bootstrapAdminAndCheckBlock(user) {
+            try {
+                await _ensureSessionReady();
+                // Block enforcement: blocked users are kicked out immediately.
+                const blkSnap = await get(ref(db, `blocked/${user.uid}`));
+                if (blkSnap.exists() && blkSnap.val() === true) {
+                    showToast('Akun Anda diblokir oleh admin.');
+                    await signOut(auth);
+                    return;
+                }
+                // Determine this user's phone to detect the admin account.
+                // Check DB users record first, then fall back to the synthetic
+                // email (phone@beruang.app) which is always available even before
+                // the DB record is written.
+                const uSnap = await get(ref(db, `users/${user.uid}`));
+                const uData = uSnap.val() || {};
+                let phone = normalizePhone(uData.phone);
+                if (!phone && user.email) {
+                    // synthetic email format: 085813899649@beruang.app
+                    const m = user.email.match(/^(\d+)@/);
+                    if (m) phone = m[1];
+                }
+                const isMatch = phone && ADMIN.PHONES.includes(phone);
+                if (isMatch) {
+                    // Force fixed Account ID + admin role + Master tier.
+                    const wSnap = await get(ref(db, `wallets/${user.uid}`));
+                    const w = wSnap.val() || {};
+                    const patch = { role: 'admin', tier: 'Master' };
+                    if (w.acctId !== ADMIN.ACCT_ID) patch.acctId = ADMIN.ACCT_ID;
+                    await update(ref(db, `wallets/${user.uid}`), patch);
+                    await set(ref(db, `account_index/${user.uid}`), ADMIN.ACCT_ID);
+                    await update(ref(db, `users/${user.uid}`), { role: 'admin', username: ADMIN.NAME, phone: phone });
+                    if (user.displayName !== ADMIN.NAME) {
+                        try { await updateProfile(user, { displayName: ADMIN.NAME }); } catch (e) {}
+                    }
+                    myRole = 'admin';
+                    myAcctId = ADMIN.ACCT_ID;
+                    myTier = 'Master';
+                }
+            } catch (e) { console.error('bootstrap admin/block failed', e); }
+        }
+
+        // --- APP LOGIC ---
+        let _initDone = false;
+        function init() {
+            if (_initDone) { // re-run after re-login: only reload profile (listeners already live)
+                loadProfile();
+                return;
+            }
+            _initDone = true;
+            listenUsers();
+            listenFollowing();
+            listenFeed();
+            listenStories();
+            listenNotifications();
+            listenMyWallet();
+            loadProfile();
+            initPullToRefresh();
+            // Initialize AdMob (no-op on web) and show the bottom banner on the
+            // starting view. Inline ad slots are rendered in the views themselves.
+            ADMOB.init().then(() => ADMOB.showBanner());
+        }
+
+        // ===== PULL-TO-REFRESH =====
+        // Works on every scrollable .view: when the user pulls down at the top
+        // of the page, the current view is reloaded (re-fetching feed/stories/
+        // notif/profile data) without a full page reload.
+        function initPullToRefresh() {
+            const indicator = document.getElementById('ptr-indicator');
+            if (!indicator) return;
+            const THRESHOLD = 70;
+            let startY = 0, pulling = false, currentTarget = null;
+
+            const getView = () => document.querySelector('.view.active');
+
+            document.addEventListener('touchstart', (e) => {
+                const view = getView();
+                if (!view || !currentUser) return;
+                // Only start a pull when the view is scrolled to the very top.
+                if (view.scrollTop <= 0) {
+                    startY = e.touches[0].clientY;
+                    pulling = true;
+                    currentTarget = view;
+                } else {
+                    pulling = false;
+                    currentTarget = null;
+                }
+            }, { passive: true });
+
+            document.addEventListener('touchmove', (e) => {
+                if (!pulling || !currentTarget) return;
+                const dy = e.touches[0].clientY - startY;
+                if (dy <= 0) {
+                    indicator.classList.remove('ptr-active', 'ptr-rotate');
+                    indicator.style.transform = 'translateX(-50%) translateY(-60px)';
+                    return;
+                }
+                // Apply a resistance curve so the pull feels natural.
+                const dist = Math.min(dy * 0.5, THRESHOLD + 20);
+                indicator.classList.add('ptr-active');
+                indicator.classList.remove('ptr-rotate');
+                indicator.style.transform = `translateX(-50%) translateY(${dist - 30}px)`;
+            }, { passive: true });
+
+            const doRefresh = async () => {
+                indicator.classList.add('ptr-rotate');
+                try {
+                    // Explicit one-shot re-reads guarantee fresh data appears
+                    // immediately, independent of realtime re-subscribe latency.
+                    await _refreshFeed();
+                    const sSnap = await get(query(ref(db, 'stories'), limitToLast(20)));
+                    const sc = document.getElementById('stories-container');
+                    if (sc) { const btn = sc.firstElementChild ? sc.firstElementChild.cloneNode(true) : null; sc.innerHTML = ''; if (btn) sc.appendChild(btn); const sd = sSnap.val() || {}; Object.values(sd).reverse().forEach(s => { sc.innerHTML += `<div class="story-card"><img src="${s.image}"></div>`; }); }
+                    if (currentView === 'view-notif') listenNotifications();
+                    if (currentView === 'view-profile') loadProfile();
+                } catch (e) {
+                    window.__dbg('PTR refresh error: ' + (e && e.message ? e.message : e));
+                }
+                // Brief spin so the user sees feedback even on fast networks.
+                setTimeout(() => {
+                    indicator.classList.remove('ptr-active', 'ptr-rotate');
+                    indicator.style.transform = 'translateX(-50%) translateY(-60px)';
+                    showToast('Diperbarui');
+                }, 600);
+            };
+
+            document.addEventListener('touchend', () => {
+                if (!pulling) return;
+                pulling = false;
+                const ty = parseInt((indicator.style.transform.match(/translateY\((-?\d+)px\)/) || [])[1] || '-60', 10);
+                if (ty >= THRESHOLD - 35) {
+                    doRefresh();
+                } else {
+                    indicator.classList.remove('ptr-active', 'ptr-rotate');
+                    indicator.style.transform = 'translateX(-50%) translateY(-60px)';
+                }
+                currentTarget = null;
+            }, { passive: true });
+        }
+
+        window.nav = (viewId) => {
+            currentView = viewId;
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            const items = document.querySelectorAll('.nav-item');
+            items.forEach(i => i.classList.remove('active'));
+            const map = {'view-home':0, 'view-chat':1, 'view-upload':2, 'view-notif':3, 'view-profile':4};
+            if(items[map[viewId]]) items[map[viewId]].classList.add('active');
+            if(viewId === 'view-profile') loadProfile();
+            if(viewId === 'view-notif') {
+                notifCount = 0;
+                document.getElementById('badge-notif').classList.add('hidden');
+            }
+            if(viewId === 'view-chat') {
+                chatCount = 0;
+                document.getElementById('badge-chat').classList.add('hidden');
+            }
+            // Show the native bottom banner on content views; hide on the upload
+            // screen so it never interferes with image picking / caption input.
+            if (viewId === 'view-upload') ADMOB.hideBanner();
+            else ADMOB.showBanner();
+        };
+
+        const processImage = (file, maxWidth = 800, quality = 0.7) => {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.getElementById('compressor');
+                        const ctx = canvas.getContext('2d');
+                        const scale = maxWidth / img.width;
+                        canvas.width = maxWidth;
+                        canvas.height = img.height * scale;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.onerror = () => resolve(e.target.result);
+                };
+                reader.onerror = () => resolve('');
+            });
+        };
+
+        // ===== SUPABASE STORAGE =====
+        // Bucket name used for all media uploads. Create this bucket in the
+        // Supabase dashboard (see STORAGE SETUP note). If the bucket/policies
+        // are not yet configured, uploads gracefully fall back to base64 so the
+        // app keeps working.
+        const STORAGE_BUCKET = 'media';
+
+        // Convert a base64 data URL into a Blob for storage upload.
+        function _dataUrlToBlob(dataUrl) {
+            const [head, body] = dataUrl.split(',');
+            const mime = (head.match(/data:(.*?);/) || [, 'image/jpeg'])[1];
+            const bin = atob(body);
+            const arr = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+            return new Blob([arr], { type: mime });
+        }
+
+        // Upload a file to Supabase Storage and return a public URL.
+        // Falls back to a base64 data URL if storage is unavailable.
+        async function uploadToStorage(file, prefix = 'posts', maxWidth = 800, quality = 0.7) {
+            const dataUrl = await processImage(file, maxWidth, quality);
+            if (!dataUrl) return '';
+            try {
+                const blob = _dataUrlToBlob(dataUrl);
+                const ext = (file.name && file.name.includes('.')) ? file.name.split('.').pop().toLowerCase() : 'jpg';
+                const safeExt = /^[a-z0-9]{2,4}$/.test(ext) ? ext : 'jpg';
+                const path = `${prefix}/${currentUser.uid}_${Date.now()}.${safeExt}`;
+                const { error } = await sb.storage
+                    .from(STORAGE_BUCKET)
+                    .upload(path, blob, { contentType: blob.type || 'image/jpeg', upsert: false });
+                if (error) throw error;
+                const pub = sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+                return (pub && pub.data && pub.data.publicUrl) ? pub.data.publicUrl : dataUrl;
+            } catch (e) {
+                window.__dbg('Storage upload fallback to base64: ' + (e && e.message ? e.message : e));
+                return dataUrl;
+            }
+        }
+
+        window.listenUsers = () => {
+            onValue(ref(db, 'users'), snap => {
+                usersCache = snap.val() || {};
+                renderChatList();
+                if(currentView === 'view-profile') loadProfile();
+            });
+        };
+
+        function renderChatList() {
+            const list = document.getElementById('chat-list');
+            list.innerHTML = '';
+            Object.values(usersCache).forEach(u => {
+                if(u.uid === currentUser.uid) return;
+                const div = document.createElement('div');
+                div.className = 'chat-list-item';
+                div.onclick = () => openChat(u.uid, u.username);
+                div.innerHTML = '<img src="' + (u.photo || DEFAULT_AVATAR) + '" style="width:50px;height:50px;border-radius:50%;object-fit:cover;"><div><div style="font-weight:700;font-size:15px;color:#333;">' + u.username + adminBadgeHtml(u.uid) + '</div><div style="font-size:13px;color:var(--text-muted);">Tap to chat</div></div>';
+                list.appendChild(div);
+            });
+        }
+
+        // --- CHAT LOGIC ---
+        window.openChat = (targetUid, targetName) => {
+            const overlay = document.getElementById('chat-overlay');
+            const title = document.getElementById('chat-title');
+            const msgsDiv = document.getElementById('chat-msgs');
+            overlay.classList.remove('hidden');
+            msgsDiv.innerHTML = '';
+            const uids = [currentUser.uid, targetUid].sort();
+            activeChatId = `private_${uids[0]}_${uids[1]}`;
+            title.innerHTML = (targetName || "Private Chat") + adminBadgeHtml(targetUid);
+            const dbPath = `private_chats/${activeChatId}`;
+            if(chatListenerRef) off(chatListenerRef);
+            chatListenerRef = query(ref(db, dbPath), limitToLast(50));
+            onValue(chatListenerRef, snap => {
+                msgsDiv.innerHTML = '';
+                const data = snap.val();
+                if(data) {
+                    Object.values(data).forEach(msg => {
+                        const isMine = msg.uid === currentUser.uid;
+                        msgsDiv.innerHTML += `<div class="bubble ${isMine ? 'mine' : 'theirs'}">${msg.text}</div>`;
+                    });
+                    msgsDiv.scrollTop = msgsDiv.scrollHeight;
+                }
+            });
+        };
+
+        window.closeChat = () => {
+            document.getElementById('chat-overlay').classList.add('hidden');
+            activeChatId = null;
+            if(chatListenerRef) off(chatListenerRef);
+        };
+
+        window.sendMsg = () => {
+            const inp = document.getElementById('chat-input');
+            const text = inp.value.trim();
+            if(!text || !activeChatId) return;
+            const senderName = fallbackName(currentUser);
+            const dbPath = `private_chats/${activeChatId}`;
+            push(ref(db, dbPath), { uid: currentUser.uid, user: senderName, text: text, timestamp: Date.now() });
+            inp.value = '';
+        };
+
+        function listenFollowing() { onValue(ref(db, `following/${currentUser.uid}`), snap => { followingCache = snap.val() || {}; }); }
+
+        window.toggleFollow = async (targetUid) => {
+            if(!targetUid || targetUid === currentUser.uid) return;
+            const isFollowing = followingCache[targetUid];
+            if(isFollowing) {
+                remove(ref(db, `following/${currentUser.uid}/${targetUid}`));
+                remove(ref(db, `followers/${targetUid}/${currentUser.uid}`));
+            } else {
+                set(ref(db, `following/${currentUser.uid}/${targetUid}`), true);
+                set(ref(db, `followers/${targetUid}/${currentUser.uid}`), true);
+                sendNotif(targetUid, "started following you");
+                await awardPoints(currentUser.uid, POINTS.FOLLOW, `follow ${targetUid}`);
+                showToast(`+${POINTS.FOLLOW} poin (menambah teman)`);
+            }
+        };
+
+        function _renderFeed(data) {
+            const container = document.getElementById('feed-container');
+            container.innerHTML = "";
+            if(!data) { container.innerHTML = "<div style='text-align:center; margin-top:50px; color:gray; font-size:14px;'>Nothing here yet.</div>"; return; }
+            const posts = Object.entries(data).reverse();
+            posts.forEach(([pid, post]) => {
+                    const u = usersCache[post.uid] || {username: 'Loading...', photo: DEFAULT_AVATAR};
+                    const isLiked = post.likes && post.likes[currentUser.uid];
+                    const likeCount = post.likes ? Object.keys(post.likes).length : 0;
+                    const safeCaption = post.caption ? String(post.caption).replace(/</g,'&lt;') : '';
+                    let followBtnHtml = '';
+                    if(post.uid !== currentUser.uid) {
+                        const isFollowing = followingCache[post.uid];
+                        followBtnHtml = `<button class="btn-follow ${isFollowing ? 'following' : 'not-following'}" onclick="toggleFollow('${post.uid}')">${isFollowing ? 'Following' : 'Follow'}</button>`;
+                    }
+                    let commentsHtml = '';
+                    if(post.comments) {
+                        Object.values(post.comments).forEach(c => {
+                            const safeText = String(c.text).replace(/</g,'&lt;');
+                            const safeName = String(c.username).replace(/</g,'&lt;');
+                            commentsHtml += `<div class="comment-item"><b>${safeName}</b> ${safeText}</div>`;
+                        });
+                    }
+                    const div = document.createElement('div');
+                    div.className = 'post-card';
+                    const adminDelHtml = isAdmin() ? `<i class="fas fa-trash-alt adm-del adm-act-btn" title="Hapus (admin)" onclick="adminDeletePost('${pid}')"></i>` : '';
+                    // Image is only rendered when the post has one (text-only posts skip it).
+                    const imgHtml = post.image
+                        ? `<img src="${post.image}" class="post-img" ondblclick="toggleLike('${pid}', '${post.uid}')" onerror="this.style.display='none'">`
+                        : '';
+                    // For text-only posts show the caption as the main body; otherwise caption shows below image.
+                    const bodyHtml = (!post.image && safeCaption)
+                        ? `<div class="post-text-only">${safeCaption}</div>`
+                        : (safeCaption ? `<div class="caption-area"><b>${u.username}</b> ${safeCaption}</div>` : '');
+                    const likesHtml = likeCount > 0 ? `<div class="post-likes-count">${likeCount} suka</div>` : '';
+                    div.innerHTML = `
+                        <div class="post-header">
+                            <img src="${u.photo || DEFAULT_AVATAR}" class="p-avatar" onerror="this.src='${DEFAULT_AVATAR}'">
+                            <div><div style="font-weight:700; color:#333; font-size:14px;">${u.username}${adminBadgeHtml(post.uid)}</div></div>
+                            ${adminDelHtml}
+                            ${followBtnHtml}
+                        </div>
+                        ${imgHtml}
+                        <div class="post-actions">
+                            <i class="${isLiked ? 'fas' : 'far'} fa-heart action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${pid}', '${post.uid}')"></i>
+                            <i class="far fa-comment action-btn" onclick="toggleCommentSection('${pid}')"></i>
+                        </div>
+                        ${likesHtml}
+                        ${bodyHtml}
+                        <div class="comment-section">
+                            <span class="comment-toggle" onclick="toggleCommentSection('${pid}')">
+                                ${post.comments ? `View all ${Object.keys(post.comments).length} comments` : 'Add a comment...'}
+                            </span>
+                            <div id="comments-${pid}" class="comment-list" style="display:none;">${commentsHtml}</div>
+                            <div id="input-${pid}" class="comment-input-box" style="display:none;">
+                                <input type="text" id="inp-${pid}" placeholder="Add a comment...">
+                                <button onclick="postComment('${pid}', '${post.uid}')">Post</button>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+        }
+
+        function listenFeed() {
+            const q = query(ref(db, 'posts'), limitToLast(30));
+            onValue(q, (snapshot) => { _renderFeed(snapshot.val()); });
+        }
+
+        // Manual one-shot feed re-read (used after posting & pull-to-refresh)
+        // to guarantee fresh content appears even if realtime is delayed.
+        async function _refreshFeed() {
+            const snap = await get(query(ref(db, 'posts'), limitToLast(30)));
+            _renderFeed(snap.val());
+        }
+
+        window.toggleLike = async (pid, authorId) => {
+            const path = `posts/${pid}/likes/${currentUser.uid}`;
+            const btn = document.querySelector(`[onclick="toggleLike('${pid}', '${authorId}')"]`);
+            if(btn && btn.classList.contains('liked')) {
+                 remove(ref(db, path));
+            } else {
+                 set(ref(db, path), true);
+                 if(authorId !== currentUser.uid) {
+                     sendNotif(authorId, "liked your post");
+                     // Award 2 poin only the first time this post is liked (anti-farming)
+                     const rewarded = await get(ref(db, `posts/${pid}/likeRewards/${currentUser.uid}`));
+                     if (!rewarded.exists()) {
+                         await set(ref(db, `posts/${pid}/likeRewards/${currentUser.uid}`), true);
+                         await awardPoints(currentUser.uid, POINTS.LIKE, `like ${pid}`);
+                         showToast(`+${POINTS.LIKE} poin (menyukai postingan)`);
+                     }
+                 }
+            }
+        };
+
+        window.toggleCommentSection = (pid) => {
+            const list = document.getElementById(`comments-${pid}`);
+            const box = document.getElementById(`input-${pid}`);
+            const isHidden = list.style.display === 'none';
+            list.style.display = isHidden ? 'block' : 'none';
+            box.style.display = isHidden ? 'flex' : 'none';
+        };
+
+        window.postComment = async (pid, ownerUid) => {
+            const inp = document.getElementById(`inp-${pid}`);
+            const text = inp.value.trim();
+            if(!text) return;
+            let c = checkLimit('comments');
+            if (!c.ok) {
+                const tier = getTier(myTier);
+                // Offer a rewarded ad for +1 comment chance.
+                const granted = await promptRewardedForQuota('comments');
+                if (!granted) {
+                    showToast(`Batas komentar harian tercapai (${c.limit}x untuk ${tier.name}). Upgrade akun untuk lebih.`);
+                    return;
+                }
+                c = checkLimit('comments'); // recheck after grant
+            }
+            const name = fallbackName(currentUser);
+            push(ref(db, `posts/${pid}/comments`), { text: text, uid: currentUser.uid, username: name, timestamp: Date.now() });
+            if(ownerUid !== currentUser.uid) sendNotif(ownerUid, `commented: ${text}`);
+            inp.value = '';
+            await recordUsage('comments');
+            await awardPoints(currentUser.uid, POINTS.COMMENT, `comment ${pid}`);
+            showToast(`+${POINTS.COMMENT} poin (berkomentar) · sisa ${c.limit === Infinity ? '∞' : (c.effective - c.used - 1)} hari ini`);
+        };
+
+        window.previewUpload = async (input) => {
+            if(input.files[0]) {
+                const b64 = await processImage(input.files[0]);
+                document.getElementById('upload-preview-img').src = b64;
+                document.getElementById('upload-preview-img').style.display = 'block';
+                document.querySelector('.upload-area i').style.display = 'none';
+                document.querySelector('.upload-area span').style.display = 'none';
+                const rm = document.getElementById('remove-img-btn');
+                if (rm) rm.style.display = 'flex';
+            }
+        };
+
+        window.clearUploadImage = () => {
+            document.getElementById('post-file').value = '';
+            const img = document.getElementById('upload-preview-img');
+            img.src = '';
+            img.style.display = 'none';
+            document.querySelector('.upload-area i').style.display = 'block';
+            document.querySelector('.upload-area span').style.display = 'block';
+            const rm = document.getElementById('remove-img-btn');
+            if (rm) rm.style.display = 'none';
+        };
+
+        window.uploadPost = async () => {
+            const fileInput = document.getElementById('post-file');
+            const file = fileInput.files[0];
+            const caption = document.getElementById('post-caption').value.trim();
+            // Post is free to be text-only, image-only, or text + image.
+            if(!file && !caption) return alert("Tulis sesuatu atau pilih gambar untuk membuat postingan.");
+            const c = checkLimit('posts');
+            if (!c.ok) {
+                const tier = getTier(myTier);
+                // Offer a rewarded ad for +1 post chance.
+                const granted = await promptRewardedForQuota('posts');
+                if (!granted) {
+                    showToast(`Batas posting harian tercapai (${c.limit}x untuk ${tier.name}). Upgrade akun untuk lebih.`);
+                    return;
+                }
+            }
+            document.getElementById('post-btn-text').style.display = 'none';
+            document.getElementById('post-loader').style.display = 'block';
+            try {
+                // Image is optional; only upload when the user picked one.
+                const imageUrl = file ? await uploadToStorage(file, 'posts', 800, 0.7) : '';
+                const payload = { uid: currentUser.uid, caption: caption, timestamp: Date.now() };
+                if (imageUrl) payload.image = imageUrl;
+                await push(ref(db, 'posts'), payload);
+                fileInput.value = "";
+                document.getElementById('post-caption').value = "";
+                clearUploadImage();
+                nav('view-home');
+                // Force a fresh feed read so the new post appears immediately,
+                // independent of realtime latency.
+                try { await _refreshFeed(); } catch (_) {}
+                await recordUsage('posts');
+                await awardPoints(currentUser.uid, POINTS.POST, `post`);
+                const after = checkLimit('posts');
+                showToast(`+${POINTS.POST} poin (posting) · sisa ${after.limit === Infinity ? '∞' : (after.effective - after.used)} hari ini`);
+            } catch(e) { alert(e.message); }
+            document.getElementById('post-btn-text').style.display = 'block';
+            document.getElementById('post-loader').style.display = 'none';
+        };
+
+        function listenStories() {
+            const q = query(ref(db, 'stories'), limitToLast(20));
+            onValue(q, snap => {
+                const container = document.getElementById('stories-container');
+                const btn = container.firstElementChild.cloneNode(true);
+                container.innerHTML = ''; container.appendChild(btn);
+                const data = snap.val(); if(!data) return;
+                Object.values(data).reverse().forEach(s => { container.innerHTML += `<div class="story-card"><img src="${s.image}"></div>`; });
+            });
+        }
+        window.uploadStory = async (input) => {
+            if(input.files[0]) {
+                const url = await uploadToStorage(input.files[0], 'stories', 300, 0.5);
+                if (url) await push(ref(db, 'stories'), { uid: currentUser.uid, image: url, timestamp: Date.now() });
+            }
+        };
+
+        function loadProfile() {
+            if(!currentUser) return;
+            const dbUser = usersCache[currentUser.uid];
+            const finalName = (dbUser && dbUser.username) ? dbUser.username : (fallbackName(currentUser));
+            const finalPhoto = (dbUser && dbUser.photo) ? dbUser.photo : DEFAULT_AVATAR;
+            document.getElementById('profile-name').innerHTML = finalName + (isAdmin() ? ' <span class="verified-admin verified-admin-lg" title="Admin">🛡️</span>' : '');
+            document.getElementById('profile-img').src = finalPhoto;
+            const tagEl = document.getElementById('admin-tag-profile');
+            if (tagEl) tagEl.style.display = isAdmin() ? 'inline-flex' : 'none';
+            onValue(query(ref(db, 'posts'), orderByKey()), snap => {
+                const grid = document.getElementById('profile-grid'); grid.innerHTML = '';
+                let count = 0; const data = snap.val();
+                if(data) Object.values(data).reverse().forEach(p => {
+                    if(p.uid === currentUser.uid) {
+                        count++;
+                        // Text-only posts render as a placeholder tile in the profile grid.
+                        if (p.image) {
+                            grid.innerHTML += `<img src="${p.image}" class="grid-item" onerror="this.style.display='none'">`;
+                        } else {
+                            grid.innerHTML += `<div class="grid-item grid-item-text"><i class="fas fa-align-left"></i></div>`;
+                        }
+                    }
+                });
+                document.getElementById('stat-posts').innerText = count;
+            });
+            onValue(ref(db, `followers/${currentUser.uid}`), snap => document.getElementById('stat-followers').innerText = snap.exists() ? Object.keys(snap.val()).length : 0);
+            onValue(ref(db, `following/${currentUser.uid}`), snap => document.getElementById('stat-following').innerText = snap.exists() ? Object.keys(snap.val()).length : 0);
+        }
+
+        window.uploadProfilePic = async (input) => {
+            if(input.files[0]) {
+                const url = await uploadToStorage(input.files[0], 'avatars', 200, 0.5);
+                if (!url) return;
+                await update(ref(db, `users/${currentUser.uid}`), { photo: url });
+                document.getElementById('profile-img').src = url;
+                loadProfile();
+                listenFeed();
+            }
+        };
+
+        window.toggleEditName = async () => {
+            const inp = document.getElementById('edit-name-input');
+            const h2 = document.getElementById('profile-name');
+            if(inp.classList.contains('hidden')) {
+                inp.classList.remove('hidden'); h2.classList.add('hidden'); inp.value = h2.innerText; inp.focus();
+            } else {
+                if(inp.value.trim()) {
+                    await updateProfile(currentUser, { displayName: inp.value });
+                    await update(ref(db, `users/${currentUser.uid}`), { username: inp.value });
+                    loadProfile();
+                    listenFeed();
+                }
+                inp.classList.add('hidden'); h2.classList.remove('hidden');
+            }
+        };
+
+        function sendNotif(targetId, text) {
+            const name = fallbackName(currentUser);
+            push(ref(db, `notifications/${targetId}`), { text: `${name} ${text}`, timestamp: Date.now() });
+        }
+
+        function listenNotifications() {
+            onValue(ref(db, `notifications/${currentUser.uid}`), snap => {
+                const div = document.getElementById('notif-list');
+                const badge = document.getElementById('badge-notif');
+                div.innerHTML = '';
+                const data = snap.val();
+                if(data) {
+                    const count = Object.keys(data).length;
+                    if(currentView !== 'view-notif') {
+                        badge.innerText = count;
+                        badge.classList.remove('hidden');
+                    }
+                    Object.values(data).reverse().forEach(n => {
+                        div.innerHTML += `<div class="notif-row"><div class="notif-icon"><i class="fas fa-bolt"></i></div><div style="font-size:14px; color:#333;">${n.text}</div></div>`;
+                    });
+                } else {
+                    div.innerHTML = '<div style="padding:20px; text-align:center; color:gray; font-size:14px;">No recent activity.</div>';
+                    badge.classList.add('hidden');
+                }
+            });
+        }
+
+        // ============ MODAL / WALLET UI HELPERS ============
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.className = 'toast';
+            t.innerText = msg;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 2500);
+        }
+
+        function closeModal() {
+            // Resolve any pending rewarded-ad prompt modal as "cancelled" so the
+            // awaiting promise never hangs when the modal is dismissed via ESC,
+            // backdrop click, or the X button.
+            if (window.__rqResolve) { const r = window.__rqResolve; window.__rqResolve = null; r(false); }
+            try { stopScanner(); } catch(_) {}
+            const root = document.getElementById('modal-root');
+            if (root) root.innerHTML = '';
+            pendingTransferRecipient = null;
+        }
+        window.closeModal = closeModal; // expose for inline onclick handlers
+
+        // Robust close handlers: event delegation for .modal-close clicks +
+        // ESC key + overlay backdrop click. These work even if an inline
+        // onclick handler hasn't been exposed yet.
+        document.addEventListener('click', (e) => {
+            const closeBtn = e.target.closest('.modal-close');
+            if (closeBtn) { e.preventDefault(); e.stopPropagation(); closeModal(); return; }
+            const overlay = e.target.closest('.modal-overlay');
+            if (overlay && e.target === overlay) { closeModal(); return; }
+        }, true);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const root = document.getElementById('modal-root');
+                if (root && root.innerHTML.trim()) closeModal();
+            }
+        });
+
+        function escHtml(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
+        function openModal(innerHtml) {
+            const root = document.getElementById('modal-root');
+            root.innerHTML = `<div class="modal-overlay"><div class="modal-card"><button class="modal-close" type="button" aria-label="Tutup"><i class="fas fa-times"></i></button>${innerHtml}</div></div>`;
+        }
+
+        const WHATSAPP_URL = 'https://whatsapp.com/channel/0029Vb8X1feA89MnppCqMy40';
+
+        // Generic info modal (about / privacy / disclaimer / terms)
+        function openInfoModal(title, bodyHtml) {
+            openModal(`<div class="modal-title">${title}</div><div class="info-body" style="margin-top:14px;">${bodyHtml}</div>`);
+        }
+
+        // Account settings menu
+        window.openSettingsModal = () => {
+            const items = [
+                { icon: 'fa-user-gear', label: 'Pengaturan Akun', sub: 'Ubah nama, foto, dan profil', act: 'closeModal();openEditProfileModal();' },
+                { icon: 'fa-info-circle', label: 'About', sub: 'Tentang BERUANG', act: 'closeModal();openAbout();' },
+                { icon: 'fa-shield-halved', label: 'Privacy Policy', sub: 'Kebijakan privasi', act: 'closeModal();openPrivacy();' },
+                { icon: 'fa-circle-exclamation', label: 'Disclaimer', sub: 'Sangkalan', act: 'closeModal();openDisclaimer();' },
+                { icon: 'fa-file-contract', label: 'Terms of Service', sub: 'Syarat & ketentuan', act: 'closeModal();openTerms();' },
+                { icon: 'fa-brands fa-whatsapp', label: 'WhatsApp', sub: 'Gabung channel WhatsApp', act: `window.open('${WHATSAPP_URL}','_blank');` }
+            ];
+            if (isAdmin()) {
+                items.unshift({ icon: 'fa-user-shield', label: 'Panel Admin', sub: 'Kelola user & postingan', act: 'closeModal();openAdminPanel();' });
+            }
+            const rows = items.map(it => `
+                <div class="settings-menu-item" onclick="${it.act}">
+                    <i class="fas ${it.icon}"></i>
+                    <div><div class="smi-label">${it.label}</div><div class="smi-sub">${it.sub}</div></div>
+                </div>
+            `).join('');
+            openModal(`<div class="modal-title">Pengaturan</div><div class="modal-sub">Kelola akun & informasi aplikasi</div><div style="margin-top:6px;">${rows}</div><div style="height:1px; background:#e2e8f0; margin:18px 0;"></div><button class="btn-logout" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Keluar / Logout</button>`);
+        };
+
+        window.openAbout = () => openInfoModal('Tentang BERUANG', `
+            <p><b>BERUANG</b> — Connect &amp; Share.</p>
+            <p>BERUANG adalah aplikasi sosial media berbasis poin yang menggabungkan berbagi momen, interaksi sosial, dan sistem dompet poin virtual.</p>
+            <h4>Fitur Utama</h4>
+            <p>• Posting foto &amp; caption<br>• Suka &amp; berkomentar<br>• Tambah teman &amp; chat pribadi<br>• Dompet poin &amp; transfer via QR<br>• Sistem tier akun<br>• Program referral</p>
+            <h4>Sistem Poin</h4>
+            <p>Komentar +50, Posting +20, Tambah teman +10, Suka +2, Referral +500 (atasan &amp; bawahan).</p>
+            <p style="margin-top:14px; font-size:12px;">Versi aplikasi: 1.0.0</p>
+        `);
+
+        window.openPrivacy = () => openInfoModal('Kebijakan Privasi', `
+            <p>Privasi Anda penting bagi kami. Kebijakan ini menjelaskan bagaimana BERUANG mengumpulkan, menggunakan, dan melindungi data Anda.</p>
+            <h4>Data yang Dikumpulkan</h4>
+            <p>Nama, nomor HP, foto profil, dan aktivitas dalam aplikasi (posting, komentar, poin, transaksi).</p>
+            <h4>Penggunaan Data</h4>
+            <p>Data digunakan untuk menjalankan layanan sosial, sistem poin, dan transaksi antar pengguna. Data tidak dijual ke pihak ketiga.</p>
+            <h4>Keamanan</h4>
+            <p>Data disimpan pada infrastruktur Supabase dengan aturan keamanan. PIN transaksi di-hash dan tidak ditampilkan kepada siapapun.</p>
+            <h4>Hak Pengguna</h4>
+            <p>Anda dapat mengubah profil kapan saja. Penghapusan akun dapat dilakukan melalui kontak dukungan.</p>
+        `);
+
+        window.openDisclaimer = () => openInfoModal('Disclaimer', `
+            <p>Dengan menggunakan BERUANG, Anda menyetujui sangkalan berikut:</p>
+            <h4>Poin Virtual</h4>
+            <p>Poin dalam BERUANG adalah mata uang virtual yang <b>tidak memiliki nilai riil</b> dan tidak dapat ditukar dengan uang fisik atau aset nyata.</p>
+            <h4>Tanggung Jawab Pengguna</h4>
+            <p>Pengguna bertanggung jawab penuh atas konten yang diunggah dan transaksi yang dilakukan. BERUANG tidak bertanggung jawab atas kehilangan poin akibat kelalaian pengguna (mis. membagikan PIN).</p>
+            <h4>Konten Pengguna</h4>
+            <p>BERUANG tidak menyensor konten secara aktif. Dilarang mengunggah konten melanggar hukum, SARA, atau pornografi.</p>
+            <h4>Layanan "Sebagaimana Adanya"</h4>
+            <p>Layanan disediakan tanpa jaminan. Kami berhak mengubah atau menghentikan layanan sewaktu-waktu.</p>
+        `);
+
+        window.openTerms = () => openInfoModal('Syarat &amp; Ketentuan', `
+            <p>Dengan mendaftar dan menggunakan BERUANG, Anda menyetujui syarat berikut:</p>
+            <h4>1. Akun</h4>
+            <p>Anda wajib menggunakan nomor HP yang valid dan menjaga kerahasiaan sandi serta PIN transaksi.</p>
+            <h4>2. Penggunaan</h4>
+            <p>Dilarang melakukan tindakan penyalahgunaan, termasuk farming poin otomatis, akun ganda untuk manipulasi referral, atau spam.</p>
+            <h4>3. Transaksi</h4>
+            <p>Transfer poin bersifat final. Konfirmasi penerima sebelum mengirim. Pembukaan PIN adalah tanggung jawab pengguna.</p>
+            <h4>4. Tier &amp; Upgrade</h4>
+            <p>Pembelian upgrade tier tidak dapat dikembalikan (non-refundable).</p>
+            <h4>5. Larangan</h4>
+            <p>Kami berhak menonaktifkan akun yang melanggar syarat ini tanpa pemberitahuan terlebih dahulu.</p>
+        `);
+
+        async function findUserByAcctId(acctId) {
+            const idxSnap = await get(ref(db, 'account_index'));
+            const idx = idxSnap.val() || {};
+            for (const uid in idx) {
+                if (idx[uid] === acctId) {
+                    const userSnap = await get(ref(db, `users/${uid}`));
+                    const u = userSnap.val() || {};
+                    return { uid: uid, username: u.username || 'User', photo: u.photo || DEFAULT_AVATAR, acctId: acctId };
+                }
+            }
+            return null;
+        }
+
+        // ===== MY QR MODAL =====
+        window.openMyQRModal = () => {
+            const payload = JSON.stringify({ acctId: myAcctId, uid: currentUser.uid });
+            openModal(`
+                <div class="modal-title">Kode QR Akun Saya</div>
+                <div class="modal-sub">Tunjukkan QR ini untuk menerima transfer poin.</div>
+                <div style="text-align:center;">
+                    <div id="my-qr-box" class="qr-box"></div>
+                    <div class="acct-id-big">${myAcctId}</div>
+                    <div style="font-size:13px; color:var(--text-muted); margin-bottom:6px;">${escHtml(currentUser.displayName || 'User')}</div>
+                    <div style="font-size:12px; color:var(--text-muted);">Saldo: <b id="qr-balance">${myPoints.toLocaleString('id-ID')}</b> poin</div>
+                </div>
+                <button class="btn-main" style="margin-top:18px;" onclick="closeModal()">Tutup</button>
+            `);
+            new QRCode(document.getElementById('my-qr-box'), { text: payload, width: 200, height: 200, colorDark: '#1e293b', colorLight: '#ffffff' });
+        };
+
+        // ===== QR SCANNER MODAL =====
+        window.openQRScanner = () => {
+            openModal(`
+                <div class="modal-title"><i class="fas fa-camera"></i> Scan QR Penerima</div>
+                <div class="modal-sub">Arahkan kamera ke QR akun tujuan untuk transfer poin.</div>
+                <div class="scan-video-box">
+                    <video id="scanner-video" playsinline muted></video>
+                    <div class="scan-overlay-frame"></div>
+                </div>
+                <p style="font-size:12px; color:var(--text-muted); text-align:center; margin-bottom:10px;">Tidak bisa scan? Masukkan ID akun manual.</p>
+                <div style="display:flex; gap:8px;">
+                    <input id="manual-acct-id" class="auth-input" placeholder="6-digit ID Akun" maxlength="6" inputmode="numeric" style="text-align:center; letter-spacing:4px; font-family:monospace; font-size:16px;">
+                    <button class="btn-main" style="width:auto; margin:0; padding:0 16px;" onclick="manualLookup()">Lanjut</button>
+                </div>
+            `);
+            startScanner();
+        };
+
+        async function startScanner() {
+            try {
+                scannerStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                const video = document.getElementById('scanner-video');
+                if (!video) { return; }
+                video.srcObject = scannerStream;
+                video.setAttribute('playsinline', true);
+                video.play();
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                const tick = () => {
+                    if (!scannerStream) return;
+                    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        try {
+                            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                            const code = (window.jsQR || window.JsQR)(imgData.data, imgData.width, imgData.height);
+                            if (code && code.data) { handleScannedPayload(code.data); return; }
+                        } catch (err) { /* ignore frame errors */ }
+                    }
+                    scannerRAF = requestAnimationFrame(tick);
+                };
+                tick();
+            } catch (e) {
+                const box = document.querySelector('.scan-video-box');
+                if (box) box.innerHTML = '<div style="color:#fff; padding:20px; text-align:center; font-size:13px;">Kamera tidak tersedia.<br>Silakan masukkan ID akun manual di bawah.</div>';
+            }
+        }
+
+        function stopScanner() {
+            if (scannerRAF) { cancelAnimationFrame(scannerRAF); scannerRAF = null; }
+            if (scannerStream) {
+                scannerStream.getTracks().forEach(t => t.stop());
+                scannerStream = null;
+            }
+        }
+
+        function handleScannedPayload(raw) {
+            let acctId = null, uid = null;
+            try {
+                const parsed = JSON.parse(raw);
+                acctId = parsed.acctId;
+                uid = parsed.uid;
+            } catch (e) {
+                if (/^\d{6}$/.test(raw)) acctId = raw;
+            }
+            if (!acctId) { showToast('QR tidak dikenali'); return; }
+            stopScanner();
+            proceedToRecipient(acctId, uid);
+        }
+
+        window.manualLookup = async () => {
+            const id = document.getElementById('manual-acct-id').value.trim();
+            if (!/^\d{6}$/.test(id)) { showToast('ID harus 6 digit angka'); return; }
+            await proceedToRecipient(id);
+        };
+
+        async function proceedToRecipient(acctId, knownUid) {
+            stopScanner();
+            let recipient;
+            if (knownUid) {
+                const uSnap = await get(ref(db, `users/${knownUid}`));
+                const u = uSnap.val() || {};
+                recipient = { uid: knownUid, username: u.username || 'User', photo: u.photo || DEFAULT_AVATAR, acctId: acctId };
+            } else {
+                recipient = await findUserByAcctId(acctId);
+            }
+            if (!recipient) { showToast('Akun tujuan tidak ditemukan'); return; }
+            if (recipient.uid === currentUser.uid) { showToast('Tidak bisa transfer ke akun sendiri'); return; }
+            pendingTransferRecipient = recipient;
+            openAmountModal(recipient);
+        }
+
+        // ===== AMOUNT MODAL =====
+        function openAmountModal(recipient) {
+            openModal(`
+                <div class="modal-title">Transfer Poin</div>
+                <div class="modal-sub">Masukkan nominal poin yang akan dikirim.</div>
+                <div class="recipient-box">
+                    <img src="${escHtml(recipient.photo)}">
+                    <div>
+                        <div style="font-weight:700; font-size:14px; color:#333;">${escHtml(recipient.username)}</div>
+                        <div style="font-size:12px; color:var(--text-muted); font-family:monospace;">ID: ${escHtml(recipient.acctId)}</div>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Nominal (poin)</label>
+                    <input id="transfer-amount" class="auth-input" type="number" inputmode="numeric" placeholder="0" style="font-size:20px; text-align:center; font-weight:700;">
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">Saldo Anda: <b>${myPoints.toLocaleString('id-ID')}</b> poin</div>
+                </div>
+                <button class="btn-main" onclick="goToPinStep()">Lanjut</button>
+            `);
+        }
+
+        window.goToPinStep = () => {
+            const amt = parseInt(document.getElementById('transfer-amount').value, 10);
+            if (!amt || amt <= 0) { showToast('Masukkan nominal valid'); return; }
+            if (amt > myPoints) { showToast('Saldo tidak cukup'); return; }
+            openPinModal(amt);
+        };
+
+        // ===== PIN MODAL =====
+        function openPinModal(amount) {
+            const recipient = pendingTransferRecipient;
+            openModal(`
+                <div class="modal-title">Masukkan PIN Transaksi</div>
+                <div class="modal-sub">Konfirmasi transfer <b>${amount.toLocaleString('id-ID')}</b> poin ke:</div>
+                <div class="recipient-box">
+                    <img src="${escHtml(recipient.photo)}">
+                    <div>
+                        <div style="font-weight:700; font-size:14px; color:#333;">${escHtml(recipient.username)}</div>
+                        <div style="font-size:12px; color:var(--text-muted); font-family:monospace;">ID: ${escHtml(recipient.acctId)}</div>
+                    </div>
+                </div>
+                <div class="pin-dots">
+                    <input id="pin-0" class="auth-input" maxlength="1" inputmode="numeric">
+                    <input id="pin-1" class="auth-input" maxlength="1" inputmode="numeric">
+                    <input id="pin-2" class="auth-input" maxlength="1" inputmode="numeric">
+                    <input id="pin-3" class="auth-input" maxlength="1" inputmode="numeric">
+                </div>
+                <p id="pin-error" style="color:#ef4444; font-size:13px; text-align:center; min-height:18px; margin:0 0 8px 0;"></p>
+                <button class="btn-main" onclick="confirmTransfer(${amount})">Kirim Poin</button>
+                <button class="btn-sec btn-main" style="margin-top:8px;" onclick="openSetPinModal()">Belum punya PIN? Buat di sini</button>
+            `);
+            setupPinInputs();
+        }
+
+        function setupPinInputs() {
+            const inputs = ['pin-0','pin-1','pin-2','pin-3'].map(id => document.getElementById(id));
+            inputs.forEach((inp, i) => {
+                inp.addEventListener('input', () => {
+                    inp.value = inp.value.replace(/\D/g, '');
+                    if (inp.value && i < inputs.length - 1) inputs[i + 1].focus();
+                });
+                inp.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && !inp.value && i > 0) inputs[i - 1].focus();
+                });
+            });
+            inputs[0].focus();
+        }
+
+        function readPin() {
+            return ['pin-0','pin-1','pin-2','pin-3'].map(id => document.getElementById(id).value).join('');
+        }
+
+        // ===== SET PIN MODAL =====
+        window.openSetPinModal = () => {
+            openModal(`
+                <div class="modal-title">Buat PIN Transaksi</div>
+                <div class="modal-sub">Buat 4 digit PIN untuk mengamankan transfer poin Anda.</div>
+                <div class="pin-dots">
+                    <input id="newpin-0" class="auth-input" maxlength="1" inputmode="numeric">
+                    <input id="newpin-1" class="auth-input" maxlength="1" inputmode="numeric">
+                    <input id="newpin-2" class="auth-input" maxlength="1" inputmode="numeric">
+                    <input id="newpin-3" class="auth-input" maxlength="1" inputmode="numeric">
+                </div>
+                <p id="setpin-error" style="color:#ef4444; font-size:13px; text-align:center; min-height:18px; margin:0 0 8px 0;"></p>
+                <button class="btn-main" onclick="saveNewPin()">Simpan PIN</button>
+            `);
+            const inputs = ['newpin-0','newpin-1','newpin-2','newpin-3'].map(id => document.getElementById(id));
+            inputs.forEach((inp, i) => {
+                inp.addEventListener('input', () => {
+                    inp.value = inp.value.replace(/\D/g, '');
+                    if (inp.value && i < inputs.length - 1) inputs[i + 1].focus();
+                });
+            });
+            inputs[0].focus();
+        };
+
+        window.saveNewPin = async () => {
+            const pin = ['newpin-0','newpin-1','newpin-2','newpin-3'].map(id => document.getElementById(id).value).join('');
+            const err = document.getElementById('setpin-error');
+            if (!/^\d{4}$/.test(pin)) { err.innerText = 'PIN harus 4 digit angka'; return; }
+            await set(ref(db, `wallets/${currentUser.uid}/pin`), pin);
+            showToast('PIN berhasil dibuat');
+            closeModal();
+        };
+
+        // ===== CONFIRM TRANSFER =====
+        window.confirmTransfer = async (amount) => {
+            const errEl = document.getElementById('pin-error');
+            const enteredPin = readPin();
+            const recipient = pendingTransferRecipient;
+            if (!recipient) { closeModal(); return; }
+            if (!/^\d{4}$/.test(enteredPin)) { errEl.innerText = 'PIN belum lengkap'; return; }
+            const pinSnap = await get(ref(db, `wallets/${currentUser.uid}/pin`));
+            const storedPin = pinSnap.val();
+            if (!storedPin) { errEl.innerText = 'Belum punya PIN. Buat dulu.'; openSetPinModal(); return; }
+            if (enteredPin !== storedPin) { errEl.innerText = 'PIN salah'; return; }
+            const balSnap = await get(ref(db, `wallets/${currentUser.uid}/balance`));
+            const bal = Number(balSnap.val()) || 0;
+            if (amount > bal) { errEl.innerText = 'Saldo tidak cukup'; return; }
+            // atomic debit sender (abort if would go negative)
+            const debitRes = await runTransaction(ref(db, `wallets/${currentUser.uid}/balance`), (cur) => {
+                const v = (cur || 0) - amount;
+                return v < 0 ? undefined : v;
+            });
+            if (debitRes.committed === false || debitRes.snapshot.val() === null) {
+                errEl.innerText = 'Saldo tidak cukup';
+                return;
+            }
+            // credit recipient
+            await runTransaction(ref(db, `wallets/${recipient.uid}/balance`), (cur) => (cur || 0) + amount);
+            const ts = Date.now();
+            const senderName = currentUser.displayName || fallbackName(currentUser);
+            await push(ref(db, `wallets/${currentUser.uid}/history`), { type: 'transfer_out', amount: amount, to: recipient.uid, toName: recipient.username, toAcctId: recipient.acctId, timestamp: ts });
+            await push(ref(db, `wallets/${recipient.uid}/history`), { type: 'transfer_in', amount: amount, from: currentUser.uid, fromName: senderName, fromAcctId: myAcctId, timestamp: ts });
+            sendNotif(recipient.uid, `${senderName} mengirim ${amount} poin ke Anda`);
+            showToast(`Transfer ${amount} poin berhasil!`);
+            pendingTransferRecipient = null;
+            closeModal();
+        };
+
+        // ===== UPGRADE TIER MODAL =====
+        window.openUpgradeModal = () => {
+            const curIdx = getTierIndex(myTier);
+            let rows = '';
+            TIERS.forEach((t, i) => {
+                const isCurrent = t.name === myTier;
+                const isOwned = i <= curIdx;
+                const canBuy = i > curIdx && myPoints >= t.price;
+                let actionHtml = '';
+                if (isCurrent) {
+                    actionHtml = '<span style="font-size:12px; font-weight:700; color:#16a34a;"><i class="fas fa-check-circle"></i> Aktif</span>';
+                } else if (isOwned) {
+                    actionHtml = `<button class="btn-main" style="width:auto; margin:0; padding:6px 14px; font-size:12px;" onclick="switchTier('${t.name}')">Gunakan</button>`;
+                } else if (canBuy) {
+                    actionHtml = `<button class="btn-main" style="width:auto; margin:0; padding:6px 14px; font-size:12px;" onclick="confirmBuyTier('${t.name}')">Upgrade</button>`;
+                } else {
+                    actionHtml = `<span style="font-size:12px; color:var(--text-muted);">Poin kurang</span>`;
+                }
+                const limitTxt = t.postLimit === Infinity ? 'Unlimited' : `${t.postLimit}x/hari`;
+                rows += `
+                    <div style="display:flex; align-items:center; gap:12px; padding:12px; border:1px solid var(--border); border-radius:14px; margin-bottom:10px; ${isCurrent ? 'border-color:var(--bg-nav); background:#fffbeb;' : ''}">
+                        <div class="rank-badge-pill rank-${t.name}" style="margin:0; min-width:46px; justify-content:center;"><i class="fas ${t.icon}"></i></div>
+                        <div style="flex:1;">
+                            <div style="font-weight:700; font-size:14px; color:#333;">${t.name}</div>
+                            <div style="font-size:11px; color:var(--text-muted);">Posting & Komentar: ${limitTxt}</div>
+                            <div style="font-size:12px; color:#333; margin-top:2px;">Harga: <b>${t.price === 0 ? 'Gratis' : t.price.toLocaleString('id-ID') + ' poin'}</b></div>
+                        </div>
+                        <div>${actionHtml}</div>
+                    </div>
+                `;
+            });
+            openModal(`
+                <div class="modal-title"><i class="fas fa-crown"></i> Upgrade Akun</div>
+                <div class="modal-sub">Tingkatkan akun untuk batas aktivitas harian lebih besar. Saldo Anda: <b>${myPoints.toLocaleString('id-ID')}</b> poin.</div>
+                ${rows}
+                <p style="font-size:11px; color:var(--text-muted); text-align:center; margin-top:8px;">Batas harian direset setiap hari (00:00 UTC).</p>
+            `);
+        };
+
+        window.confirmBuyTier = (tierName) => {
+            const t = getTier(tierName);
+            if (getTierIndex(tierName) <= getTierIndex(myTier)) return;
+            if (myPoints < t.price) { showToast('Poin tidak cukup'); return; }
+            openModal(`
+                <div class="modal-title">Konfirmasi Upgrade</div>
+                <div class="modal-sub">Anda akan upgrade ke <b>${t.name}</b> seharga <b>${t.price.toLocaleString('id-ID')}</b> poin.</div>
+                <div class="recipient-box">
+                    <div class="rank-badge-pill rank-${t.name}" style="margin:0; min-width:44px; justify-content:center;"><i class="fas ${t.icon}"></i></div>
+                    <div>
+                        <div style="font-weight:700; font-size:14px; color:#333;">${t.name}</div>
+                        <div style="font-size:12px; color:var(--text-muted);">${t.postLimit === Infinity ? 'Unlimited' : t.postLimit + 'x/hari'} posting & komentar</div>
+                    </div>
+                </div>
+                <p id="upg-error" style="color:#ef4444; font-size:13px; text-align:center; min-height:18px; margin:0 0 8px 0;"></p>
+                <button class="btn-main" onclick="buyTier('${tierName}')">Bayar ${t.price.toLocaleString('id-ID')} Poin</button>
+                <button class="btn-sec btn-main" style="margin-top:8px;" onclick="openUpgradeModal()">Batal</button>
+            `);
+        };
+
+        window.buyTier = async (tierName) => {
+            const errEl = document.getElementById('upg-error');
+            const t = getTier(tierName);
+            if (getTierIndex(tierName) <= getTierIndex(myTier)) { errEl.innerText = 'Tier sudah dimiliki'; return; }
+            if (myPoints < t.price) { errEl.innerText = 'Poin tidak cukup'; return; }
+            // atomic debit (abort if would go negative)
+            const res = await runTransaction(ref(db, `wallets/${currentUser.uid}/balance`), (cur) => {
+                const v = (cur || 0) - t.price;
+                return v < 0 ? undefined : v;
+            });
+            if (res.committed === false || res.snapshot.val() === null) { errEl.innerText = 'Poin tidak cukup'; return; }
+            await update(ref(db, `wallets/${currentUser.uid}`), { tier: t.name });
+            await push(ref(db, `wallets/${currentUser.uid}/history`), { type: 'upgrade', amount: t.price, tier: t.name, timestamp: Date.now() });
+            showToast(`Upgrade ke ${t.name} berhasil!`);
+            closeModal();
+        };
+
+        // Switch back to an already-owned lower tier (no cost)
+        window.switchTier = async (tierName) => {
+            if (getTierIndex(tierName) > getTierIndex(myTier)) return;
+            await update(ref(db, `wallets/${currentUser.uid}`), { tier: tierName });
+            showToast(`Akun diatur ke ${tierName}`);
+            closeModal();
+        };
+
+        // ===== TRANSACTION HISTORY MODAL =====
+        window.openTxnHistoryModal = () => {
+            openModal(`
+                <div class="modal-title">Riwayat Transaksi</div>
+                <div class="modal-sub">Aktifitas poin Anda.</div>
+                <div id="txn-history-list" style="min-height:60px;"><div style="text-align:center; color:var(--text-muted); padding:20px; font-size:13px;">Memuat...</div></div>
+            `);
+            onValue(ref(db, `wallets/${currentUser.uid}/history`), snap => {
+                const list = document.getElementById('txn-history-list');
+                if (!list) return;
+                const data = snap.val();
+                if (!data) { list.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px; font-size:13px;">Belum ada transaksi.</div>'; return; }
+                list.innerHTML = '';
+                Object.values(data).reverse().forEach(t => {
+                    let label = '', sub = '', cls = '', sign = '';
+                    if (t.type === 'reward') { label = `Reward: ${escHtml(t.reason||'aktivitas')}`; cls = 'in'; sign = '+'; }
+                    else if (t.type === 'transfer_in') { label = `Diterima dari ${escHtml(t.fromName||'User')}`; sub = t.fromAcctId ? `ID: ${escHtml(t.fromAcctId)}` : ''; cls = 'in'; sign = '+'; }
+                    else if (t.type === 'transfer_out') { label = `Dikirim ke ${escHtml(t.toName||'User')}`; sub = t.toAcctId ? `ID: ${escHtml(t.toAcctId)}` : ''; cls = 'out'; sign = '-'; }
+                    else if (t.type === 'upgrade') { label = `Upgrade akun ke ${escHtml(t.tier||'tier')}`; cls = 'out'; sign = '-'; }
+                    const d = new Date(t.timestamp);
+                    list.innerHTML += `
+                        <div class="txn-history-item">
+                            <div>
+                                <div style="font-size:13px; color:#333;">${label}</div>
+                                <div style="font-size:11px; color:var(--text-muted);">${d.toLocaleString('id-ID')}${sub ? ' · ' + sub : ''}</div>
+                            </div>
+                            <div class="txn-amount ${cls}">${sign}${Number(t.amount).toLocaleString('id-ID')}</div>
+                        </div>
+                    `;
+                });
+            });
+        };
+
+        // ===== EDIT PROFILE MODAL =====
+        window.openEditProfileModal = async () => {
+            const pSnap = await get(ref(db, `profiles/${currentUser.uid}`));
+            const p = pSnap.val() || { fullname: '', phone: '', email: '', gender: '' };
+            const uSnap = await get(ref(db, `users/${currentUser.uid}`));
+            const u = uSnap.val() || {};
+            const curPhoto = u.photo || DEFAULT_AVATAR;
+            openModal(`
+                <div class="modal-title">Edit Profil Lengkap</div>
+                <div class="modal-sub">Lengkapi data akun virtual Anda.</div>
+                <div class="field-group" style="text-align:center;">
+                    <label class="field-label">Foto Profil</label>
+                    <img id="ep-photo-preview" src="${curPhoto}" style="width:90px;height:90px;border-radius:50%;object-fit:cover;margin:0 auto;display:block;border:3px solid var(--bg-nav);" onerror="this.src='${DEFAULT_AVATAR}'">
+                    <button type="button" class="btn-sec" style="margin-top:10px;width:auto;padding:7px 18px;border-radius:20px;font-size:12px;font-weight:600;" onclick="document.getElementById('ep-photo-file').click()"><i class="fas fa-camera"></i> Ganti Foto</button>
+                    <input type="file" id="ep-photo-file" accept="image/*" style="display:none;" onchange="previewProfilePicEdit(this)">
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Nama Lengkap</label>
+                    <input id="ep-fullname" class="auth-input" value="${escHtml(p.fullname || '')}" placeholder="Nama lengkap">
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Nomor HP</label>
+                    <input id="ep-phone" class="auth-input" value="${escHtml(p.phone || '')}" placeholder="08xxxxxxxxxx" inputmode="tel">
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Email (opsional)</label>
+                    <input id="ep-email" class="auth-input" value="${escHtml(p.email || '')}" placeholder="email@contoh.com" inputmode="email">
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Jenis Kelamin</label>
+                    <div class="radio-row">
+                        <label><input type="radio" name="ep-gender" value="Laki-laki" ${p.gender==='Laki-laki'?'checked':''}><span>Laki-laki</span></label>
+                        <label><input type="radio" name="ep-gender" value="Perempuan" ${p.gender==='Perempuan'?'checked':''}><span>Perempuan</span></label>
+                    </div>
+                </div>
+                <p id="ep-error" style="color:#ef4444; font-size:13px; text-align:center; min-height:18px; margin:0 0 8px 0;"></p>
+                <button class="btn-main" onclick="saveEditProfile()">Simpan Profil</button>
+            `);
+            // Stash current photo so saveEditProfile knows the starting value.
+            window.__epPhoto = curPhoto;
+        };
+
+        // Preview a newly picked profile photo inside the edit modal.
+        window.previewProfilePicEdit = async (input) => {
+            if (!input.files[0]) return;
+            const url = await uploadToStorage(input.files[0], 'avatars', 300, 0.6);
+            if (url) {
+                document.getElementById('ep-photo-preview').src = url;
+                window.__epPhoto = url;
+            }
+        };
+
+        window.saveEditProfile = async () => {
+            const fullname = document.getElementById('ep-fullname').value.trim();
+            const phone = document.getElementById('ep-phone').value.trim();
+            const email = document.getElementById('ep-email').value.trim();
+            const genderEl = document.querySelector('input[name="ep-gender"]:checked');
+            const gender = genderEl ? genderEl.value : '';
+            const photo = window.__epPhoto || DEFAULT_AVATAR;
+            const err = document.getElementById('ep-error');
+            if (!fullname) { err.innerText = 'Nama lengkap wajib diisi'; return; }
+            err.innerText = '';
+            const btn = document.querySelector('.btn-main[onclick="saveEditProfile()"]');
+            if (btn) { btn.disabled = true; btn.innerText = 'Menyimpan...'; }
+            try {
+                await update(ref(db, `profiles/${currentUser.uid}`), { fullname, phone, email, gender });
+                await update(ref(db, `users/${currentUser.uid}`), { username: fullname, photo });
+                try { await updateProfile(currentUser, { displayName: fullname, photoURL: photo }); } catch (_) {}
+                showToast('Profil tersimpan');
+                closeModal();
+                loadProfile();
+                listenFeed();
+            } catch (e) {
+                err.innerText = 'Gagal menyimpan: ' + (e && e.message ? e.message : 'kesalahan');
+                if (btn) { btn.disabled = false; btn.innerText = 'Simpan Profil'; }
+            }
+        };
+
+        // ============ ADMIN TOOLS (MASTER/ADMIN only) ============
+        // Admin panel: list all users with block / delete controls + delete any post.
+        window.openAdminPanel = () => {
+            if (!isAdmin()) { showToast('Akses admin diperlukan'); return; }
+            openModal(`
+                <div class="modal-title"><i class="fas fa-user-shield" style="color:#6d28d9;"></i> Panel Admin</div>
+                <div class="modal-sub">Kelola pengguna & postingan. Tindakan tidak dapat dibatalkan.</div>
+                <div id="admin-user-list" style="min-height:60px;"><div style="text-align:center; color:var(--text-muted); padding:20px; font-size:13px;">Memuat...</div></div>
+            `);
+            renderAdminUserList();
+        };
+
+        async function renderAdminUserList() {
+            const wrap = document.getElementById('admin-user-list');
+            if (!wrap) return;
+            const users = Object.values(usersCache);
+            if (!users.length) { wrap.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding:20px; font-size:13px;">Belum ada pengguna.</div>'; return; }
+            // Load block flags for all users in one read.
+            const blkSnap = await get(ref(db, 'blocked'));
+            const blocked = blkSnap.val() || {};
+            wrap.innerHTML = '';
+            users.forEach(u => {
+                const isMe = u.uid === currentUser.uid;
+                const isThisAdmin = (u.role === 'admin') || (isMe && isAdmin());
+                const isBlocked = blocked[u.uid] === true;
+                let actions = '';
+                if (isMe) {
+                    actions = '<span style="font-size:12px; color:var(--text-muted); margin-left:auto;">Anda</span>';
+                } else if (isThisAdmin) {
+                    actions = '<span class="admin-tag" style="margin-left:auto;">Admin</span>';
+                } else {
+                    const blkBtn = isBlocked
+                        ? `<button class="adm-act-btn adm-unblock" title="Buka blokir" onclick="adminUnblockUser('${u.uid}')"><i class="fas fa-unlock"></i></button>`
+                        : `<button class="adm-act-btn adm-block" title="Blokir" onclick="adminBlockUser('${u.uid}')"><i class="fas fa-ban"></i></button>`;
+                    actions = `<div class="adm-act">${blkBtn}<button class="adm-act-btn adm-del" title="Hapus akun (data)" onclick="adminDeleteUser('${u.uid}')"><i class="fas fa-user-slash"></i></button></div>`;
+                }
+                const row = document.createElement('div');
+                row.className = 'settings-menu-item';
+                row.style.cursor = 'default';
+                row.innerHTML = `
+                    <i class="fas fa-circle-user" style="background:#f1f5f9;"></i>
+                    <div><div class="smi-label">${escHtml(u.username || 'User')}${adminBadgeHtml(u.uid)}${isBlocked ? ' <span style="font-size:10px; color:#dc2626; font-weight:700;">(diblokir)</span>' : ''}</div><div class="smi-sub">HP: ${escHtml(u.phone || '-')}</div></div>
+                    ${actions}
+                `;
+                wrap.appendChild(row);
+            });
+        }
+
+        // Delete any post from the feed (admin)
+        window.adminDeletePost = async (pid) => {
+            if (!isAdmin()) return;
+            if (!confirm('Hapus postingan ini secara permanen?')) return;
+            try {
+                await remove(ref(db, `posts/${pid}`));
+                showToast('Postingan dihapus');
+            } catch (e) { showToast('Gagal menghapus: ' + e.message); }
+        };
+
+        // Block a user — they will be kicked out on next login and cannot use the app.
+        window.adminBlockUser = async (uid) => {
+            if (!isAdmin()) return;
+            const name = (usersCache[uid] && usersCache[uid].username) || 'User';
+            if (!confirm(`Blokir akun "${name}"? Pengguna tidak dapat masuk lagi.`)) return;
+            try {
+                await set(ref(db, `blocked/${uid}`), true);
+                showToast('Pengguna diblokir');
+                renderAdminUserList();
+            } catch (e) { showToast('Gagal memblokir: ' + e.message); }
+        };
+
+        // Unblock a user
+        window.adminUnblockUser = async (uid) => {
+            if (!isAdmin()) return;
+            if (!confirm('Buka blokir akun ini?')) return;
+            try {
+                await remove(ref(db, `blocked/${uid}`));
+                showToast('Blokir dibuka');
+                renderAdminUserList();
+            } catch (e) { showToast('Gagal membuka blokir: ' + e.message); }
+        };
+
+        // Delete a user's app data (client-side). The Firebase Auth record itself can only
+        // be removed via the Admin SDK; here we wipe their visible app data so the account
+        // effectively disappears from the app.
+        window.adminDeleteUser = async (uid) => {
+            if (!isAdmin()) return;
+            const name = (usersCache[uid] && usersCache[uid].username) || 'User';
+            if (!confirm(`Hapus akun "${name}"? Semua data pengguna (profil, dompet, postingan) akan dihapus permanen.`)) return;
+            try {
+                // Remove their posts
+                const postsSnap = await get(ref(db, 'posts'));
+                const posts = postsSnap.val() || {};
+                await Promise.all(Object.keys(posts).filter(pid => posts[pid].uid === uid).map(pid => remove(ref(db, `posts/${pid}`))));
+                // Remove profile/wallet/users/account_index/notifications/blocked records
+                await remove(ref(db, `users/${uid}`));
+                await remove(ref(db, `profiles/${uid}`));
+                await remove(ref(db, `wallets/${uid}`));
+                await remove(ref(db, `account_index/${uid}`));
+                await remove(ref(db, `notifications/${uid}`));
+                await remove(ref(db, `followers/${uid}`));
+                await remove(ref(db, `following/${uid}`));
+                showToast('Akun dihapus');
+                renderAdminUserList();
+            } catch (e) { showToast('Gagal menghapus: ' + e.message); }
+        };
+
+        // ============================================================
+        //  SQL_SETUP (run once in the Supabase SQL editor)
+        // ============================================================
+        //  -- 1. Storage table: one row per data node (the app's whole "database").
+        //  create table if not exists public.nodes (
+        //    path text primary key,
+        //    value jsonb,
+        //    ts bigint not null default 0
+        //  );
+        //  create index if not exists nodes_path_like_idx on public.nodes (path text_pattern_ops);
+        //
+        //  -- 2. Compare-and-swap RPC used by runTransaction (atomic wallet balance updates).
+        //  create or replace function public.cas_update(
+        //    p_path text, p_expected_ts bigint, p_new_value jsonb, p_new_ts bigint
+        //  ) returns int language plpgsql as $$
+        //  declare ok int;
+        //  begin
+        //    update public.nodes set value = p_new_value, ts = p_new_ts
+        //      where path = p_path and coalesce(ts, 0) = p_expected_ts
+        //      returning 1 into ok;
+        //    if ok is null and p_expected_ts = 0 then
+        //      insert into public.nodes(path, value, ts)
+        //        values (p_path, p_new_value, p_new_ts)
+        //        on conflict (path) do nothing
+        //        returning 1 into ok;
+        //    end if;
+        //    return coalesce(ok, 0);
+        //  end; $$;
+        //
+        //  -- 3. Enable Realtime on the table (so onValue() live updates work).
+        //  alter publication supabase_realtime add table public.nodes;
+        //
+        //  -- 4. Row Level Security. Simplest working policy (auth users can read/write all
+        //  --    app nodes). Tighten per-path in production as needed.
+        //  alter table public.nodes enable row level security;
+        //  create policy "authed full access" on public.nodes
+        //    for all to authenticated using (true) with check (true);
+        //
+        //  -- 5. Auth: in Supabase dashboard set "Confirm email" = OFF so the phone-based
+        //  --    synthetic emails (e.g. 08xxxxx@beruang.phone) can sign in immediately.
+        //
+        //  ============================================================
+        //  STORAGE SETUP (run once in the Supabase SQL editor / dashboard)
+        //  ============================================================
+        //  The app uploads post images, stories, and avatars to a Storage bucket
+        //  named "media" (see STORAGE_BUCKET). If the bucket is missing the app
+        //  falls back to storing base64 in the database, so create the bucket for
+        //  best performance:
+        //
+        //  -- 1. Create a PUBLIC bucket named "media":
+        //  insert into storage.buckets (id, name, public)
+        //    values ('media', 'media', true) on conflict (id) do nothing;
+        //
+        //  -- 2. Allow authenticated users to upload, and anyone to read:
+        //  create policy "media read" on storage.objects
+        //    for select using (bucket_id = 'media');
+        //  create policy "media upload" on storage.objects
+        //    for insert to authenticated with check (bucket_id = 'media');
+        //  create policy "media update own" on storage.objects
+        //    for update to authenticated using (bucket_id = 'media');
+        //  create policy "media delete own" on storage.objects
+        //    for delete to authenticated using (bucket_id = 'media');
+        //
+        //  -- 3. (Optional) S3 protocol credentials supplied by the user enable
+        //  --    connecting to the same bucket over the S3 API:
+        //  --    Endpoint:  https://jzyfxdysukzvnfllcbvq.storage.supabase.co/storage/v1/s3
+        //  --    Region:    ap-south-1
+        //  --    Access key id + secret are created in Dashboard > Storage > S3 Connection.
+        //  --    The browser app uses the JS client (sb.storage), not the S3 endpoint,
+        //  --    so the S3 keys are only needed for server-side / CLI uploads.
+    </script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+PANDUAN UPLOAD BERUANG KE GOOGLE PLAY — ALTOMEDIA
+====================================================
+Tanggal: 15 Agustus 2026
+Aplikasi: BERUANG
+Package: com.altomedia.beruang
+Developer: ALTOMEDIA
+Email Play Console: altomediaindonesia@gmail.com
+
+------------------------------------------------------------
+BAGIAN 1 — PERSIAPAN AKUN GOOGLE PLAY DEVELOPER
+------------------------------------------------------------
+1. Buka https://play.google.com/console dan login dengan akun
+   altomediaindonesia@gmail.com.
+2. Daftar sebagai Developer (biaya satu kali ~USD 25) jika belum.
+   - Nama developer yang ditampilkan: ALTOMEDIA
+   - Kontak publik: altomediaindonesia@gmail.com
+   - Situs web (opsional): isi jika ada.
+3. Lengkapi verifikasi identitas (KTP/DIN) sesuai permintaan Google.
+   Proses verifikasi biasanya 1-3 hari kerja.
+
+------------------------------------------------------------
+BAGIAN 2 — BUAT APLIKASI BARU
+------------------------------------------------------------
+1. Di Play Console → "Pilih aplikasi" → "Buat aplikasi".
+2. Isi:
+   - Nama aplikasi: BERUANG
+   - Bahasa default: Indonesia (id) atau English
+   - Aplikasi atau Game: Aplikasi
+   - Gratis atau Berbayar: Gratis
+3. Deklarasi: centang kepatuhan hukum AS ekspor dan kebijakan
+   pengguna Google Play.
+
+------------------------------------------------------------
+BAGIAN 3 — KONFIGURASI APLIKASI (App signing)
+------------------------------------------------------------
+Google Play App Signing (WAJIB untuk AAB):
+1. Buka aplikasi BERUANG → "Penyiapan" → "Integritas aplikasi".
+2. Aktifkan "Play App Signing".
+3. Pilih "Gunakan kunci yang dibuat Google" ATAU "Upload key".
+   Rekomendasi: upload keystore ALTOMEDIA.jks sebagai "Upload key".
+4. Jika diminta upload-cert, ekspor upload certificate dari
+   ALTOMEDIA.jks:
+   keytool -exportcert -keystore ALTOMEDIA.jks -alias kdsmedia \
+     -file upload_certificate.pem -storepass Kdsmedia@123
+   Lalu unggah file .pem ke Play Console.
+5. SHA-256 fingerprint (verifikasi):
+   EB:E1:A0:A5:24:2E:9B:CA:9A:E8:57:EE:1D:A4:C6:CC:51:53:C6:91:0D:EC:52:E5:94:CA:7A:D3:5A:28:2D:AB
+
+------------------------------------------------------------
+BAGIAN 4 — UPLOAD BUNDLE (.AAB)
+------------------------------------------------------------
+File rilis: ALTOMEDIA/release/BERUANG-v1.0-release.aab
+1. Play Console → BERUANG → "Produksi" → "Buat rilis baru".
+2. Pilih jalur: Produksi (atau mulai dari Pengujian Tertutup).
+3. U n g a h file: BERUANG-v1.0-release.aab
+4. Isi "Catatan rilis":
+   - Rilis awal BERUANG v1.0.0 (lihat RELEASE_NOTES.txt).
+5. Simpan → "Tinjau rilis" → "Mulai peluncuran ke Produksi".
+
+------------------------------------------------------------
+BAGIAN 5 — DAFTAR TOKO (Store Listing)
+------------------------------------------------------------
+Lihat detail lengkap di STORE_LISTING.txt. Ringkasan:
+- Nama aplikasi: BERUANG
+- Nama singkat (50): BERUANG
+- Deskripsi singkat (80): Sosial media ringan, kocak, dan beruang-beruang.
+- Deskripsi lengkap (4000): lihat STORE_LISTING.txt.
+- Ikon aplikasi: ALTOMEDIA/icon.png (512x512)
+- Fitur grafis: ALTOMEDIA/store-graphics/feature-graphic-1024x500.png
+- Screenshot telepon: ALTOMEDIA/store-graphics/screenshot-1-1080x1920.png
+  (minimal 2, maks 8)
+- Kategori: Sosial
+- Tag: sosial, berbagi foto, chat
+- Konten dewasa: Tidak
+- Iklan: Ya (mengandung iklan — AdMob)
+
+------------------------------------------------------------
+BAGIAN 6 — KEBIJAKAN PRIVASI
+------------------------------------------------------------
+1. Host PRIVACY_POLICY.md di URL publik (mis. GitHub Pages atau situs
+   developer). Contoh:
+   https://altomedia.github.io/beruang/privacy-policy
+2. Play Console → "Kebijakan dan program" → "Kebijakan privasi" →
+   masukkan URL tersebut.
+3. Tambahkan link yang sama di dalam aplikasi (pengaturan → privasi).
+
+------------------------------------------------------------
+BAGIAN 7 — IKLAN (AdMob)
+------------------------------------------------------------
+1. Pastikan aplikasi sudah terdaftar di AdMob dengan App ID:
+   ca-app-pub-6881903056221433~1794482255
+2. Unit iklan yang dipakai: banner + rewarded (ID unit lihat index.html).
+3. Tautkan AdMob ke Play Console via "Kebijakan dan program" → "Iklan".
+4. PATUHI kebijakan AdMob: jangan pakai iklan yang menutupi konten,
+   label "Iklan" yang menyesatkan, atau klik paksa.
+
+------------------------------------------------------------
+BAGIAN 8 — RATING ISI (Content Rating)
+------------------------------------------------------------
+1. Isi kuesioner rating isi (IARC) di Play Console → "Rating isi".
+2. Jawab jujur; hasil biasanya "PEGI 3" / "Everyone".
+3. Konten: tanpa kekerasan, tanpa judi, tanpa dewasa.
+
+------------------------------------------------------------
+BAGIAN 9 — TARGET AUDIENCE & DATA SAFETY
+------------------------------------------------------------
+Target audience:
+- Rentang usia: 13+ (tidak ditujukan untuk anak <13).
+- Pilih "Aplikasi tidak ditujukan khusus untuk anak-anak".
+
+Data safety (Data keamanan):
+- Mengumpulkan: data perangkat, data penggunaan, ID perangkat (iklan).
+- Data dibagikan dengan: Firebase/Supabase, Google AdMob.
+- Enkripsi transit: Ya.
+- Permintaan penghapusan: Ya (via email).
+
+------------------------------------------------------------
+BAGIAN 10 — PENGAJUAN DAN TINJAUAN
+------------------------------------------------------------
+1. Setelah semua lengkap (listing, AAB, content rating, data safety,
+   privacy policy), tekan "Kirim untuk tinjauan".
+2. Proses tinjauan Google: 1-7 hari kerja.
+3. Jika ditolak, perbaiki sesuai alasan di Play Console dan unggah ulang.
+4. Setelah disetujui, aplikasi otomatis live di Produksi.
+
+------------------------------------------------------------
+RINGKASAN FILE ARTIFACT
+------------------------------------------------------------
+ALTOMEDIA/
+├── ALTOMEDIA.jks                      (keystore signing)
+├── PRIVACY_POLICY.md
+├── TERMS_OF_SERVICE.md
+├── PANDUAN_UPLOAD_PLAY.txt            (file ini)
+├── RELEASE_NOTES.txt
+├── STORE_LISTING.txt
+├── ARTIKEL_BLOG.md
+├── icon.png                           (512x512 ikon toko)
+├── store-graphics/
+│   ├── feature-graphic-1024x500.png
+│   └── screenshot-1-1080x1920.png
+└── release/
+    ├── BERUANG-v1.0-release.apk       (APK signed)
+    └── BERUANG-v1.0-release.aab       (Bundle Play Store)
+
+SELESAI — BERUANG siap diunggah ke Google Play.

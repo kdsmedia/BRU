@@ -1,0 +1,69 @@
+RELEASE NOTES — BERUANG
+==================================================
+Versi: 1.0.0 (versionCode 1)
+Tanggal rilis: 15 Agustus 2026
+Package: com.altomedia.beruang
+Developer: ALTOMEDIA
+
+------------------------------------------------------------
+BAHASA INDONESIA
+------------------------------------------------------------
+BERUANG v1.0.0 — Rilis awal!
+
+Selamat datang di BERUANG, aplikasi sosial ringan dan menghibur
+dari ALTOMEDIA. Bagikan momen Anda, terhubung dengan teman, dan
+nikmati pengalaman sosial yang simpel.
+
+Fitur utama:
+- Umpan beranda untuk melihat kiriman terbaru.
+- Unggah kiriman dengan foto dan caption.
+- Berkomentar pada kiriman.
+- Obrolan/chat dalam aplikasi.
+- Profil pengguna dengan tier langganan.
+- Sistem tier dengan batas harian:
+    Star (5/hari), Bronze (10), Silver (20), Gold (50),
+    Master (tak terbatas).
+- Iklan reward (rewarded) sukarela untuk mendapatkan kuota
+  tambahan saat batas harian tercapai.
+- Banner iklan native yang tidak mengganggu konten.
+
+Dukungan teknis:
+- Android minSdk 23 (Android 6.0+) hingga targetSdk 37.
+- Dibangun dengan Capacitor + Firebase/Supabase backend.
+- Integrasi Google AdMob.
+
+Catatan:
+- Aplikasi gratis dan mengandung iklan.
+- Untuk pertanyaan: altomediaindonesia@gmail.com.
+
+------------------------------------------------------------
+ENGLISH
+------------------------------------------------------------
+BERUANG v1.0.0 — Initial release!
+
+Welcome to BERUANG, a lightweight and entertaining social app
+from ALTOMEDIA. Share your moments, connect with friends, and
+enjoy a simple social experience.
+
+Key features:
+- Home feed to browse the latest posts.
+- Upload posts with photos and captions.
+- Comment on posts.
+- In-app chat.
+- User profile with subscription tiers.
+- Tier system with daily limits:
+    Star (5/day), Bronze (10), Silver (20), Gold (50),
+    Master (unlimited).
+- Optional rewarded ads to grant extra daily quota.
+- Non-intrusive native banner ads.
+
+Technical notes:
+- Android minSdk 23 (Android 6.0+) up to targetSdk 37.
+- Built with Capacitor + Firebase/Supabase backend.
+- Google AdMob integration.
+
+Notes:
+- Free app with ads.
+- Support: altomediaindonesia@gmail.com.
+
+==================================================

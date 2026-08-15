@@ -1,0 +1,121 @@
+STORE LISTING — BERUANG (Google Play)
+==================================================
+Nama aplikasi: BERUANG
+Nama singkat (maks 50 karakter): BERUANG
+Package: com.altomedia.beruang
+Developer: ALTOMEDIA
+
+------------------------------------------------------------
+DESKRIPSI SINGKAT (maks 80 karakter)
+------------------------------------------------------------
+Sosial media ringan, kocak, dan beruang-beruang. Bagikan momenmu!
+
+------------------------------------------------------------
+DESKRIPSI LENGKAP (maks 4000 karakter)
+------------------------------------------------------------
+BERUANG — Sosial Media Ringan & Menghibur by ALTOMEDIA
+
+Halo, para beruang! Selamat datang di BERUANG, aplikasi sosial yang
+ringan, simpel, dan menghibur. BERUANG dirancang untuk Anda yang ingin
+berbagi momen, terhubung dengan teman, dan menikmati pengalaman sosial
+tanpa ribet. Tidak ada antarmuka yang berat, tidak ada notifikasi
+berisik tanpa henti—cukup kiriman, komentar, obrolan, dan beruang.
+
+KENAPA BERUANG?
+
+• Ringan dan Cepat
+  BERUANG dibangun untuk berjalan mulus bahkan di perangkat kelas
+  menengah ke bawah dan koneksi data terbatas. Aplikasi kecil, hemat
+  data, dan responsif.
+
+• Umpan Beranda
+  Lihat kiriman terbaru dari pengguna lain di umpan beranda. Gulir
+  tanpa henti, beri reaksi, dan temukan konten baru setiap hari.
+
+• Unggah Momen
+  Bagikan foto dan cerita Anda dengan mudah. Pilih gambar dari
+  galeri, tambahkan caption, lalu unggah—selesai.
+
+• Komentar dan Interaksi
+  Sampaikan pendapat Anda melalui komentar pada setiap kiriman.
+  Bangun percakapan dan terhubung dengan komunitas.
+
+• Obrolan Dalam Aplikasi
+  Ngobrol langsung dengan pengguna lain melalui fitur chat bawaan.
+  Cepat, privat, dan praktis.
+
+• Sistem Tier dengan Kuota Harian
+  BERUANG menerapkan tier langganan untuk menjaga kualitas layanan
+  dan mencegah spam:
+    - Star   : 5 aksi/hari
+    - Bronze : 10 aksi/hari
+    - Silver : 20 aksi/hari
+    - Gold   : 50 aksi/hari
+    - Master : tak terbatas
+  Saat kuota harian habis, Anda dapat menonton iklan reward secara
+  sukarela untuk mendapatkan kuota tambahan. Tidak ada paksaan—pilihan
+  ada di tangan Anda.
+
+• Iklan yang Tidak Mengganggu
+  Kami menampilkan iklan banner native yang terintegrasi rapi sehingga
+  tidak menutupi konten. Pengalaman Anda tetap menjadi prioritas.
+
+PRIVASI & KEAMANAN
+
+BERUANG menghormati privasi Anda. Data yang dikumpulkan terbatas pada
+keperluan operasional akun, konten pengguna, dan penyajian iklan via
+Google AdMob. Kami tidak menjual data pribadi Anda. Detail lengkap
+tersedia dalam Kebijakan Privasi pada halaman toko dan di dalam
+aplikasi.
+
+DIRANCANG UNTUK SEMUA
+
+BERUANG cocok untuk remaja (13+) hingga dewasa yang mencari sosial
+media sederhana tanpa kerumitan. Antarmuka bersih, navigasi jelas, dan
+konten yang Anda kendalikan.
+
+DETAIL TEKNIS
+
+• Ukuran aplikasi: ringan (~7 MB APK)
+• Kompatibilitas: Android 6.0 (API 23) ke atas, target API 37
+• Dibangun dengan Capacitor, Firebase/Supabase, dan Google AdMob
+• Bahasa: Indonesia & English
+
+HUBUNGI KAMI
+
+Punya masukan, laporan bug, atau pertanyaan? Hubungi ALTOMEDIA di
+altomediaindonesia@gmail.com. Kami terus mengembangkan BERUANG agar
+semakin baik untuk para beruang.
+
+Unduh BERUANG sekarang dan jadilah bagian dari komunitas beruang yang
+ringan dan menyenangkan!
+
+------------------------------------------------------------
+KATEGORI & TAG
+------------------------------------------------------------
+Kategori utama: Sosial (Social)
+Kategori sekunder: (opsional) Hiburan
+Tag: sosial, berbagi foto, chat, komunitas
+
+------------------------------------------------------------
+IKON & GRAFIS
+------------------------------------------------------------
+Ikon aplikasi (512x512): ALTOMEDIA/icon.png
+Feature graphic (1024x500): ALTOMEDIA/store-graphics/feature-graphic-1024x500.png
+Screenshot telepon (1080x1920): ALTOMEDIA/store-graphics/screenshot-1-1080x1920.png
+  → Disarankan unggah minimal 2 screenshot (screenshot-1 + ulang/variasi).
+
+------------------------------------------------------------
+KONTEN & RATING
+------------------------------------------------------------
+Konten dewasa: TIDAK
+Mengandung iklan: YA (Google AdMob)
+Rating target: Everyone / PEGI 3
+Target audience usia: 13+
+
+------------------------------------------------------------
+KONTAK PUBLIK
+------------------------------------------------------------
+Email developer: altomediaindonesia@gmail.com
+Situs privasi: (isi URL hosting PRIVACY_POLICY.md)
+==================================================
