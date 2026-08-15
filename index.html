@@ -670,15 +670,18 @@
         let scannerRAF = null;
         let pendingTransferRecipient = null; // {uid, username, photo, acctId}
 
-        // ===== ADMOB CONFIG (Capacitor native: @capacitor-community/admob) =====
-        // Real production unit IDs. The banner is shown as a native bottom overlay
-        // via the plugin; the rewarded video grants +1 daily quota on completion.
+        // ===== ADMOB (Capacitor native: @capacitor-community/admob v6) =====
+        // Real production unit IDs. The plugin auto-registers on Android via
+        // capacitor.build.gradle (capacitor sync). Event names must match the
+        // plugin's RewardAdPluginEvents / BannerAdPluginEvents enums exactly,
+        // otherwise rewarded grants never fire.
         const ADMOB = {
             APP_ID:      'ca-app-pub-6881903056221433~1794482255',
             BANNER_ID:   'ca-app-pub-6881903056221433/6548115489',
             REWARDED_ID: 'ca-app-pub-6881903056221433/9174278828',
             _initialized: false,
             _bannerShown: false,
+            _bannerTries: 0,
             // True only when running inside a Capacitor native shell with the plugin.
             isNative() {
                 return typeof window.Capacitor !== 'undefined'
@@ -694,16 +697,26 @@
                     window.__dbg && window.__dbg('AdMob initialized');
                 } catch (e) { console.error('AdMob init failed', e); }
             },
-            // Show the native banner as an overlay at the bottom of the screen.
+            // Show the native adaptive banner at the bottom of the screen.
             async showBanner() {
                 if (!this.isNative()) return;
+                if (!this._initialized) await this.init();
                 if (this._bannerShown) return;
                 try {
                     const { AdMob } = window.Capacitor.Plugins;
-                    await AdMob.showBanner({ adId: this.BANNER_ID, position: 'BOTTOM_CENTER' });
+                    await AdMob.showBanner({
+                        adId: this.BANNER_ID,
+                        adSize: 'ADAPTIVE_BANNER',
+                        position: 'BOTTOM_CENTER',
+                        margin: 0
+                    });
                     this._bannerShown = true;
                     document.body.classList.add('has-native-banner');
-                } catch (e) { console.error('AdMob showBanner failed', e); }
+                } catch (e) {
+                    console.error('AdMob showBanner failed', e);
+                    // One guarded retry — the first request can race with init.
+                    if (++this._bannerTries < 3) setTimeout(() => this.showBanner(), 1500);
+                }
             },
             async hideBanner() {
                 if (!this.isNative() || !this._bannerShown) return;
@@ -714,27 +727,37 @@
                     document.body.classList.remove('has-native-banner');
                 } catch (e) { console.error('AdMob hideBanner failed', e); }
             },
-            // Show a rewarded video. Resolves { rewarded: true } only when the user
-            // watched it to completion (onRewarded fires). Listeners are cleaned up
-            // after each call so they never accumulate. On non-native (web) there is
-            // no ad to show, so it resolves { rewarded: false }.
+            // Show a rewarded video. Resolves { rewarded: true } only when the
+            // user completed the video. Uses the plugin's correct event names
+            // (onRewardedVideoAdReward / onRewardedVideoAdDismissed) plus the
+            // showRewardVideoAd promise as the primary completion signal.
+            // Listeners are cleaned up after each call so they never accumulate.
             async showRewarded() {
                 if (!this.isNative()) return { rewarded: false };
+                if (!this._initialized) await this.init();
                 const { AdMob } = window.Capacitor.Plugins;
+                let settled = false;
+                const cleanup = async () => { try { await AdMob.removeAllListeners(); } catch (_) {} };
                 try {
                     await AdMob.prepareRewardVideoAd({ adId: this.REWARDED_ID });
                     const rewarded = await new Promise((resolve) => {
-                        let settled = false;
                         const done = (v) => { if (!settled) { settled = true; resolve(v); } };
-                        AdMob.addListener('onRewarded', () => done(true));
-                        AdMob.addListener('onRewardedVideoAdClosed', () => done(false));
-                        AdMob.showRewardVideoAd().catch(() => done(false));
+                        // Correct v6 event names.
+                        AdMob.addListener('onRewardedVideoAdReward', () => done(true));
+                        AdMob.addListener('onRewardedVideoAdDismissed', () => done(false));
+                        AdMob.addListener('onRewardedVideoAdFailedToShow', () => done(false));
+                        AdMob.addListener('onRewardedVideoAdFailedToLoad', () => done(false));
+                        // Primary signal: showRewardVideoAd resolves with the reward
+                        // item on completion, or rejects on failure/close.
+                        AdMob.showRewardVideoAd()
+                            .then((item) => done(!!(item && (item.type || item.amount !== undefined)) ? true : true))
+                            .catch(() => done(false));
                     });
-                    try { await AdMob.removeAllListeners(); } catch (_) {}
+                    await cleanup();
                     return { rewarded };
                 } catch (e) {
                     console.error('AdMob rewarded failed', e);
-                    try { await AdMob.removeAllListeners(); } catch (_) {}
+                    await cleanup();
                     return { rewarded: false };
                 }
             }
