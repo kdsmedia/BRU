@@ -679,9 +679,16 @@
             APP_ID:      'ca-app-pub-6881903056221433~1794482255',
             BANNER_ID:   'ca-app-pub-6881903056221433/6548115489',
             REWARDED_ID: 'ca-app-pub-6881903056221433/9174278828',
+            INTERSTITIAL_ID: 'ca-app-pub-6881903056221433/8432042798',
+            // Minimum gap between two interstitial impressions (ms). 15 minutes.
+            INTERSTITIAL_COOLDOWN: 15 * 60 * 1000,
             _initialized: false,
             _bannerShown: false,
             _bannerTries: 0,
+            _interReady: false,
+            _interPreparing: false,
+            _lastInterstitialTs: 0,
+            _interListenersBound: false,
             // True only when running inside a Capacitor native shell with the plugin.
             isNative() {
                 return typeof window.Capacitor !== 'undefined'
@@ -695,6 +702,8 @@
                     await AdMob.initialize({ initializeForTesting: false });
                     this._initialized = true;
                     window.__dbg && window.__dbg('AdMob initialized');
+                    // Kick off interstitial preload as soon as the SDK is ready.
+                    this.prepareInterstitial();
                 } catch (e) { console.error('AdMob init failed', e); }
             },
             // Show the native adaptive banner at the bottom of the screen.
@@ -726,6 +735,59 @@
                     this._bannerShown = false;
                     document.body.classList.remove('has-native-banner');
                 } catch (e) { console.error('AdMob hideBanner failed', e); }
+            },
+            // ===== INTERSTITIAL =====
+            // Preload a full-screen interstitial. Idempotent: no-op if already
+            // ready or currently preparing. Event names match the plugin's
+            // InterstitialAdPluginEvents enum exactly.
+            async prepareInterstitial() {
+                if (!this.isNative()) return;
+                if (!this._initialized) await this.init();
+                if (this._interReady || this._interPreparing) return;
+                const { AdMob } = window.Capacitor.Plugins;
+                // Bind the load/dismiss listeners once — they live for the app
+                // lifetime and track readiness rather than per-show.
+                if (!this._interListenersBound) {
+                    try {
+                        AdMob.addListener('interstitialAdLoaded', () => { this._interReady = true; this._interPreparing = false; window.__dbg && window.__dbg('interstitial loaded'); });
+                        AdMob.addListener('interstitialAdFailedToLoad', () => { this._interReady = false; this._interPreparing = false; });
+                        AdMob.addListener('interstitialAdDismissed', () => {
+                            this._interReady = false;
+                            // Preload the next one so a fresh ad is ready for the next window.
+                            setTimeout(() => this.prepareInterstitial(), 1500);
+                        });
+                        AdMob.addListener('interstitialAdFailedToShow', () => { this._interReady = false; setTimeout(() => this.prepareInterstitial(), 1500); });
+                        this._interListenersBound = true;
+                    } catch (e) { console.error('AdMob interstitial listener bind failed', e); }
+                }
+                try {
+                    this._interPreparing = true;
+                    await AdMob.prepareInterstitial({ adId: this.INTERSTITIAL_ID });
+                } catch (e) {
+                    this._interPreparing = false;
+                    console.error('AdMob prepareInterstitial failed', e);
+                }
+            },
+            // Show a full-screen interstitial only if (a) an ad is loaded and
+            // ready, and (b) at least INTERSTITIAL_COOLDOWN ms have passed since
+            // the last impression. Returns true when an ad was actually shown.
+            async maybeShowInterstitial() {
+                if (!this.isNative()) return false;
+                if (!this._interReady) { this.prepareInterstitial(); return false; }
+                const now = Date.now();
+                if (now - this._lastInterstitialTs < this.INTERSTITIAL_COOLDOWN) return false;
+                try {
+                    const { AdMob } = window.Capacitor.Plugins;
+                    await AdMob.showInterstitial();
+                    this._lastInterstitialTs = Date.now();
+                    this._interReady = false;   // consumed; Dismissed listener will reload
+                    return true;
+                } catch (e) {
+                    console.error('AdMob showInterstitial failed', e);
+                    this._interReady = false;
+                    setTimeout(() => this.prepareInterstitial(), 1500);
+                    return false;
+                }
             },
             // Show a rewarded video. Resolves { rewarded: true } only when the
             // user completed the video. Uses the plugin's correct event names
@@ -1336,6 +1398,9 @@
         }
 
         window.nav = (viewId) => {
+            // Full-screen interstitial: only fires on a real view change, only
+            // if an ad is preloaded & ready, and at most once per 15 minutes.
+            if (viewId !== currentView) ADMOB.maybeShowInterstitial();
             currentView = viewId;
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
