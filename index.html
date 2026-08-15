@@ -664,7 +664,7 @@
         let myAcctId = '000000';
         let myTier = 'Star';
         let myRole = 'user'; // 'user' | 'admin'
-        let myUsage = { date: '', posts: 0, comments: 0 }; // daily counters
+        let myUsage = { date: '', posts: 0, comments: 0, adGrants: { posts: 0, comments: 0 } }; // daily counters
         let scannerStream = null;
         let scannerRAF = null;
         let pendingTransferRecipient = null; // {uid, username, photo, acctId}
@@ -873,10 +873,16 @@
                 myRole = w.role === 'admin' ? 'admin' : 'user';
                 // daily usage: reset if date changed
                 const u = w.usage || {};
+                const zeroGrants = { posts: 0, comments: 0 };
                 if (u.date !== todayStr()) {
-                    myUsage = { date: todayStr(), posts: 0, comments: 0 };
+                    myUsage = { date: todayStr(), posts: 0, comments: 0, adGrants: { ...zeroGrants } };
                 } else {
-                    myUsage = { date: u.date, posts: Number(u.posts) || 0, comments: Number(u.comments) || 0 };
+                    myUsage = {
+                        date: u.date,
+                        posts: Number(u.posts) || 0,
+                        comments: Number(u.comments) || 0,
+                        adGrants: (u.adGrants && typeof u.adGrants === 'object') ? { posts: Number(u.adGrants.posts)||0, comments: Number(u.adGrants.comments)||0 } : { ...zeroGrants }
+                    };
                 }
                 const balEl = document.getElementById('wallet-balance');
                 const idEl = document.getElementById('wallet-acct-id');
@@ -905,22 +911,67 @@
         }
 
         // ===== DAILY USAGE / LIMIT CHECKS =====
-        // Returns { ok, used, limit } for the given action ('posts' | 'comments')
+        // adGrants tracks extra post/comment chances earned via rewarded ads.
+        // It lives inside the daily usage object so it resets together with
+        // posts/comments when the date changes. Master tier is unlimited and
+        // never needs grants.
+        function _todayGrants(action) {
+            if (myUsage.date !== todayStr()) return 0;
+            return (myUsage.adGrants && myUsage.adGrants[action]) || 0;
+        }
+        // Returns { ok, used, limit, effective, grants } for 'posts' | 'comments'.
         function checkLimit(action) {
             const tier = getTier(myTier);
             const limit = action === 'posts' ? tier.postLimit : tier.commentLimit;
             const used = action === 'posts' ? myUsage.posts : myUsage.comments;
-            if (limit === Infinity) return { ok: true, used: used, limit: Infinity };
-            return { ok: used < limit, used: used, limit: limit };
+            if (limit === Infinity) return { ok: true, used: used, limit: Infinity, effective: Infinity, grants: 0 };
+            const grants = _todayGrants(action);
+            const effective = limit + grants;
+            return { ok: used < effective, used: used, limit: limit, effective: effective, grants: grants };
         }
 
         // Increment today's counter for an action and persist (resets date if needed)
         async function recordUsage(action) {
-            if (myUsage.date !== todayStr()) myUsage = { date: todayStr(), posts: 0, comments: 0 };
+            if (myUsage.date !== todayStr()) myUsage = { date: todayStr(), posts: 0, comments: 0, adGrants: { posts: 0, comments: 0 } };
             if (action === 'posts') myUsage.posts += 1; else myUsage.comments += 1;
             await update(ref(db, `wallets/${currentUser.uid}/usage`), {
                 date: myUsage.date, posts: myUsage.posts, comments: myUsage.comments
             });
+        }
+
+        // Grant +1 extra chance for an action via a rewarded ad. Persisted so it
+        // survives reloads until used (resets with the daily usage date).
+        async function grantAdQuota(action) {
+            if (myUsage.date !== todayStr()) myUsage = { date: todayStr(), posts: 0, comments: 0, adGrants: { posts: 0, comments: 0 } };
+            if (!myUsage.adGrants) myUsage.adGrants = { posts: 0, comments: 0 };
+            myUsage.adGrants[action] = (myUsage.adGrants[action] || 0) + 1;
+            await update(ref(db, `wallets/${currentUser.uid}/usage`), {
+                date: myUsage.date, adGrants: myUsage.adGrants
+            });
+        }
+
+        // Offer a rewarded ad to earn +1 chance for the given action.
+        // Resolves true if a bonus chance was granted.
+        async function promptRewardedForQuota(action) {
+            const label = action === 'posts' ? 'postingan' : 'komentar';
+            const ok = await new Promise((res) => {
+                openModal(`<div class="modal-title">Batas ${label} harian tercapai</div>
+                    <div style="margin-top:12px; font-size:14px; color:var(--text-muted); line-height:1.5;">
+                        Tonton iklan singkat untuk mendapatkan <b>+1 kesempatan ${label}</b> hari ini.
+                    </div>
+                    <div style="display:flex; gap:10px; margin-top:18px;">
+                        <button class="btn-sec" style="flex:1;" onclick="closeModal(); window.__rqResolve(false);">Nanti saja</button>
+                        <button class="btn-main" style="flex:1; margin-top:0;" onclick="closeModal(); window.__rqResolve(true);">Tonton Iklan</button>
+                    </div>`);
+                window.__rqResolve = res;
+            });
+            if (!ok) return false;
+            showToast('Memuat iklan...');
+            const { rewarded } = await ADMOB.showRewarded();
+            if (!rewarded) { showToast('Iklan tidak selesai. Coba lagi.'); return false; }
+            await grantAdQuota(action);
+            showToast(`+1 kesempatan ${label} ditambahkan!`);
+            return true;
         }
 
         // Award points atomically
