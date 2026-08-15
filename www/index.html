@@ -59,6 +59,7 @@
         .story-card img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
         .story-card.add { background: #fff; border: 2px dashed var(--bg-nav); display: flex; align-items: center; justify-content: center; color: var(--bg-nav); }
         .post-card { margin: 12px 12px 22px 12px; padding: 0; border-radius: 18px; box-shadow: 0 4px 18px rgba(15,23,42,0.07); background: white; overflow: hidden; border: 1px solid #e9eef5; }
+        .post-card.post-pinned { border: 2px solid #eab308; box-shadow: 0 4px 18px rgba(234,179,8,0.18); }
         .post-header { display: flex; align-items: center; gap: 12px; padding: 13px 15px; }
         .p-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid #eaeef3; flex-shrink: 0; }
         .post-img { width: 100%; max-height: 560px; object-fit: cover; display: block; background: #f1f5f9; }
@@ -1589,7 +1590,13 @@
             const container = document.getElementById('feed-container');
             container.innerHTML = "";
             if(!data) { container.innerHTML = "<div style='text-align:center; margin-top:50px; color:gray; font-size:14px;'>Nothing here yet.</div>"; return; }
-            const posts = Object.entries(data).reverse();
+            const posts = Object.entries(data);
+            // Pinned posts always render first, then the rest in reverse-chronological order.
+            posts.sort((a, b) => {
+                const ap = a[1].pinned ? 1 : 0, bp = b[1].pinned ? 1 : 0;
+                if (ap !== bp) return bp - ap;            // pinned first
+                return (b[1].timestamp || 0) - (a[1].timestamp || 0); // newest next
+            });
             posts.forEach(([pid, post]) => {
                     const u = usersCache[post.uid] || {username: 'Loading...', photo: DEFAULT_AVATAR};
                     const isLiked = post.likes && post.likes[currentUser.uid];
@@ -1610,9 +1617,12 @@
                         });
                     }
                     const div = document.createElement('div');
-                    div.className = 'post-card';
+                    div.className = 'post-card' + (post.pinned ? ' post-pinned' : '');
                     const canDeletePost = isAdmin() || post.uid === currentUser.uid;
                     const delHtml = canDeletePost ? `<i class="fas fa-trash-alt adm-del adm-act-btn" title="${post.uid === currentUser.uid ? 'Hapus postingan' : 'Hapus (admin)'}" onclick="deletePost('${pid}', '${post.uid}')"></i>` : '';
+                    // Admin can pin/unpin a post to keep it at the top of the feed.
+                    const pinHtml = isAdmin() ? `<i class="fas fa-thumbtack adm-del adm-act-btn" title="${post.pinned ? 'Lepas sematan' : 'Sematkan (pin)'}" style="${post.pinned ? 'color:var(--accent-gold,#eab308);' : ''}" onclick="adminTogglePin('${pid}', ${post.pinned ? 'true' : 'false'})"></i>` : '';
+                    const pinnedBadgeHtml = post.pinned ? `<span style="display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:700; color:#eab308; margin-left:6px;"><i class="fas fa-thumbtack"></i> Disematkan</span>` : '';
                     // Image is only rendered when the post has one (text-only posts skip it).
                     const imgHtml = post.image
                         ? `<img src="${post.image}" class="post-img" ondblclick="toggleLike('${pid}', '${post.uid}')" onerror="this.style.display='none'">`
@@ -1625,7 +1635,8 @@
                     div.innerHTML = `
                         <div class="post-header">
                             <img src="${u.photo || DEFAULT_AVATAR}" class="p-avatar" onerror="this.src='${DEFAULT_AVATAR}'" onclick="visitProfile('${post.uid}')" style="cursor:pointer;">
-                            <div onclick="visitProfile('${post.uid}')" style="cursor:pointer;"><div style="font-weight:700; color:#333; font-size:14px;">${u.username}${adminBadgeHtml(post.uid)}${aiBadgeHtml(post.uid)}</div></div>
+                            <div onclick="visitProfile('${post.uid}')" style="cursor:pointer;"><div style="font-weight:700; color:#333; font-size:14px;">${u.username}${adminBadgeHtml(post.uid)}${aiBadgeHtml(post.uid)}${pinnedBadgeHtml}</div></div>
+                            ${pinHtml}
                             ${delHtml}
                             ${followBtnHtml}
                         </div>
@@ -2589,6 +2600,21 @@
         };
         // Back-compat alias for any older admin UI reference.
         window.adminDeletePost = (pid) => window.deletePost(pid, null);
+
+        // Pin / unpin a post so it always stays at the top of the feed (admin only).
+        window.adminTogglePin = async (pid, currentlyPinned) => {
+            if (!isAdmin()) { showToast('Akses admin diperlukan'); return; }
+            if (!pid) return;
+            try {
+                if (currentlyPinned) {
+                    await remove(ref(db, `posts/${pid}/pinned`));
+                    showToast('Sematan dilepas');
+                } else {
+                    await set(ref(db, `posts/${pid}/pinned`), true);
+                    showToast('Postingan disematkan');
+                }
+            } catch (e) { showToast('Gagal: ' + e.message); }
+        };
 
         // Block a user — they will be kicked out on next login and cannot use the app.
         window.adminBlockUser = async (uid) => {
