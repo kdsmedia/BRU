@@ -253,7 +253,7 @@ async function runActivity(a: AgentRow, type: ActivityType, cfg: AIConfig, ai: A
       return;
     }
     await publishLike(target.pid, a.ai_user_id);
-    if (target.uid !== a.ai_user_id) await sendNotif(target.uid, "liked your post");
+    if (target.uid !== a.ai_user_id) await sendNotif(target.uid, "menyukai postingan Anda");
     await bumpAgent(a, "LIKE");
     await logActivity(a, "LIKE", "ok", { targetPostId: target.pid, targetUserId: target.uid });
     return;
@@ -267,7 +267,7 @@ async function runActivity(a: AgentRow, type: ActivityType, cfg: AIConfig, ai: A
     const already = await getNode(`following/${a.ai_user_id}/${target.uid}`);
     if (already) { await logActivity(a, "FOLLOW", "skipped", { error: "already following" }); return; }
     await publishFollow(a.ai_user_id, target.uid);
-    await sendNotif(target.uid, "started following you");
+    await sendNotif(target.uid, "mulai mengikuti Anda");
     await rememberInteraction(a.ai_user_id, target.uid, "follow");
     await bumpAgent(a, "FOLLOW");
     await logActivity(a, "FOLLOW", "ok", { targetUserId: target.uid });
@@ -308,7 +308,7 @@ async function runActivity(a: AgentRow, type: ActivityType, cfg: AIConfig, ai: A
   }
   const name = await agentName(a);
   await publishComment(target.pid, a.ai_user_id, name, gen.text);
-  if (target.uid !== a.ai_user_id) await sendNotif(target.uid, `commented: ${gen.text}`);
+  if (target.uid !== a.ai_user_id) await sendNotif(target.uid, `berkomentar: ${gen.text}`);
   await rememberInteraction(a.ai_user_id, target.uid, gen.text);
   await bumpAgent(a, type);
   await logActivity(a, type, "ok", { targetPostId: target.pid, targetUserId: target.uid, content: gen.text });
