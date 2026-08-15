@@ -302,18 +302,11 @@
             <div class="wallet-card">
                 <div class="wallet-label">Points Balance</div>
                 <div class="wallet-amount"><span id="wallet-balance">0</span> <span>poin</span></div>
-                <div class="wallet-acct">ID Akun: <b id="wallet-acct-id">000000</b></div>
+                <div class="wallet-acct">ID Akun: <b id="wallet-acct-id">000000</b> <i class="fas fa-copy" style="cursor:pointer; margin-left:4px; opacity:0.85;" title="Salin ID Akun" onclick="copyAcctId()"></i></div>
                 <div class="wallet-actions">
                     <button class="wallet-btn primary" onclick="openMyQRModal()"><i class="fas fa-qrcode"></i>Kode QR Saya</button>
                     <button class="wallet-btn" onclick="openQRScanner()"><i class="fas fa-camera"></i>Scan Transfer</button>
                     <button class="wallet-btn" onclick="openTxnHistoryModal()"><i class="fas fa-clock-rotate-left"></i>Riwayat</button>
-                </div>
-                <div style="margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:space-between; gap:8px;">
-                    <div>
-                        <div style="font-size:11px; opacity:0.7;">Kode Referral Anda</div>
-                        <div style="font-size:18px; font-weight:700; letter-spacing:1px;" id="referral-code">000000</div>
-                    </div>
-                    <button class="wallet-btn" style="width:auto; padding:6px 14px; font-size:12px;" onclick="copyReferralCode()"><i class="fas fa-copy"></i>Salin</button>
                 </div>
             </div>
 
@@ -800,21 +793,19 @@
                 }
                 const balEl = document.getElementById('wallet-balance');
                 const idEl = document.getElementById('wallet-acct-id');
-                const refEl = document.getElementById('referral-code');
                 if (balEl) balEl.innerText = myPoints.toLocaleString('id-ID');
                 if (idEl) idEl.innerText = myAcctId;
-                if (refEl) refEl.innerText = myAcctId; // referral code == account id
                 renderRankPill(myTier);
                 if (currentView === 'view-profile') loadProfile();
             });
         }
 
-        window.copyReferralCode = async () => {
+        window.copyAcctId = async () => {
             try {
                 await navigator.clipboard.writeText(myAcctId);
-                showToast('Kode referral disalin: ' + myAcctId);
+                showToast('ID Akun disalin: ' + myAcctId);
             } catch (e) {
-                showToast('Kode referral Anda: ' + myAcctId);
+                showToast('ID Akun Anda: ' + myAcctId);
             }
         };
 
@@ -1019,10 +1010,8 @@
                     myTier = w.tier || 'Star';
                     const idEl = document.getElementById('wallet-acct-id');
                     const balEl = document.getElementById('wallet-balance');
-                    const refEl = document.getElementById('referral-code');
                     if (idEl) idEl.innerText = myAcctId;
                     if (balEl) balEl.innerText = myPoints.toLocaleString('id-ID');
-                    if (refEl) refEl.innerText = myAcctId;
                     renderRankPill(myTier);
                 } catch (_) {}
             } else {
