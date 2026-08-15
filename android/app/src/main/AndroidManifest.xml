@@ -43,4 +43,12 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Camera: required by the QR scanner (getUserMedia in the WebView).
+         Capacitor's BridgeWebChromeClient requests this at runtime when the
+         page calls getUserMedia, but it must be declared here to be grantable. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 </manifest>

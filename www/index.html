@@ -285,16 +285,21 @@
 
         <!-- PROFILE -->
         <div id="view-profile" class="view">
+            <i id="profile-back-btn" class="fas fa-arrow-left settings-btn hidden" onclick="nav('view-home')" title="Kembali"></i>
             <i class="fas fa-cog settings-btn" onclick="openSettingsModal()" title="Pengaturan Akun"></i>
             <div class="profile-head">
-                <img id="profile-img" src="" class="p-big-img" onclick="document.getElementById('profile-file').click()">
+                <img id="profile-img" src="" class="p-big-img" onclick="onProfileImageClick()">
                 <h2 id="profile-name" style="margin: 0; font-size: 22px; color: #1a1a1a;">Loading...</h2>
                 <div id="rank-pill" class="rank-badge-pill"></div>
                 <div id="admin-tag-profile" class="admin-tag" style="margin-top:8px; display:none;">🛡️ Admin</div>
-                <div style="display:flex; gap:8px; justify-content:center; margin-top: 12px;">
+                <div id="profile-own-actions" style="display:flex; gap:8px; justify-content:center; margin-top: 12px;">
                     <button class="btn-sec" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;" onclick="toggleEditName()">Edit Name</button>
                     <button class="btn-sec" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;" onclick="openEditProfileModal()">Full Profile</button>
                     <button class="btn-sec" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600; border-color: var(--accent-red); color: var(--accent-red);" onclick="openUpgradeModal()">Upgrade Akun</button>
+                </div>
+                <div id="profile-visit-actions" class="hidden" style="display:flex; gap:8px; justify-content:center; margin-top: 12px;">
+                    <button id="profile-follow-btn" class="btn-main" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;" onclick="profileToggleFollow()">Follow</button>
+                    <button class="btn-sec" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;" onclick="profileStartChat()">Message</button>
                 </div>
                 <input id="edit-name-input" class="auth-input hidden" style="margin-top: 15px; text-align: center;">
                 <div class="stats-row">
@@ -304,8 +309,8 @@
                 </div>
             </div>
 
-            <!-- WALLET CARD -->
-            <div class="wallet-card">
+            <!-- WALLET CARD (own profile only) -->
+            <div id="profile-wallet-card" class="wallet-card">
                 <div class="wallet-label">Points Balance</div>
                 <div class="wallet-amount"><span id="wallet-balance">0</span> <span>poin</span></div>
                 <div class="wallet-acct">ID Akun: <b id="wallet-acct-id">000000</b> <i class="fas fa-copy" style="cursor:pointer; margin-left:4px; opacity:0.85;" title="Salin ID Akun" onclick="copyAcctId()"></i></div>
@@ -1315,7 +1320,7 @@
             items.forEach(i => i.classList.remove('active'));
             const map = {'view-home':0, 'view-chat':1, 'view-upload':2, 'view-notif':3, 'view-profile':4};
             if(items[map[viewId]]) items[map[viewId]].classList.add('active');
-            if(viewId === 'view-profile') loadProfile();
+            if(viewId === 'view-profile') loadProfile(null);   // dock tab always shows own profile
             if(viewId === 'view-notif') {
                 notifCount = 0;
                 document.getElementById('badge-notif').classList.add('hidden');
@@ -1407,7 +1412,7 @@
                 const div = document.createElement('div');
                 div.className = 'chat-list-item';
                 div.onclick = () => openChat(u.uid, u.username);
-                div.innerHTML = '<img src="' + (u.photo || DEFAULT_AVATAR) + '" style="width:50px;height:50px;border-radius:50%;object-fit:cover;"><div><div style="font-weight:700;font-size:15px;color:#333;">' + u.username + adminBadgeHtml(u.uid) + aiBadgeHtml(u.uid) + '</div><div style="font-size:13px;color:var(--text-muted);">Tap to chat</div></div>';
+                div.innerHTML = '<img src="' + (u.photo || DEFAULT_AVATAR) + '" style="width:50px;height:50px;border-radius:50%;object-fit:cover;"><div style="flex:1;"><div style="font-weight:700;font-size:15px;color:#333;">' + u.username + adminBadgeHtml(u.uid) + aiBadgeHtml(u.uid) + '</div><div style="font-size:13px;color:var(--text-muted);">Tap to chat</div></div><i class="fas fa-circle-user" style="color:#94a3b8; font-size:20px; cursor:pointer;" title="Lihat profil" onclick="event.stopPropagation(); visitProfile(\'' + u.uid + '\')"></i>';
                 list.appendChild(div);
             });
         }
@@ -1421,7 +1426,7 @@
             msgsDiv.innerHTML = '';
             const uids = [currentUser.uid, targetUid].sort();
             activeChatId = `private_${uids[0]}_${uids[1]}`;
-            title.innerHTML = (targetName || "Private Chat") + adminBadgeHtml(targetUid) + aiBadgeHtml(targetUid);
+            title.innerHTML = '<span style="cursor:pointer;" onclick="visitProfile(\'' + targetUid + '\')" title="Lihat profil">' + (targetName || "Private Chat") + '</span>' + adminBadgeHtml(targetUid) + aiBadgeHtml(targetUid);
             const dbPath = `private_chats/${activeChatId}`;
             if(chatListenerRef) off(chatListenerRef);
             chatListenerRef = query(ref(db, dbPath), limitToLast(50));
@@ -1454,7 +1459,7 @@
             inp.value = '';
         };
 
-        function listenFollowing() { onValue(ref(db, `following/${currentUser.uid}`), snap => { followingCache = snap.val() || {}; }); }
+        function listenFollowing() { onValue(ref(db, `following/${currentUser.uid}`), snap => { followingCache = snap.val() || {}; if (viewingProfileUid) refreshProfileFollowBtn(); }); }
 
         window.toggleFollow = async (targetUid) => {
             if(!targetUid || targetUid === currentUser.uid) return;
@@ -1491,7 +1496,8 @@
                         Object.values(post.comments).forEach(c => {
                             const safeText = String(c.text).replace(/</g,'&lt;');
                             const safeName = String(c.username).replace(/</g,'&lt;');
-                            commentsHtml += `<div class="comment-item"><b>${safeName}${aiBadgeHtml(c.uid)}</b> ${safeText}</div>`;
+                            const cUid = c.uid || '';
+                            commentsHtml += `<div class="comment-item"><b ${cUid ? `style="cursor:pointer;" onclick="visitProfile('${cUid}')"` : ''}>${safeName}${aiBadgeHtml(c.uid)}</b> ${safeText}</div>`;
                         });
                     }
                     const div = document.createElement('div');
@@ -1508,8 +1514,8 @@
                     const likesHtml = likeCount > 0 ? `<div class="post-likes-count">${likeCount} suka</div>` : '';
                     div.innerHTML = `
                         <div class="post-header">
-                            <img src="${u.photo || DEFAULT_AVATAR}" class="p-avatar" onerror="this.src='${DEFAULT_AVATAR}'">
-                            <div><div style="font-weight:700; color:#333; font-size:14px;">${u.username}${adminBadgeHtml(post.uid)}${aiBadgeHtml(post.uid)}</div></div>
+                            <img src="${u.photo || DEFAULT_AVATAR}" class="p-avatar" onerror="this.src='${DEFAULT_AVATAR}'" onclick="visitProfile('${post.uid}')" style="cursor:pointer;">
+                            <div onclick="visitProfile('${post.uid}')" style="cursor:pointer;"><div style="font-weight:700; color:#333; font-size:14px;">${u.username}${adminBadgeHtml(post.uid)}${aiBadgeHtml(post.uid)}</div></div>
                             ${adminDelHtml}
                             ${followBtnHtml}
                         </div>
@@ -1679,22 +1685,45 @@
             }
         };
 
-        function loadProfile() {
-            if(!currentUser) return;
-            const dbUser = usersCache[currentUser.uid];
-            const finalName = (dbUser && dbUser.username) ? dbUser.username : (fallbackName(currentUser));
+        let viewingProfileUid = null;   // when set, the profile view shows this user instead of "self"
+
+        // Load the profile view. With no argument (or null) it shows the current
+        // user; with a uid it shows that user's public profile (visit profile).
+        function loadProfile(uid) {
+            if (!currentUser) return;
+            const targetUid = uid || currentUser.uid;
+            const isSelf = targetUid === currentUser.uid;
+            viewingProfileUid = isSelf ? null : targetUid;
+
+            // Toggle own/visit action rows + back button + private wallet card.
+            document.getElementById('profile-own-actions').classList.toggle('hidden', !isSelf);
+            document.getElementById('profile-visit-actions').classList.toggle('hidden', isSelf);
+            document.getElementById('profile-back-btn').classList.toggle('hidden', isSelf);
+            document.getElementById('profile-wallet-card').classList.toggle('hidden', !isSelf);
+
+            const dbUser = usersCache[targetUid];
+            const finalName = (dbUser && dbUser.username) ? dbUser.username : (isSelf ? fallbackName(currentUser) : 'User');
             const finalPhoto = (dbUser && dbUser.photo) ? dbUser.photo : DEFAULT_AVATAR;
-            document.getElementById('profile-name').innerHTML = finalName + (isAdmin() ? ' <span class="verified-admin verified-admin-lg" title="Admin">🛡️</span>' : '') + (dbUser && dbUser.is_ai ? ' <span class="ai-badge" title="Akun AI">AI</span>' : '');
+            const role = (dbUser && dbUser.role) || (isSelf ? myRole : '');
+            const isAiUser = !!(dbUser && dbUser.is_ai);
+            document.getElementById('profile-name').innerHTML =
+                finalName
+                + (role === 'admin' ? ' <span class="verified-admin verified-admin-lg" title="Admin">🛡️</span>' : '')
+                + (isAiUser ? ' <span class="ai-badge" title="Akun AI">AI</span>' : '');
             document.getElementById('profile-img').src = finalPhoto;
             const tagEl = document.getElementById('admin-tag-profile');
-            if (tagEl) tagEl.style.display = isAdmin() ? 'inline-flex' : 'none';
+            if (tagEl) tagEl.style.display = role === 'admin' ? 'inline-flex' : 'none';
+            renderRankPill(isSelf ? myTier : ((dbUser && dbUser.tier) || 'Star'));
+
+            // Refresh follow button state for visited profiles.
+            if (!isSelf) refreshProfileFollowBtn();
+
             onValue(query(ref(db, 'posts'), orderByKey()), snap => {
                 const grid = document.getElementById('profile-grid'); grid.innerHTML = '';
                 let count = 0; const data = snap.val();
                 if(data) Object.values(data).reverse().forEach(p => {
-                    if(p.uid === currentUser.uid) {
+                    if(p.uid === targetUid) {
                         count++;
-                        // Text-only posts render as a placeholder tile in the profile grid.
                         if (p.image) {
                             grid.innerHTML += `<img src="${p.image}" class="grid-item" onerror="this.style.display='none'">`;
                         } else {
@@ -1704,9 +1733,40 @@
                 });
                 document.getElementById('stat-posts').innerText = count;
             });
-            onValue(ref(db, `followers/${currentUser.uid}`), snap => document.getElementById('stat-followers').innerText = snap.exists() ? Object.keys(snap.val()).length : 0);
-            onValue(ref(db, `following/${currentUser.uid}`), snap => document.getElementById('stat-following').innerText = snap.exists() ? Object.keys(snap.val()).length : 0);
+            onValue(ref(db, `followers/${targetUid}`), snap => document.getElementById('stat-followers').innerText = snap.exists() ? Object.keys(snap.val()).length : 0);
+            onValue(ref(db, `following/${targetUid}`), snap => document.getElementById('stat-following').innerText = snap.exists() ? Object.keys(snap.val()).length : 0);
         }
+
+        // Open another user's public profile from anywhere in the app.
+        window.visitProfile = (uid) => {
+            if (!uid) return;
+            if (uid === currentUser.uid) { nav('view-profile'); return; }
+            loadProfile(uid);
+            nav('view-profile');
+        };
+
+        // Image click: edit photo on own profile, open the image on others.
+        window.onProfileImageClick = () => {
+            if (viewingProfileUid) return; // visited profile: no-op
+            document.getElementById('profile-file').click();
+        };
+
+        // Follow / unfollow the user whose profile is being viewed.
+        async function refreshProfileFollowBtn() {
+            const btn = document.getElementById('profile-follow-btn');
+            if (!btn) return;
+            const following = followingCache[viewingProfileUid];
+            btn.innerText = following ? 'Following' : 'Follow';
+            btn.classList.toggle('following', !!following);
+        }
+        window.profileToggleFollow = () => { if (viewingProfileUid) toggleFollow(viewingProfileUid); };
+
+        // Start a private chat from a visited profile.
+        window.profileStartChat = () => {
+            if (!viewingProfileUid) return;
+            const u = usersCache[viewingProfileUid];
+            openChat(viewingProfileUid, (u && u.username) || 'User');
+        };
 
         window.uploadProfilePic = async (input) => {
             if(input.files[0]) {
@@ -1935,12 +1995,17 @@
 
         async function startScanner() {
             try {
-                scannerStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                // Request the camera. On native Android Capacitor will surface the
+                // runtime CAMERA permission prompt via BridgeWebChromeClient.
+                scannerStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { ideal: 'environment' } },
+                    audio: false
+                });
                 const video = document.getElementById('scanner-video');
-                if (!video) { return; }
+                if (!video) { stopScanner(); return; }
                 video.srcObject = scannerStream;
                 video.setAttribute('playsinline', true);
-                video.play();
+                await video.play().catch(() => {});
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d', { willReadFrequently: true });
                 const tick = () => {
@@ -1959,8 +2024,18 @@
                 };
                 tick();
             } catch (e) {
+                // NotAllowedError = permission denied or dismissed. Give a clear,
+                // actionable message rather than a silent black box.
+                const msg = (e && e.name === 'NotAllowedError')
+                    ? 'Izin kamera ditolak. Aktifkan izin Kamera di pengaturan aplikasi, lalu coba lagi.'
+                    : 'Kamera tidak tersedia di perangkat ini.';
                 const box = document.querySelector('.scan-video-box');
-                if (box) box.innerHTML = '<div style="color:#fff; padding:20px; text-align:center; font-size:13px;">Kamera tidak tersedia.<br>Silakan masukkan ID akun manual di bawah.</div>';
+                if (box) box.innerHTML =
+                    '<div style="color:#fff; padding:20px; text-align:center; font-size:13px;">'
+                    + '<i class="fas fa-camera-slash" style="font-size:28px; display:block; margin-bottom:8px;"></i>'
+                    + msg
+                    + '<br><button class="btn-sec" style="margin-top:12px; padding:6px 16px;" onclick="openQRScanner()">Coba lagi</button>'
+                    + '</div>';
             }
         }
 
@@ -2384,7 +2459,7 @@
                 row.style.cursor = 'default';
                 row.innerHTML = `
                     <i class="fas fa-circle-user" style="background:#f1f5f9;"></i>
-                    <div><div class="smi-label">${escHtml(u.username || 'User')}${adminBadgeHtml(u.uid)}${aiBadgeHtml(u.uid)}${isBlocked ? ' <span style="font-size:10px; color:#dc2626; font-weight:700;">(diblokir)</span>' : ''}</div><div class="smi-sub">HP: ${escHtml(u.phone || '-')}</div></div>
+                    <div style="flex:1;"><div class="smi-label">${escHtml(u.username || 'User')}${adminBadgeHtml(u.uid)}${aiBadgeHtml(u.uid)}${isBlocked ? ' <span style="font-size:10px; color:#dc2626; font-weight:700;">(diblokir)</span>' : ''} <i class="fas fa-up-right-from-square" style="font-size:11px; color:#64748b; cursor:pointer;" title="Lihat profil" onclick="visitProfile('${u.uid}')"></i></div><div class="smi-sub">HP: ${escHtml(u.phone || '-')}</div></div>
                     ${actions}
                 `;
                 wrap.appendChild(row);
