@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.kdsmedia.beruang',
+  appId: 'com.altomedia.beruang',
   appName: 'BERUANG',
   webDir: '.',
   // index.html lives at the repo root, so webDir is the current directory.

@@ -81,12 +81,6 @@
         .comment-input-box button { border: none; background: transparent; color: var(--bg-nav); font-weight: 600; cursor: pointer; font-size: 13px; }
         .upload-area { margin: 15px; height: 140px; border: 2px dashed #cbd5e1; border-radius: 18px; display: flex; align-items: center; justify-content: center; flex-direction: column; cursor: pointer; position: relative; overflow: hidden; background: #f8fafc; transition: 0.3s; }
         .upload-area:active { background: #f1f5f9; border-color: var(--bg-nav); }
-        /* Inline AdMob banner placeholders (in-content ad slots). On native the
-           live ad is shown as a bottom overlay by the ADMOB module; these slots
-           stay as labeled containers. */
-        .ad-slot { margin: 12px; border-radius: 14px; min-height: 90px; background: repeating-linear-gradient(45deg,#f1f5f9,#f1f5f9 10px,#eef2f7 10px,#eef2f7 20px); border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
-        .ad-slot-feed { margin: 12px 12px 22px; }
-        .ad-slot-chat { margin: 4px 0 10px; min-height: 60px; }
         /* When a native bottom banner overlay is active, add bottom padding so
            the nav-dock / content is not covered. */
         body.has-native-banner .nav-dock { bottom: 60px; }
@@ -285,8 +279,6 @@
         <div id="view-notif" class="view">
             <div class="header"><span style="font-size: 18px; font-weight: 700; color:#333">Activity</span></div>
             <div id="notif-list"></div>
-            <!-- AdMob banner slot: below Activity -->
-            <div class="ad-slot" data-ad-slot="activity-bottom"><span>Iklan</span></div>
         </div>
 
         <!-- PROFILE -->
@@ -322,9 +314,6 @@
                 </div>
             </div>
 
-            <!-- AdMob banner slot: below wallet/balance on Profile -->
-            <div class="ad-slot" data-ad-slot="profile-balance"><span>Iklan</span></div>
-
             <div class="grid-container" id="profile-grid"></div>
         </div>
 
@@ -345,8 +334,6 @@
                 <div style="width: 24px;"></div>
             </div>
             <div id="chat-msgs" class="chat-messages"></div>
-            <!-- AdMob banner slot: inside private chat -->
-            <div class="ad-slot ad-slot-chat" data-ad-slot="private-chat"><span>Iklan</span></div>
             <div class="chat-input-bar">
                 <input type="text" id="chat-input" class="auth-input" placeholder="Type a message..." style="margin:0; border-radius: 30px; background: #f8fafc;">
                 <button class="btn-main" style="width: auto; margin:0; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;" onclick="sendMsg()">
@@ -677,9 +664,8 @@
         let pendingTransferRecipient = null; // {uid, username, photo, acctId}
 
         // ===== ADMOB CONFIG (Capacitor native: @capacitor-community/admob) =====
-        // Real unit IDs. On web (browser dev) the plugin is absent, so the ADMOB
-        // module gracefully degrades: banner slots render as styled placeholders
-        // and the rewarded flow grants the bonus quota directly for testing.
+        // Real production unit IDs. The banner is shown as a native bottom overlay
+        // via the plugin; the rewarded video grants +1 daily quota on completion.
         const ADMOB = {
             APP_ID:      'ca-app-pub-6881903056221433~1794482255',
             BANNER_ID:   'ca-app-pub-6881903056221433/6548115489',
@@ -721,35 +707,29 @@
                     document.body.classList.remove('has-native-banner');
                 } catch (e) { console.error('AdMob hideBanner failed', e); }
             },
-            // Show a rewarded ad. Resolves { rewarded: true } only when the user
-            // watched it to completion (no skip). On web, resolves true immediately.
-            showRewarded() {
-                return new Promise((resolve) => {
-                    if (!this.isNative()) { resolve({ rewarded: true }); return; }
-                    try {
-                        const { AdMob } = window.Capacitor.Plugins;
-                        AdMob.prepareRewardVideoAd({ adId: this.REWARDED_ID })
-                            .then(() => AdMob.showRewardVideoAd())
-                            .catch((e) => { console.error('AdMob rewarded failed', e); resolve({ rewarded: false }); });
-                        AdMob.addListener('onRewarded', () => {
-                            // onRewarded only fires after a completed (no-skip) view.
-                            resolve({ rewarded: true });
-                        });
-                        AdMob.addListener('onRewardedVideoAdClosed', () => {
-                            // Resolve false if closed without reward event firing.
-                            setTimeout(() => resolve({ rewarded: false }), 0);
-                        });
-                    } catch (e) {
-                        console.error('AdMob rewarded exception', e);
-                        resolve({ rewarded: false });
-                    }
-                });
-            },
-            // Inline ad-slot markup used for in-content banner placements.
-            // On native these are styled placeholders (the live ad is the overlay);
-            // on web they are labeled "Ad" placeholders.
-            slotHtml(label, extraClass) {
-                return `<div class="ad-slot ${extraClass || ''}" data-ad-slot="${label}"><span>Iklan</span></div>`;
+            // Show a rewarded video. Resolves { rewarded: true } only when the user
+            // watched it to completion (onRewarded fires). Listeners are cleaned up
+            // after each call so they never accumulate. On non-native (web) there is
+            // no ad to show, so it resolves { rewarded: false }.
+            async showRewarded() {
+                if (!this.isNative()) return { rewarded: false };
+                const { AdMob } = window.Capacitor.Plugins;
+                try {
+                    await AdMob.prepareRewardVideoAd({ adId: this.REWARDED_ID });
+                    const rewarded = await new Promise((resolve) => {
+                        let settled = false;
+                        const done = (v) => { if (!settled) { settled = true; resolve(v); } };
+                        AdMob.addListener('onRewarded', () => done(true));
+                        AdMob.addListener('onRewardedVideoAdClosed', () => done(false));
+                        AdMob.showRewardVideoAd().catch(() => done(false));
+                    });
+                    try { await AdMob.removeAllListeners(); } catch (_) {}
+                    return { rewarded };
+                } catch (e) {
+                    console.error('AdMob rewarded failed', e);
+                    try { await AdMob.removeAllListeners(); } catch (_) {}
+                    return { rewarded: false };
+                }
             }
         };
 
@@ -962,15 +942,17 @@
         async function promptRewardedForQuota(action) {
             const label = action === 'posts' ? 'postingan' : 'komentar';
             const ok = await new Promise((res) => {
+                // Wrap resolve so it can only fire once; closeModal() also calls
+                // this with false when the modal is dismissed any other way.
+                window.__rqResolve = (v) => { if (window.__rqResolve) { window.__rqResolve = null; res(v); } };
                 openModal(`<div class="modal-title">Batas ${label} harian tercapai</div>
                     <div style="margin-top:12px; font-size:14px; color:var(--text-muted); line-height:1.5;">
                         Tonton iklan singkat untuk mendapatkan <b>+1 kesempatan ${label}</b> hari ini.
                     </div>
                     <div style="display:flex; gap:10px; margin-top:18px;">
-                        <button class="btn-sec" style="flex:1;" onclick="closeModal(); window.__rqResolve(false);">Nanti saja</button>
-                        <button class="btn-main" style="flex:1; margin-top:0;" onclick="closeModal(); window.__rqResolve(true);">Tonton Iklan</button>
+                        <button class="btn-sec" style="flex:1;" onclick="window.__rqResolve(false); closeModal();">Nanti saja</button>
+                        <button class="btn-main" style="flex:1; margin-top:0;" onclick="window.__rqResolve(true); closeModal();">Tonton Iklan</button>
                     </div>`);
-                window.__rqResolve = res;
             });
             if (!ok) return false;
             showToast('Memuat iklan...');
@@ -1338,7 +1320,6 @@
             }
             // Show the native bottom banner on content views; hide on the upload
             // screen so it never interferes with image picking / caption input.
-            // (Inline ad-slot placeholders remain visible regardless.)
             if (viewId === 'view-upload') ADMOB.hideBanner();
             else ADMOB.showBanner();
         };
@@ -1489,7 +1470,7 @@
             container.innerHTML = "";
             if(!data) { container.innerHTML = "<div style='text-align:center; margin-top:50px; color:gray; font-size:14px;'>Nothing here yet.</div>"; return; }
             const posts = Object.entries(data).reverse();
-            posts.forEach(([pid, post], i) => {
+            posts.forEach(([pid, post]) => {
                     const u = usersCache[post.uid] || {username: 'Loading...', photo: DEFAULT_AVATAR};
                     const isLiked = post.likes && post.likes[currentUser.uid];
                     const likeCount = post.likes ? Object.keys(post.likes).length : 0;
@@ -1545,12 +1526,6 @@
                         </div>
                     `;
                     container.appendChild(div);
-                    // Insert an AdMob banner slot between every 5 posts.
-                    if ((i + 1) % 5 === 0) {
-                        const ad = document.createElement('div');
-                        ad.innerHTML = ADMOB.slotHtml('feed-' + (i + 1), 'ad-slot-feed');
-                        container.appendChild(ad.firstElementChild);
-                    }
                 });
         }
 
@@ -1791,6 +1766,10 @@
         }
 
         function closeModal() {
+            // Resolve any pending rewarded-ad prompt modal as "cancelled" so the
+            // awaiting promise never hangs when the modal is dismissed via ESC,
+            // backdrop click, or the X button.
+            if (window.__rqResolve) { const r = window.__rqResolve; window.__rqResolve = null; r(false); }
             try { stopScanner(); } catch(_) {}
             const root = document.getElementById('modal-root');
             if (root) root.innerHTML = '';

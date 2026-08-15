@@ -1,7 +1,9 @@
 {
   "name": "beruang-social",
   "version": "1.0.0",
-  "description": "BERUANG - Social app (Capacitor + AdMob)",
+  "description": "BERUANG - Social app by ALTOMEDIA (Capacitor + AdMob)",
+  "author": "ALTOMEDIA <altomediaindonesia@gmail.com>",
+  "license": "UNLICENSED",
   "private": true,
   "scripts": {
     "build:web": "echo 'No build step — index.html is the web asset. Copied as-is by Capacitor.'",
