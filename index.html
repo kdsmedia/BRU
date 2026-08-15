@@ -77,6 +77,9 @@
         .comment-section { padding: 0 15px 15px 15px; }
         .comment-toggle { font-size: 13px; color: #94a3b8; cursor: pointer; margin-bottom: 8px; display: inline-block; font-weight: 500; }
         .comment-item { font-size: 13px; margin-bottom: 4px; color: var(--text-muted); }
+        .post-text-only a, .caption-area a, .comment-item a, .chat-msgs a {
+            color: #2563eb; text-decoration: underline; word-break: break-all;
+        }
         .comment-input-box { display: flex; gap: 8px; margin-top: 8px; }
         .comment-input-box input { flex: 1; border: none; background: #f1f5f9; padding: 10px 15px; border-radius: 20px; font-size: 13px; outline: none; }
         .comment-input-box button { border: none; background: transparent; color: var(--bg-nav); font-weight: 600; cursor: pointer; font-size: 13px; }
@@ -1525,7 +1528,7 @@
                 if(data) {
                     Object.entries(data).forEach(([msgKey, msg]) => {
                         const isMine = msg.uid === currentUser.uid;
-                        const safeMsg = String(msg.text || '').replace(/</g,'&lt;');
+                        const safeMsg = linkify(msg.text || '');
                         const delAttr = isMine ? ` style="cursor:pointer;" onclick="deleteChatMsg('${msgKey}')" title="Ketuk untuk hapus"` : '';
                         msgsDiv.innerHTML += `<div class="bubble ${isMine ? 'mine' : 'theirs'}" ${delAttr}>${safeMsg}</div>`;
                     });
@@ -1601,7 +1604,7 @@
                     const u = usersCache[post.uid] || {username: 'Memuat...', photo: DEFAULT_AVATAR};
                     const isLiked = post.likes && post.likes[currentUser.uid];
                     const likeCount = post.likes ? Object.keys(post.likes).length : 0;
-                    const safeCaption = post.caption ? String(post.caption).replace(/</g,'&lt;') : '';
+                    const safeCaption = post.caption ? linkify(post.caption) : '';
                     let followBtnHtml = '';
                     if(post.uid !== currentUser.uid) {
                         const isFollowing = followingCache[post.uid];
@@ -1610,7 +1613,7 @@
                     let commentsHtml = '';
                     if(post.comments) {
                         Object.values(post.comments).forEach(c => {
-                            const safeText = String(c.text).replace(/</g,'&lt;');
+                            const safeText = linkify(c.text);
                             const safeName = String(c.username).replace(/</g,'&lt;');
                             const cUid = c.uid || '';
                             commentsHtml += `<div class="comment-item"><b ${cUid ? `style="cursor:pointer;" onclick="visitProfile('${cUid}')"` : ''}>${safeName}${aiBadgeHtml(c.uid)}</b> ${safeText}</div>`;
@@ -1982,6 +1985,21 @@
 
         function escHtml(s) {
             return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
+        // Escape HTML, then turn bare URLs into clickable links that open in a new tab.
+        // Order matters: escape first so injected markup is inert, then linkify the
+        // escaped text (URLs survive escaping because they only contain ASCII chars
+        // that aren't <, >, &, ", ').
+        function linkify(text) {
+            const escaped = escHtml(text);
+            return escaped.replace(/(https?:\/\/[^\s<]+)/g, (url) => {
+                // Trim trailing punctuation that is unlikely part of the URL.
+                const trailing = url.match(/[.,;:!?)\]]+$/);
+                const clean = trailing ? url.slice(0, -trailing[0].length) : url;
+                const tail = trailing ? trailing[0] : '';
+                return `<a href="${clean}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">${clean}</a>${tail}`;
+            });
         }
 
         function openModal(innerHtml) {
