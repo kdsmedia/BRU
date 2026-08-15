@@ -1,0 +1,9 @@
+# Node / Capacitor
+node_modules/
+android/
+ios/
+npm-debug.log*
+.DS_Store
+
+# Capacitor sync output
+./android/

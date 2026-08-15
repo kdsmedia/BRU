@@ -1,0 +1,20 @@
+{
+  "name": "beruang-social",
+  "version": "1.0.0",
+  "description": "BERUANG - Social app (Capacitor + AdMob)",
+  "private": true,
+  "scripts": {
+    "build:web": "echo 'No build step — index.html is the web asset. Copied as-is by Capacitor.'",
+    "sync": "cap sync",
+    "add:android": "cap add android",
+    "open:android": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor-community/admob": "^6.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0"
+  }
+}
