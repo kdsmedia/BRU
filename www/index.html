@@ -202,7 +202,7 @@
     <div id="auth-view">
         <div class="auth-card">
             <div class="logo-text-lg">BERUANG</div>
-            <p style="color:#666; margin-bottom:20px;">Connect & Share.</p>
+            <p style="color:#666; margin-bottom:20px;">Terhubung & Berbagi.</p>
 
             <div class="auth-tabs">
                 <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Masuk</button>
@@ -244,7 +244,7 @@
             <div class="header">
                 <span class="gradient-text" style="font-size: 20px; letter-spacing: -0.5px;">BERUANG</span>
                 <div style="display:flex; gap:16px; align-items:center;">
-                    <i class="fas fa-qrcode" style="font-size: 20px; color: #333; cursor: pointer;" onclick="openQRScanner()" title="Scan & Transfer"></i>
+                    <i class="fas fa-qrcode" style="font-size: 20px; color: #333; cursor: pointer;" onclick="openQRScanner()" title="Scan & Transfer Poin"></i>
                     <i class="far fa-paper-plane" style="font-size: 20px; color: #333; cursor: pointer;" onclick="nav('view-chat')"></i>
                 </div>
             </div>
@@ -256,23 +256,23 @@
 
         <!-- SEARCH / CHAT -->
         <div id="view-chat" class="view">
-            <div class="header"><span style="font-size: 18px; font-weight: 700; color:#333">Messages</span></div>
+            <div class="header"><span style="font-size: 18px; font-weight: 700; color:#333">Pesan</span></div>
             <div id="chat-list" class="chat-list-container"></div>
         </div>
 
         <!-- UPLOAD -->
         <div id="view-upload" class="view">
-            <div class="header"><span style="font-size: 18px; font-weight: 700; color:#333">New Post</span></div>
+            <div class="header"><span style="font-size: 18px; font-weight: 700; color:#333">Posting Baru</span></div>
             <div style="padding: 20px;">
                 <div class="upload-area" onclick="document.getElementById('post-file').click()">
                     <img id="upload-preview-img" class="upload-preview">
                     <i class="fas fa-cloud-upload-alt" style="font-size: 24px; color: #cbd5e1; margin-bottom: 6px;"></i>
-                    <span style="color: #94a3b8; font-size: 12px;">Tap to upload image (optional)</span>
+                    <span style="color: #94a3b8; font-size: 12px;">Ketuk untuk unggah gambar (opsional)</span>
                 </div>
                 <i id="remove-img-btn" class="fas fa-times-circle" title="Hapus gambar" onclick="event.stopPropagation(); clearUploadImage()" style="display:none; position:fixed; right:34px; bottom:230px; font-size:28px; color:#ef4444; background:#fff; border-radius:50%; z-index:1200; box-shadow:0 2px 8px rgba(0,0,0,0.2);"></i>
-                <textarea id="post-caption" rows="3" placeholder="Write a caption..."></textarea>
+                <textarea id="post-caption" rows="3" placeholder="Tulis keterangan..."></textarea>
                 <button class="btn-main" onclick="uploadPost()">
-                    <span id="post-btn-text">Publish Post</span>
+                    <span id="post-btn-text">Terbitkan Postingan</span>
                     <div id="post-loader" class="loader" style="border-color: rgba(255,255,255,0.3); border-top-color: #fff;"></div>
                 </button>
             </div>
@@ -280,7 +280,7 @@
 
         <!-- NOTIFICATIONS -->
         <div id="view-notif" class="view">
-            <div class="header"><span style="font-size: 18px; font-weight: 700; color:#333">Activity</span></div>
+            <div class="header"><span style="font-size: 18px; font-weight: 700; color:#333">Aktivitas</span></div>
             <div id="notif-list"></div>
         </div>
 
@@ -290,29 +290,29 @@
             <i class="fas fa-cog settings-btn" onclick="openSettingsModal()" title="Pengaturan Akun"></i>
             <div class="profile-head">
                 <img id="profile-img" src="" class="p-big-img" onclick="onProfileImageClick()">
-                <h2 id="profile-name" style="margin: 0; font-size: 22px; color: #1a1a1a;">Loading...</h2>
+                <h2 id="profile-name" style="margin: 0; font-size: 22px; color: #1a1a1a;">Memuat...</h2>
                 <div id="rank-pill" class="rank-badge-pill"></div>
                 <div id="admin-tag-profile" class="admin-tag" style="margin-top:8px; display:none;">🛡️ Admin</div>
                 <div id="profile-own-actions" style="display:flex; gap:8px; justify-content:center; margin-top: 12px;">
-                    <button class="btn-sec" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;" onclick="toggleEditName()">Edit Name</button>
-                    <button class="btn-sec" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;" onclick="openEditProfileModal()">Full Profile</button>
+                    <button class="btn-sec" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;" onclick="toggleEditName()">Ubah Nama</button>
+                    <button class="btn-sec" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;" onclick="openEditProfileModal()">Profil Lengkap</button>
                     <button class="btn-sec" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600; border-color: var(--accent-red); color: var(--accent-red);" onclick="openUpgradeModal()">Upgrade Akun</button>
                 </div>
                 <div id="profile-visit-actions" class="hidden" style="display:flex; gap:8px; justify-content:center; margin-top: 12px;">
-                    <button id="profile-follow-btn" class="btn-main" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;" onclick="profileToggleFollow()">Follow</button>
+                    <button id="profile-follow-btn" class="btn-main" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;" onclick="profileToggleFollow()">Ikuti</button>
                     <button class="btn-sec" style="width: auto; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;" onclick="profileStartChat()"><i class="fas fa-comment-dots" style="margin-right:4px;"></i>Chat</button>
                 </div>
                 <input id="edit-name-input" class="auth-input hidden" style="margin-top: 15px; text-align: center;">
                 <div class="stats-row">
-                    <div class="stat-box"><span class="stat-num" id="stat-posts">0</span><span class="stat-label">Posts</span></div>
-                    <div class="stat-box"><span class="stat-num" id="stat-followers">0</span><span class="stat-label">Followers</span></div>
-                    <div class="stat-box"><span class="stat-num" id="stat-following">0</span><span class="stat-label">Following</span></div>
+                    <div class="stat-box"><span class="stat-num" id="stat-posts">0</span><span class="stat-label">Postingan</span></div>
+                    <div class="stat-box"><span class="stat-num" id="stat-followers">0</span><span class="stat-label">Pengikut</span></div>
+                    <div class="stat-box"><span class="stat-num" id="stat-following">0</span><span class="stat-label">Mengikuti</span></div>
                 </div>
             </div>
 
             <!-- WALLET CARD (own profile only) -->
             <div id="profile-wallet-card" class="wallet-card">
-                <div class="wallet-label">Points Balance</div>
+                <div class="wallet-label">Saldo Poin</div>
                 <div class="wallet-amount"><span id="wallet-balance">0</span> <span>poin</span></div>
                 <div class="wallet-acct">ID Akun: <b id="wallet-acct-id">000000</b> <i class="fas fa-copy" style="cursor:pointer; margin-left:4px; opacity:0.85;" title="Salin ID Akun" onclick="copyAcctId()"></i></div>
                 <div class="wallet-actions">
@@ -343,7 +343,7 @@
             </div>
             <div id="chat-msgs" class="chat-messages"></div>
             <div class="chat-input-bar">
-                <input type="text" id="chat-input" class="auth-input" placeholder="Type a message..." style="margin:0; border-radius: 30px; background: #f8fafc;">
+                <input type="text" id="chat-input" class="auth-input" placeholder="Tulis pesan..." style="margin:0; border-radius: 30px; background: #f8fafc;">
                 <button class="btn-main" style="width: auto; margin:0; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;" onclick="sendMsg()">
                     <i class="fas fa-paper-plane" style="font-size: 16px;"></i>
                 </button>
@@ -591,7 +591,7 @@
                 uid: u.id,
                 id: u.id,
                 email: u.email,
-                displayName: meta.display_name || meta.displayName || (u.email ? u.email.split('@')[0] : 'User'),
+                displayName: meta.display_name || meta.displayName || (u.email ? u.email.split('@')[0] : 'Pengguna'),
                 photoURL: meta.photo_url || meta.photoURL || null,
                 _raw: u
             };
@@ -1082,7 +1082,7 @@
         function fallbackName(user) {
             if (user && user.displayName) return user.displayName;
             if (user && user.email) return user.email.split('@')[0];
-            return 'User';
+            return 'Pengguna';
         }
 
         // Referral bonus config: both referrer and new user get 500 poin
@@ -1175,7 +1175,7 @@
                 }
             } catch (err) {
                 console.error('REGISTER ERROR', err);
-                alert('Register error: ' + (err && err.message ? err.message : err));
+                alert('Kesalahan pendaftaran: ' + (err && err.message ? err.message : err));
                 const msg = err.code === 'auth/email-already-in-use'
                     ? 'Nomor HP sudah terdaftar. Silakan Masuk.'
                     : err.message.replace('Firebase:', '');
@@ -1501,7 +1501,7 @@
                 const div = document.createElement('div');
                 div.className = 'chat-list-item';
                 div.onclick = () => openChat(u.uid, u.username);
-                div.innerHTML = '<img src="' + (u.photo || DEFAULT_AVATAR) + '" style="width:50px;height:50px;border-radius:50%;object-fit:cover;"><div style="flex:1;"><div style="font-weight:700;font-size:15px;color:#333;">' + u.username + adminBadgeHtml(u.uid) + aiBadgeHtml(u.uid) + '</div><div style="font-size:13px;color:var(--text-muted);">Tap to chat</div></div><i class="fas fa-circle-user" style="color:#94a3b8; font-size:20px; cursor:pointer;" title="Lihat profil" onclick="event.stopPropagation(); visitProfile(\'' + u.uid + '\')"></i>';
+                div.innerHTML = '<img src="' + (u.photo || DEFAULT_AVATAR) + '" style="width:50px;height:50px;border-radius:50%;object-fit:cover;"><div style="flex:1;"><div style="font-weight:700;font-size:15px;color:#333;">' + u.username + adminBadgeHtml(u.uid) + aiBadgeHtml(u.uid) + '</div><div style="font-size:13px;color:var(--text-muted);">Ketuk untuk mengobrol</div></div><i class="fas fa-circle-user" style="color:#94a3b8; font-size:20px; cursor:pointer;" title="Lihat profil" onclick="event.stopPropagation(); visitProfile(\'' + u.uid + '\')"></i>';
                 list.appendChild(div);
             });
         }
@@ -1515,7 +1515,7 @@
             msgsDiv.innerHTML = '';
             const uids = [currentUser.uid, targetUid].sort();
             activeChatId = `private_${uids[0]}_${uids[1]}`;
-            title.innerHTML = '<span style="cursor:pointer;" onclick="visitProfile(\'' + targetUid + '\')" title="Lihat profil">' + (targetName || "Private Chat") + '</span>' + adminBadgeHtml(targetUid) + aiBadgeHtml(targetUid);
+            title.innerHTML = '<span style="cursor:pointer;" onclick="visitProfile(\'' + targetUid + '\')" title="Lihat profil">' + (targetName || "Obrolan Pribadi") + '</span>' + adminBadgeHtml(targetUid) + aiBadgeHtml(targetUid);
             const dbPath = `private_chats/${activeChatId}`;
             if(chatListenerRef) off(chatListenerRef);
             chatListenerRef = query(ref(db, dbPath), limitToLast(50));
@@ -1580,7 +1580,7 @@
             } else {
                 set(ref(db, `following/${currentUser.uid}/${targetUid}`), true);
                 set(ref(db, `followers/${targetUid}/${currentUser.uid}`), true);
-                sendNotif(targetUid, "started following you");
+                sendNotif(targetUid, "mulai mengikuti Anda");
                 await awardPoints(currentUser.uid, POINTS.FOLLOW, `follow ${targetUid}`);
                 showToast(`+${POINTS.FOLLOW} poin (menambah teman)`);
             }
@@ -1589,7 +1589,7 @@
         function _renderFeed(data) {
             const container = document.getElementById('feed-container');
             container.innerHTML = "";
-            if(!data) { container.innerHTML = "<div style='text-align:center; margin-top:50px; color:gray; font-size:14px;'>Nothing here yet.</div>"; return; }
+            if(!data) { container.innerHTML = "<div style='text-align:center; margin-top:50px; color:gray; font-size:14px;'>Belum ada postingan.</div>"; return; }
             const posts = Object.entries(data);
             // Pinned posts always render first, then the rest in reverse-chronological order.
             posts.sort((a, b) => {
@@ -1598,14 +1598,14 @@
                 return (b[1].timestamp || 0) - (a[1].timestamp || 0); // newest next
             });
             posts.forEach(([pid, post]) => {
-                    const u = usersCache[post.uid] || {username: 'Loading...', photo: DEFAULT_AVATAR};
+                    const u = usersCache[post.uid] || {username: 'Memuat...', photo: DEFAULT_AVATAR};
                     const isLiked = post.likes && post.likes[currentUser.uid];
                     const likeCount = post.likes ? Object.keys(post.likes).length : 0;
                     const safeCaption = post.caption ? String(post.caption).replace(/</g,'&lt;') : '';
                     let followBtnHtml = '';
                     if(post.uid !== currentUser.uid) {
                         const isFollowing = followingCache[post.uid];
-                        followBtnHtml = `<button class="btn-follow ${isFollowing ? 'following' : 'not-following'}" onclick="toggleFollow('${post.uid}')">${isFollowing ? 'Following' : 'Follow'}</button>`;
+                        followBtnHtml = `<button class="btn-follow ${isFollowing ? 'following' : 'not-following'}" onclick="toggleFollow('${post.uid}')">${isFollowing ? 'Mengikuti' : 'Ikuti'}</button>`;
                     }
                     let commentsHtml = '';
                     if(post.comments) {
@@ -1649,12 +1649,12 @@
                         ${bodyHtml}
                         <div class="comment-section">
                             <span class="comment-toggle" onclick="toggleCommentSection('${pid}')">
-                                ${post.comments ? `View all ${Object.keys(post.comments).length} comments` : 'Add a comment...'}
+                                ${post.comments ? `Lihat semua ${Object.keys(post.comments).length} komentar` : 'Tambahkan komentar...'}
                             </span>
                             <div id="comments-${pid}" class="comment-list" style="display:none;">${commentsHtml}</div>
                             <div id="input-${pid}" class="comment-input-box" style="display:none;">
-                                <input type="text" id="inp-${pid}" placeholder="Add a comment...">
-                                <button onclick="postComment('${pid}', '${post.uid}')">Post</button>
+                                <input type="text" id="inp-${pid}" placeholder="Tambahkan komentar...">
+                                <button onclick="postComment('${pid}', '${post.uid}')">Kirim</button>
                             </div>
                         </div>
                     `;
@@ -1682,7 +1682,7 @@
             } else {
                  set(ref(db, path), true);
                  if(authorId !== currentUser.uid) {
-                     sendNotif(authorId, "liked your post");
+                     sendNotif(authorId, "menyukai postingan Anda");
                      // Award 2 poin only the first time this post is liked (anti-farming)
                      const rewarded = await get(ref(db, `posts/${pid}/likeRewards/${currentUser.uid}`));
                      if (!rewarded.exists()) {
@@ -1719,7 +1719,7 @@
             }
             const name = fallbackName(currentUser);
             push(ref(db, `posts/${pid}/comments`), { text: text, uid: currentUser.uid, username: name, timestamp: Date.now() });
-            if(ownerUid !== currentUser.uid) sendNotif(ownerUid, `commented: ${text}`);
+            if(ownerUid !== currentUser.uid) sendNotif(ownerUid, `berkomentar: ${text}`);
             inp.value = '';
             await recordUsage('comments');
             await awardPoints(currentUser.uid, POINTS.COMMENT, `comment ${pid}`);
@@ -1823,7 +1823,7 @@
             document.getElementById('profile-wallet-card').classList.toggle('hidden', !isSelf);
 
             const dbUser = usersCache[targetUid];
-            const finalName = (dbUser && dbUser.username) ? dbUser.username : (isSelf ? fallbackName(currentUser) : 'User');
+            const finalName = (dbUser && dbUser.username) ? dbUser.username : (isSelf ? fallbackName(currentUser) : 'Pengguna');
             const finalPhoto = (dbUser && dbUser.photo) ? dbUser.photo : DEFAULT_AVATAR;
             const role = (dbUser && dbUser.role) || (isSelf ? myRole : '');
             const isAiUser = !!(dbUser && dbUser.is_ai);
@@ -1886,7 +1886,7 @@
         window.profileStartChat = () => {
             if (!viewingProfileUid) return;
             const u = usersCache[viewingProfileUid];
-            openChat(viewingProfileUid, (u && u.username) || 'User');
+            openChat(viewingProfileUid, (u && u.username) || 'Pengguna');
         };
 
         window.uploadProfilePic = async (input) => {
@@ -1937,7 +1937,7 @@
                         div.innerHTML += `<div class="notif-row"><div class="notif-icon"><i class="fas fa-bolt"></i></div><div style="font-size:14px; color:#333;">${n.text}</div></div>`;
                     });
                 } else {
-                    div.innerHTML = '<div style="padding:20px; text-align:center; color:gray; font-size:14px;">No recent activity.</div>';
+                    div.innerHTML = '<div style="padding:20px; text-align:center; color:gray; font-size:14px;">Belum ada aktivitas terbaru.</div>';
                     badge.classList.add('hidden');
                 }
             });
@@ -2000,10 +2000,10 @@
         window.openSettingsModal = () => {
             const items = [
                 { icon: 'fa-user-gear', label: 'Pengaturan Akun', sub: 'Ubah nama, foto, dan profil', act: 'closeModal();openEditProfileModal();' },
-                { icon: 'fa-info-circle', label: 'About', sub: 'Tentang BERUANG', act: 'closeModal();openAbout();' },
-                { icon: 'fa-shield-halved', label: 'Privacy Policy', sub: 'Kebijakan privasi', act: 'closeModal();openPrivacy();' },
-                { icon: 'fa-circle-exclamation', label: 'Disclaimer', sub: 'Sangkalan', act: 'closeModal();openDisclaimer();' },
-                { icon: 'fa-file-contract', label: 'Terms of Service', sub: 'Syarat & ketentuan', act: 'closeModal();openTerms();' },
+                { icon: 'fa-info-circle', label: 'Tentang', sub: 'Tentang BERUANG', act: 'closeModal();openAbout();' },
+                { icon: 'fa-shield-halved', label: 'Kebijakan Privasi', sub: 'Kebijakan privasi', act: 'closeModal();openPrivacy();' },
+                { icon: 'fa-circle-exclamation', label: 'Sangkalan', sub: 'Sangkalan', act: 'closeModal();openDisclaimer();' },
+                { icon: 'fa-file-contract', label: 'Syarat & Ketentuan', sub: 'Syarat & ketentuan', act: 'closeModal();openTerms();' },
                 { icon: 'fa-brands fa-whatsapp', label: 'WhatsApp', sub: 'Gabung channel WhatsApp', act: `window.open('${WHATSAPP_URL}','_blank');` }
             ];
             if (isAdmin()) {
@@ -2015,11 +2015,11 @@
                     <div><div class="smi-label">${it.label}</div><div class="smi-sub">${it.sub}</div></div>
                 </div>
             `).join('');
-            openModal(`<div class="modal-title">Pengaturan</div><div class="modal-sub">Kelola akun & informasi aplikasi</div><div style="margin-top:6px;">${rows}</div><div style="height:1px; background:#e2e8f0; margin:18px 0;"></div><button class="btn-logout" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Keluar / Logout</button>`);
+            openModal(`<div class="modal-title">Pengaturan</div><div class="modal-sub">Kelola akun & informasi aplikasi</div><div style="margin-top:6px;">${rows}</div><div style="height:1px; background:#e2e8f0; margin:18px 0;"></div><button class="btn-logout" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Keluar</button>`);
         };
 
         window.openAbout = () => openInfoModal('Tentang BERUANG', `
-            <p><b>BERUANG</b> — Connect &amp; Share.</p>
+            <p><b>BERUANG</b> — Terhubung &amp; Berbagi.</p>
             <p>BERUANG adalah aplikasi sosial media berbasis poin yang menggabungkan berbagi momen, interaksi sosial, dan sistem dompet poin virtual.</p>
             <h4>Fitur Utama</h4>
             <p>• Posting foto &amp; caption<br>• Suka &amp; berkomentar<br>• Tambah teman &amp; chat pribadi<br>• Dompet poin &amp; transfer via QR<br>• Sistem tier akun<br>• Program referral</p>
@@ -2040,7 +2040,7 @@
             <p>Anda dapat mengubah profil kapan saja. Penghapusan akun dapat dilakukan melalui kontak dukungan.</p>
         `);
 
-        window.openDisclaimer = () => openInfoModal('Disclaimer', `
+        window.openDisclaimer = () => openInfoModal('Sangkalan', `
             <p>Dengan menggunakan BERUANG, Anda menyetujui sangkalan berikut:</p>
             <h4>Poin Virtual</h4>
             <p>Poin dalam BERUANG adalah mata uang virtual yang <b>tidak memiliki nilai riil</b> dan tidak dapat ditukar dengan uang fisik atau aset nyata.</p>
@@ -2073,7 +2073,7 @@
                 if (idx[uid] === acctId) {
                     const userSnap = await get(ref(db, `users/${uid}`));
                     const u = userSnap.val() || {};
-                    return { uid: uid, username: u.username || 'User', photo: u.photo || DEFAULT_AVATAR, acctId: acctId };
+                    return { uid: uid, username: u.username || 'Pengguna', photo: u.photo || DEFAULT_AVATAR, acctId: acctId };
                 }
             }
             return null;
@@ -2088,7 +2088,7 @@
                 <div style="text-align:center;">
                     <div id="my-qr-box" class="qr-box"></div>
                     <div class="acct-id-big">${myAcctId}</div>
-                    <div style="font-size:13px; color:var(--text-muted); margin-bottom:6px;">${escHtml(currentUser.displayName || 'User')}</div>
+                    <div style="font-size:13px; color:var(--text-muted); margin-bottom:6px;">${escHtml(currentUser.displayName || 'Pengguna')}</div>
                     <div style="font-size:12px; color:var(--text-muted);">Saldo: <b id="qr-balance">${myPoints.toLocaleString('id-ID')}</b> poin</div>
                 </div>
                 <button class="btn-main" style="margin-top:18px;" onclick="closeModal()">Tutup</button>
@@ -2194,7 +2194,7 @@
             if (knownUid) {
                 const uSnap = await get(ref(db, `users/${knownUid}`));
                 const u = uSnap.val() || {};
-                recipient = { uid: knownUid, username: u.username || 'User', photo: u.photo || DEFAULT_AVATAR, acctId: acctId };
+                recipient = { uid: knownUid, username: u.username || 'Pengguna', photo: u.photo || DEFAULT_AVATAR, acctId: acctId };
             } else {
                 recipient = await findUserByAcctId(acctId);
             }
@@ -2362,7 +2362,7 @@
                 } else {
                     actionHtml = `<span style="font-size:12px; color:var(--text-muted);">Poin kurang</span>`;
                 }
-                const limitTxt = t.postLimit === Infinity ? 'Unlimited' : `${t.postLimit}x/hari`;
+                const limitTxt = t.postLimit === Infinity ? 'Tanpa batas' : `${t.postLimit}x/hari`;
                 rows += `
                     <div style="display:flex; align-items:center; gap:12px; padding:12px; border:1px solid var(--border); border-radius:14px; margin-bottom:10px; ${isCurrent ? 'border-color:var(--bg-nav); background:#fffbeb;' : ''}">
                         <div class="rank-badge-pill rank-${t.name}" style="margin:0; min-width:46px; justify-content:center;"><i class="fas ${t.icon}"></i></div>
@@ -2394,7 +2394,7 @@
                     <div class="rank-badge-pill rank-${t.name}" style="margin:0; min-width:44px; justify-content:center;"><i class="fas ${t.icon}"></i></div>
                     <div>
                         <div style="font-weight:700; font-size:14px; color:#333;">${t.name}</div>
-                        <div style="font-size:12px; color:var(--text-muted);">${t.postLimit === Infinity ? 'Unlimited' : t.postLimit + 'x/hari'} posting & komentar</div>
+                        <div style="font-size:12px; color:var(--text-muted);">${t.postLimit === Infinity ? 'Tanpa batas' : t.postLimit + 'x/hari'} posting & komentar</div>
                     </div>
                 </div>
                 <p id="upg-error" style="color:#ef4444; font-size:13px; text-align:center; min-height:18px; margin:0 0 8px 0;"></p>
@@ -2432,7 +2432,7 @@
         window.openTxnHistoryModal = () => {
             openModal(`
                 <div class="modal-title">Riwayat Transaksi</div>
-                <div class="modal-sub">Aktifitas poin Anda.</div>
+                <div class="modal-sub">Aktivitas poin Anda.</div>
                 <div id="txn-history-list" style="min-height:60px;"><div style="text-align:center; color:var(--text-muted); padding:20px; font-size:13px;">Memuat...</div></div>
             `);
             onValue(ref(db, `wallets/${currentUser.uid}/history`), snap => {
@@ -2444,8 +2444,8 @@
                 Object.values(data).reverse().forEach(t => {
                     let label = '', sub = '', cls = '', sign = '';
                     if (t.type === 'reward') { label = `Reward: ${escHtml(t.reason||'aktivitas')}`; cls = 'in'; sign = '+'; }
-                    else if (t.type === 'transfer_in') { label = `Diterima dari ${escHtml(t.fromName||'User')}`; sub = t.fromAcctId ? `ID: ${escHtml(t.fromAcctId)}` : ''; cls = 'in'; sign = '+'; }
-                    else if (t.type === 'transfer_out') { label = `Dikirim ke ${escHtml(t.toName||'User')}`; sub = t.toAcctId ? `ID: ${escHtml(t.toAcctId)}` : ''; cls = 'out'; sign = '-'; }
+                    else if (t.type === 'transfer_in') { label = `Diterima dari ${escHtml(t.fromName||'Pengguna')}`; sub = t.fromAcctId ? `ID: ${escHtml(t.fromAcctId)}` : ''; cls = 'in'; sign = '+'; }
+                    else if (t.type === 'transfer_out') { label = `Dikirim ke ${escHtml(t.toName||'Pengguna')}`; sub = t.toAcctId ? `ID: ${escHtml(t.toAcctId)}` : ''; cls = 'out'; sign = '-'; }
                     else if (t.type === 'upgrade') { label = `Upgrade akun ke ${escHtml(t.tier||'tier')}`; cls = 'out'; sign = '-'; }
                     const d = new Date(t.timestamp);
                     list.innerHTML += `
@@ -2580,7 +2580,7 @@
                 row.style.cursor = 'default';
                 row.innerHTML = `
                     <i class="fas fa-circle-user" style="background:#f1f5f9;"></i>
-                    <div style="flex:1;"><div class="smi-label">${escHtml(u.username || 'User')}${adminBadgeHtml(u.uid)}${aiBadgeHtml(u.uid)}${isBlocked ? ' <span style="font-size:10px; color:#dc2626; font-weight:700;">(diblokir)</span>' : ''} <i class="fas fa-up-right-from-square" style="font-size:11px; color:#64748b; cursor:pointer;" title="Lihat profil" onclick="visitProfile('${u.uid}')"></i></div><div class="smi-sub">HP: ${escHtml(u.phone || '-')}</div></div>
+                    <div style="flex:1;"><div class="smi-label">${escHtml(u.username || 'Pengguna')}${adminBadgeHtml(u.uid)}${aiBadgeHtml(u.uid)}${isBlocked ? ' <span style="font-size:10px; color:#dc2626; font-weight:700;">(diblokir)</span>' : ''} <i class="fas fa-up-right-from-square" style="font-size:11px; color:#64748b; cursor:pointer;" title="Lihat profil" onclick="visitProfile('${u.uid}')"></i></div><div class="smi-sub">HP: ${escHtml(u.phone || '-')}</div></div>
                     ${actions}
                 `;
                 wrap.appendChild(row);
@@ -2619,7 +2619,7 @@
         // Block a user — they will be kicked out on next login and cannot use the app.
         window.adminBlockUser = async (uid) => {
             if (!isAdmin()) return;
-            const name = (usersCache[uid] && usersCache[uid].username) || 'User';
+            const name = (usersCache[uid] && usersCache[uid].username) || 'Pengguna';
             if (!confirm(`Blokir akun "${name}"? Pengguna tidak dapat masuk lagi.`)) return;
             try {
                 await set(ref(db, `blocked/${uid}`), true);
@@ -2644,7 +2644,7 @@
         // effectively disappears from the app.
         window.adminDeleteUser = async (uid) => {
             if (!isAdmin()) return;
-            const name = (usersCache[uid] && usersCache[uid].username) || 'User';
+            const name = (usersCache[uid] && usersCache[uid].username) || 'Pengguna';
             if (!confirm(`Hapus akun "${name}"? Semua data pengguna (profil, dompet, postingan) akan dihapus permanen.`)) return;
             try {
                 // Remove their posts
