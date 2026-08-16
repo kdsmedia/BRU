@@ -1,12 +1,74 @@
 RELEASE NOTES — BERUANG
 ==================================================
-Versi: 1.1.0 (versionCode 2)
+Versi: 1.3.0 (versionCode 4)
 Tanggal rilis: 15 Agustus 2026
 Package: com.altomedia.beruang
 Developer: ALTOMEDIA
 
 ------------------------------------------------------------
-BAHASA INDONESIA
+BAHASA INDONESIA — v1.3.0 (rilis ini)
+------------------------------------------------------------
+BERUANG v1.3.0 — Perbaikan iklan AdMob tidak tampil
+
+Perbaikan utama: iklan AdMob (banner) yang sebelumnya tidak
+tampil kini berfungsi. Masalahnya: SDK AdMob baru diinisialisasi
+setelah login (terlalu terlambat), tidak ada listener untuk
+event load/gagal, dan counter retry tidak pernah direset
+sehingga setelah 3x gagal banner berhenti selamanya.
+
+Perbaikan iklan AdMob di v1.3.0:
+- SDK AdMob kini diinisialisasi saat app start (sebelum login)
+  agar SDK punya waktu warm-up sebelum request iklan pertama.
+- Ditambahkan listener untuk event bannerAdLoaded dan
+  bannerAdFailedToLoad agar kegagalan load terdeteksi.
+- Auto-retry setiap 30 detik jika banner belum termuat, alih-
+  alih berhenti setelah 3 percobaan.
+- Counter retry direset pada inisialisasi baru dan setiap
+  percobaan ulang periodik.
+- Timer retry dihentikan saat banner berhasil dimuat atau
+  disembunyikan.
+
+------------------------------------------------------------
+BAHASA INDONESIA — v1.2.0
+------------------------------------------------------------
+BERUANG v1.2.0 — Perbaikan bug, pelokalan penuh, & sinkronisasi AdMob
+
+Pembaruan fokus pada perbaikan bug, penyempurnaan pelokalan
+Bahasa Indonesia, dan keandalan iklan AdMob.
+
+Perbaikan bug di v1.2.0:
+- Kunjungi profil pengguna lain kini berfungsi dengan benar.
+  Sebelumnya, mengetuk profil orang lain selalu membuka profil
+  sendiri. Sekarang profil pengguna tujuan ditampilkan sesuai
+  harapan.
+- Iklan AdMob (banner & interstisial) kini tersinkronisasi
+  dengan benar ke APK. Sebelumnya, perubahan kode belum
+  tersalin ke paket Android sehingga iklan tidak tampil.
+  Sinkronisasi Capacitor telah diperbaiki.
+
+Perubahan label (sesuai permintaan):
+- "Kode QR Saya" menjadi "QR SAYA"
+- "Scan Transfer" menjadi "TRANSFER"
+- "Riwayat" menjadi "RIWAYAT"
+
+Pelokalan Bahasa Indonesia (penyempurnaan):
+- Follow/Following → Ikuti/Mengikuti
+- Upgrade → Naik Kelas
+- Chat → Obrolan
+- Reward → Hadiah
+- "Scan & Transfer Poin" → "Pindai & Transfer Poin"
+- Seluruh teks yang ditampilkan ke pengguna kini 100% Bahasa
+  Indonesia (termasuk toast, modal, riwayat transaksi, dan
+  tombol).
+
+Infrastruktur AI:
+- SQL lengkap keseluruhan aplikasi (0000_complete_schema.sql)
+  ditambahkan — mencakup tabel nodes, RPC cas_update,
+  Realtime, RLS, Storage bucket, tabel AI, dan pg_cron.
+  Idempotent (aman dijalankan ulang tanpa error duplikat).
+
+------------------------------------------------------------
+BAHASA INDONESIA — v1.1.0
 ------------------------------------------------------------
 BERUANG v1.1.0 — Pembaruan fitur & lokalisasi penuh
 
@@ -69,7 +131,45 @@ Catatan:
 - Untuk pertanyaan: altomediaindonesia@gmail.com.
 
 ------------------------------------------------------------
-ENGLISH
+ENGLISH — v1.2.0 (this release)
+------------------------------------------------------------
+BERUANG v1.2.0 — Bug fixes, full localization, & AdMob sync
+
+Update focused on bug fixes, Bahasa Indonesia localization
+refinements, and AdMob ad reliability.
+
+Bug fixes in v1.2.0:
+- Visiting another user's profile now works correctly.
+  Previously, tapping another user's profile always opened
+  your own. The target user's profile is now shown as
+  expected.
+- AdMob ads (banner & interstitial) are now correctly synced
+  to the APK. Previously, code changes were not copied to the
+  Android package so ads did not appear. Capacitor sync has
+  been fixed.
+
+Label changes (as requested):
+- "Kode QR Saya" → "QR SAYA"
+- "Scan Transfer" → "TRANSFER"
+- "Riwayat" → "RIWAYAT"
+
+Bahasa Indonesia localization (refinements):
+- Follow/Following → Ikuti/Mengikuti
+- Upgrade → Naik Kelas
+- Chat → Obrolan
+- Reward → Hadiah
+- "Scan & Transfer Poin" → "Pindai & Transfer Poin"
+- All user-facing text is now 100% Bahasa Indonesia
+  (including toasts, modals, transaction history, buttons).
+
+AI infrastructure:
+- Complete application SQL (0000_complete_schema.sql) added —
+  covers nodes table, cas_update RPC, Realtime, RLS, Storage
+  bucket, AI tables, and pg_cron. Idempotent (safe to re-run
+  without duplicate errors).
+
+------------------------------------------------------------
+ENGLISH — v1.1.0
 ------------------------------------------------------------
 BERUANG v1.1.0 — Feature update & full localization
 
