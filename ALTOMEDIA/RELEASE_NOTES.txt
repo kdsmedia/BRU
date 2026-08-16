@@ -1,12 +1,35 @@
 RELEASE NOTES — BERUANG
 ==================================================
-Versi: 1.2.0 (versionCode 3)
+Versi: 1.3.0 (versionCode 4)
 Tanggal rilis: 15 Agustus 2026
 Package: com.altomedia.beruang
 Developer: ALTOMEDIA
 
 ------------------------------------------------------------
-BAHASA INDONESIA — v1.2.0 (rilis ini)
+BAHASA INDONESIA — v1.3.0 (rilis ini)
+------------------------------------------------------------
+BERUANG v1.3.0 — Perbaikan iklan AdMob tidak tampil
+
+Perbaikan utama: iklan AdMob (banner) yang sebelumnya tidak
+tampil kini berfungsi. Masalahnya: SDK AdMob baru diinisialisasi
+setelah login (terlalu terlambat), tidak ada listener untuk
+event load/gagal, dan counter retry tidak pernah direset
+sehingga setelah 3x gagal banner berhenti selamanya.
+
+Perbaikan iklan AdMob di v1.3.0:
+- SDK AdMob kini diinisialisasi saat app start (sebelum login)
+  agar SDK punya waktu warm-up sebelum request iklan pertama.
+- Ditambahkan listener untuk event bannerAdLoaded dan
+  bannerAdFailedToLoad agar kegagalan load terdeteksi.
+- Auto-retry setiap 30 detik jika banner belum termuat, alih-
+  alih berhenti setelah 3 percobaan.
+- Counter retry direset pada inisialisasi baru dan setiap
+  percobaan ulang periodik.
+- Timer retry dihentikan saat banner berhasil dimuat atau
+  disembunyikan.
+
+------------------------------------------------------------
+BAHASA INDONESIA — v1.2.0
 ------------------------------------------------------------
 BERUANG v1.2.0 — Perbaikan bug, pelokalan penuh, & sinkronisasi AdMob
 

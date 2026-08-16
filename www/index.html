@@ -689,6 +689,8 @@
             _initialized: false,
             _bannerShown: false,
             _bannerTries: 0,
+            _bannerListenersBound: false,
+            _bannerRetryTimer: null,
             _interReady: false,
             _interPreparing: false,
             _lastInterstitialTs: 0,
@@ -705,15 +707,61 @@
                     const { AdMob } = window.Capacitor.Plugins;
                     await AdMob.initialize({ initializeForTesting: false });
                     this._initialized = true;
+                    this._bannerTries = 0; // reset retry counter on fresh init
                     window.__dbg && window.__dbg('AdMob initialized');
+                    this._bindBannerListeners();
                     // Kick off interstitial preload as soon as the SDK is ready.
                     this.prepareInterstitial();
                 } catch (e) { console.error('AdMob init failed', e); }
+            },
+            // Bind banner lifecycle listeners once so we can react to load/failure
+            // and auto-retry instead of silently giving up.
+            _bindBannerListeners() {
+                if (this._bannerListenersBound || !this.isNative()) return;
+                const { AdMob } = window.Capacitor.Plugins;
+                try {
+                    AdMob.addListener('bannerAdLoaded', () => {
+                        this._bannerShown = true;
+                        document.body.classList.add('has-native-banner');
+                        window.__dbg && window.__dbg('AdMob banner loaded');
+                        this._stopBannerRetry();
+                    });
+                    AdMob.addListener('bannerAdFailedToLoad', (info) => {
+                        window.__dbg && window.__dbg('AdMob banner failed: ' + JSON.stringify(info));
+                        this._bannerShown = false;
+                        document.body.classList.remove('has-native-banner');
+                        this._scheduleBannerRetry();
+                    });
+                    this._bannerListenersBound = true;
+                } catch (e) { console.error('AdMob banner listener bind failed', e); }
+            },
+            _scheduleBannerRetry() {
+                if (this._bannerRetryTimer) return;
+                // Retry every 30s until the banner loads. Stops on success or hide.
+                this._bannerRetryTimer = setInterval(() => {
+                    if (!this._bannerShown) {
+                        this._bannerTries = 0; // reset so showBanner can try again
+                        this._doShowBanner();
+                    } else {
+                        this._stopBannerRetry();
+                    }
+                }, 30000);
+            },
+            _stopBannerRetry() {
+                if (this._bannerRetryTimer) {
+                    clearInterval(this._bannerRetryTimer);
+                    this._bannerRetryTimer = null;
+                }
             },
             // Show the native adaptive banner at the bottom of the screen.
             async showBanner() {
                 if (!this.isNative()) return;
                 if (!this._initialized) await this.init();
+                if (this._bannerShown) return;
+                await this._doShowBanner();
+            },
+            async _doShowBanner() {
+                if (!this.isNative() || !this._initialized) return;
                 if (this._bannerShown) return;
                 try {
                     const { AdMob } = window.Capacitor.Plugins;
@@ -723,16 +771,21 @@
                         position: 'BOTTOM_CENTER',
                         margin: 0
                     });
-                    this._bannerShown = true;
-                    document.body.classList.add('has-native-banner');
+                    // _bannerShown is set true by the bannerAdLoaded listener.
+                    // If the listener never fires, the retry timer will try again.
                 } catch (e) {
                     console.error('AdMob showBanner failed', e);
-                    // One guarded retry — the first request can race with init.
-                    if (++this._bannerTries < 3) setTimeout(() => this.showBanner(), 1500);
+                    if (++this._bannerTries < 3) {
+                        setTimeout(() => this._doShowBanner(), 1500);
+                    } else {
+                        this._scheduleBannerRetry();
+                    }
                 }
             },
             async hideBanner() {
-                if (!this.isNative() || !this._bannerShown) return;
+                if (!this.isNative()) return;
+                this._stopBannerRetry();
+                if (!this._bannerShown) return;
                 try {
                     const { AdMob } = window.Capacitor.Plugins;
                     await AdMob.hideBanner();
@@ -1213,6 +1266,11 @@
             showToast('Anda telah keluar.');
         };
 
+        // Initialize AdMob SDK as early as possible — do NOT wait for login.
+        // The SDK needs time to warm up before the first ad request can succeed.
+        // init() is a no-op on web (isNative() returns false).
+        ADMOB.init();
+
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
@@ -1319,9 +1377,9 @@
             listenMyWallet();
             loadProfile();
             initPullToRefresh();
-            // Initialize AdMob (no-op on web) and show the bottom banner on the
-            // starting view. Inline ad slots are rendered in the views themselves.
-            ADMOB.init().then(() => ADMOB.showBanner());
+            // AdMob SDK was already initialized at app startup (before login).
+            // Now show the bottom banner on the starting view.
+            ADMOB.showBanner();
         }
 
         // ===== PULL-TO-REFRESH =====
