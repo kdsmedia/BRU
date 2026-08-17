@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Base application theme (Material3, NoActionBar). -->
+    <style name="Theme.BERUANG" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/white</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+        <item name="android:navigationBarColor">@color/brand_yellow</item>
+        <item name="android:windowBackground">@color/bg_body</item>
+    </style>
+
+    <!-- Splash screen theme (shown until MainActivity content is drawn). -->
+    <style name="Theme.BERUANG.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/white</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
+        <item name="postSplashScreenTheme">@style/Theme.BERUANG</item>
+    </style>
+</resources>

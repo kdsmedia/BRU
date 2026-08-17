@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand palette — matches the original web app CSS variables. -->
+    <color name="brand_yellow">#FFEAB308</color>
+    <color name="brand_red">#FFFF0000</color>
+    <color name="bg_body">#FFF8FAFC</color>
+    <color name="bg_card">#FFFFFFFF</color>
+    <color name="text_main">#FF1E293B</color>
+    <color name="text_muted">#FF64748B</color>
+    <color name="border">#FFE2E8F0</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+    <color name="ic_launcher_background">#FFEAB308</color>
+</resources>
