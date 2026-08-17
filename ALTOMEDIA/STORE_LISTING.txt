@@ -58,7 +58,15 @@ KENAPA BERUANG?
 
 • Iklan yang Tidak Mengganggu
   Kami menampilkan iklan banner native yang terintegrasi rapi sehingga
-  tidak menutupi konten. Pengalaman Anda tetap menjadi prioritas.
+  tidak menutupi konten. Banner muncul di bagian bawah layar dengan
+  otomatis memuat ulang bila terjadi gangguan jaringan. Pengalaman
+  Anda tetap menjadi prioritas.
+
+• Iklan Reward & Interstisial
+  Saat kuota harian habis, Anda dapat menonton iklan reward secara
+  sukarela untuk mendapatkan kuota tambahan. Iklan interstisial layar
+  penuh muncul sesekali saat berpindah layar (jarak minimum 15 menit)
+  agar tidak mengganggu.
 
 PRIVASI & KEAMANAN
 

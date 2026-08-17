@@ -1,12 +1,48 @@
 RELEASE NOTES — BERUANG
 ==================================================
-Versi: 1.1.0 (versionCode 2)
-Tanggal rilis: 15 Agustus 2026
+Versi: 1.2.0 (versionCode 3)
+Tanggal rilis: 17 Agustus 2026
 Package: com.altomedia.beruang
 Developer: ALTOMEDIA
 
 ------------------------------------------------------------
 BAHASA INDONESIA
+------------------------------------------------------------
+BERUANG v1.2.0 — Perbaikan & Penyempurnaan Iklan (AdMob)
+
+Pembaruan penting yang memastikan iklan Google AdMob tampil dan
+berfungsi dengan sempurna pada perangkat Android.
+
+Perbaikan di v1.2.0:
+- Iklan banner kini benar-benar muncul di bagian bawah layar.
+  Sebelumnya banner sering tidak tampil karena status pemuatan
+  tidak dipantau; kini sistem mendeteksi keberhasilan/kegagalan
+  muat iklan dan mencoba ulang otomatis bila terjadi gangguan
+  jaringan atau "no fill" sementara.
+- Iklan interstisial (layar penuh) kini lebih andal: iklan
+  dimuat lebih awal dan dimuat ulang otomatis setelah ditutup,
+  sehingga siap ditampilkan pada perpindahan layar (jarak
+  minimum 15 menit antar tayangan tetap berlaku).
+- Iklan reward (rewarded video) kini stabil: perbaikan manajemen
+  listener agar pemberian kuota bonus (+1 posting/komentar)
+  selalu terdeteksi dan tidak menggangu iklan interstisial
+  berikutnya.
+- Inisialisasi SDK AdMob kini idempoten dan aman dari panggilan
+  bersamaan, mencegah kondisi balapan (race condition) saat aplikasi
+  dibuka.
+- Mode uji iklan: developer dapat memverifikasi tampilan iklan
+  dengan menambahkan ?adtest=1 (atau localStorage.adtest='1') untuk
+  memakai unit iklan contoh resmi Google—tidak menimbulkan
+  impresi/pendapatan iklan nyata.
+- Catatan status AdMob kini tampil pada panel debug (?debug=1)
+  untuk memudahkan pengecekan.
+
+Catatan teknis:
+- Android minSdk 23 (Android 6.0+) hingga targetSdk 37.
+- Plugin @capacitor-community/admob v6.
+
+------------------------------------------------------------
+BAHASA INDONESIA — v1.1.0
 ------------------------------------------------------------
 BERUANG v1.1.0 — Pembaruan fitur & lokalisasi penuh
 
@@ -70,6 +106,39 @@ Catatan:
 
 ------------------------------------------------------------
 ENGLISH
+------------------------------------------------------------
+BERUANG v1.2.0 — AdMob reliability & polish
+
+Important update ensuring Google AdMob ads display and function
+correctly on Android devices.
+
+Fixes in v1.2.0:
+- Banner ads now actually appear at the bottom of the screen.
+  Previously the banner often failed to show because load status
+  was not monitored; the app now detects ad load success/failure
+  and automatically retries on transient network or "no fill"
+  errors so the banner self-heals.
+- Interstitial (full-screen) ads are more reliable: they are
+  preloaded earlier and automatically reloaded after dismissal,
+  ready to show on screen changes (the 15-minute minimum gap
+  between impressions still applies).
+- Rewarded video ads are stable: listener management was fixed so
+  the +1 post/comment quota grant is always detected and no longer
+  breaks subsequent interstitial reloads.
+- AdMob SDK initialization is now idempotent and re-entrant safe,
+  preventing race conditions on app launch.
+- Ad test mode: developers can verify ad rendering with ?adtest=1
+  (or localStorage.adtest='1'), which uses Google's official sample
+  ad-unit IDs and never produces real impressions/revenue.
+- AdMob status is now surfaced in the debug panel (?debug=1) for
+  easier troubleshooting.
+
+Technical notes:
+- Android minSdk 23 (Android 6.0+) up to targetSdk 37.
+- Plugin @capacitor-community/admob v6.
+
+------------------------------------------------------------
+ENGLISH — v1.1.0
 ------------------------------------------------------------
 BERUANG v1.1.0 — Feature update & full localization
 

@@ -1,10 +1,11 @@
 PANDUAN UPLOAD BERUANG KE GOOGLE PLAY — ALTOMEDIA
 ====================================================
-Tanggal: 15 Agustus 2026
+Tanggal: 17 Agustus 2026
 Aplikasi: BERUANG
 Package: com.altomedia.beruang
 Developer: ALTOMEDIA
 Email Play Console: altomediaindonesia@gmail.com
+Versi rilis aktif: 1.2.0 (versionCode 3)
 
 ------------------------------------------------------------
 BAGIAN 1 — PERSIAPAN AKUN GOOGLE PLAY DEVELOPER
@@ -49,13 +50,18 @@ Google Play App Signing (WAJIB untuk AAB):
 ------------------------------------------------------------
 BAGIAN 4 — UPLOAD BUNDLE (.AAB)
 ------------------------------------------------------------
-File rilis: ALTOMEDIA/release/BERUANG-v1.0-release.aab
+File rilis: ALTOMEDIA/release/BERUANG-v1.2-release.aab
 1. Play Console → BERUANG → "Produksi" → "Buat rilis baru".
 2. Pilih jalur: Produksi (atau mulai dari Pengujian Tertutup).
-3. U n g a h file: BERUANG-v1.0-release.aab
+3. U n g a h file: BERUANG-v1.2-release.aab
 4. Isi "Catatan rilis":
-   - Rilis awal BERUANG v1.0.0 (lihat RELEASE_NOTES.txt).
+   - BERUANG v1.2.0 — perbaikan & penyempurnaan iklan (AdMob),
+     lihat RELEASE_NOTES.txt (gunakan teks Bahasa Indonesia untuk
+     Play Store Indonesia dan teks English untuk Play Store global).
 5. Simpan → "Tinjau rilis" → "Mulai peluncuran ke Produksi".
+
+APK untuk pengujian manual/sideload:
+   ALTOMEDIA/release/BERUANG-v1.2-release.apk
 
 ------------------------------------------------------------
 BAGIAN 5 — DAFTAR TOKO (Store Listing)
@@ -139,7 +145,9 @@ ALTOMEDIA/
 │   ├── feature-graphic-1024x500.png
 │   └── screenshot-1-1080x1920.png
 └── release/
-    ├── BERUANG-v1.0-release.apk       (APK signed)
-    └── BERUANG-v1.0-release.aab       (Bundle Play Store)
+    ├── BERUANG-v1.2-release.apk       (APK signed, versionCode 3)
+    ├── BERUANG-v1.2-release.aab       (Bundle Play Store, versionCode 3)
+    ├── BERUANG-v1.1-release.apk       (versi sebelumnya, arsip)
+    └── BERUANG-v1.1-release.aab       (versi sebelumnya, arsip)
 
-SELESAI — BERUANG siap diunggah ke Google Play.
+SELESAI — BERUANG v1.2.0 siap diunggah ke Google Play.

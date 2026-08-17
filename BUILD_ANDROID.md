@@ -111,7 +111,47 @@ When a user hits their daily post/comment limit (tier-based), they are
 prompted to watch a rewarded ad. On a completed (no-skip) view, the app
 grants +1 extra post OR +1 extra comment for that day, persisted in the
 wallet `usage.adGrants` object. Master tier is unlimited and is never
-prompted. Event listeners are cleaned up with `removeAllListeners()`
-after each rewarded call, and the prompt promise resolves exactly once
-(cancelled if the modal is dismissed).
+prompted. After each rewarded call, **only that call's listener handles
+are removed** (via `PluginListenerHandle.remove()`) — the module never
+calls `AdMob.removeAllListeners()`, because that would also wipe the
+interstitial lifetime listeners and break future interstitial reloads.
+The prompt promise resolves exactly once (cancelled if the modal is
+dismissed, with a 90s safety timeout).
+
+## AdMob test mode (verify ads without real impressions)
+
+The `ADMOB` module exposes an `isTest()` toggle. Enable it to render
+Google's official sample ad-unit IDs on any device so ads can be
+verified without counting real impressions/revenue:
+
+- Append `?adtest=1` to the app URL, **or**
+- Run `localStorage.setItem('adtest','1')` once in the webview console,
+  **or** (during dev) build with the flag preset.
+
+In test mode the module switches the banner/rewarded/interstitial IDs
+to `ca-app-pub-3940256099942544/...` sample units and passes
+`isTesting:true` on every ad request plus `initializeForTesting:true`
+on `AdMob.initialize()`. Production builds (no flag) use the real unit
+IDs and never set `isTesting`.
+
+## AdMob v1.2.0 reliability notes
+
+The `ADMOB` module was rewritten in v1.2.0 so ads actually display and
+function on native Android (@capacitor-community/admob v6):
+
+- Banner load success/failure is now observed via the
+  `bannerAdLoaded` / `bannerAdFailedToLoad` listeners. The native AdView
+  is destroyed on load failure, so failure resets state and retries with
+  backoff — a transient "no fill" / network blip self-heals instead of
+  leaving the banner permanently blank. The `has-native-banner` body
+  class is applied only on a confirmed load.
+- Interstitial lifetime listeners (`interstitialAdLoaded`,
+  `interstitialAdFailedToLoad`, `interstitialAdDismissed`,
+  `interstitialAdFailedToShow`) are bound once at init and track
+  readiness. Failed loads retry with backoff; dismissal reloads the next
+  ad. The 15-minute cooldown between impressions still applies.
+- `AdMob.initialize()` is idempotent and re-entrant safe (concurrent
+  callers coalesce), preventing race conditions on launch.
+- AdMob state messages are surfaced to the `?debug=1` on-screen log
+  overlay for troubleshooting.
 
