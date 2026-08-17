@@ -37,11 +37,15 @@ fun AppNavHost() {
             )
         }
         composable(Routes.MAIN) {
-            MainScaffold(onLogout = {
-                navController.navigate(Routes.AUTH) {
-                    popUpTo(Routes.MAIN) { inclusive = true }
-                }
-            })
+            val me = user ?: return@composable
+            MainScaffold(
+                me = me,
+                onLogout = {
+                    navController.navigate(Routes.AUTH) {
+                        popUpTo(Routes.MAIN) { inclusive = true }
+                    }
+                },
+            )
         }
     }
 }

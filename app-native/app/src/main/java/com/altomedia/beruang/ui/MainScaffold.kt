@@ -4,10 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -21,6 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +35,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.altomedia.beruang.data.NodesRepository
+import com.altomedia.beruang.data.Paths
+import com.altomedia.beruang.data.asObject
+import com.altomedia.beruang.data.str
+import com.altomedia.beruang.ui.auth.AuthUser
+import com.altomedia.beruang.ui.auth.AuthViewModel
+import com.altomedia.beruang.ui.feed.HomeScreen
 import com.altomedia.beruang.ui.theme.BgBody
 import com.altomedia.beruang.ui.theme.BrandRed
 import com.altomedia.beruang.ui.theme.BrandYellow
@@ -54,18 +63,36 @@ enum class Tab(val route: String, val label: String, val icon: ImageVector, val 
  * remaining migration steps; placeholders render until then.
  */
 @Composable
-fun MainScaffold(onLogout: () -> Unit) {
+fun MainScaffold(
+    me: AuthUser,
+    onLogout: () -> Unit,
+    authVm: AuthViewModel = viewModel(),
+) {
     var current by remember { mutableStateOf(Tab.Home) }
+    var isAdmin by remember { mutableStateOf(false) }
+
+    // Resolve admin flag from users/{uid}.role (set during bootstrap).
+    androidx.compose.runtime.LaunchedEffect(me.uid) {
+        val u = NodesRepository.readValue(Paths.user(me.uid))?.asObject()
+        isAdmin = u?.str("role") == "admin"
+    }
+
     Scaffold(
-        containerColor = com.altomedia.beruang.ui.theme.BgBody,
+        containerColor = BgBody,
         bottomBar = { NavDock(current = current, onSelect = { current = it }) },
     ) { inner ->
         Box(
             modifier = Modifier.fillMaxSize().padding(inner),
-            contentAlignment = Alignment.Center,
         ) {
             when (current) {
-                Tab.Home -> Placeholder("Beranda")
+                Tab.Home -> HomeScreen(
+                    me = me,
+                    isAdmin = isAdmin,
+                    onAddStory = {
+                        // Story picker handled in the upload step.
+                    },
+                    onVisitProfile = { /* navigate to profile — wired in profile step */ },
+                )
                 Tab.Chat -> Placeholder("Pesan")
                 Tab.Upload -> Placeholder("Unggah")
                 Tab.Notif -> Placeholder("Aktivitas")
@@ -77,7 +104,9 @@ fun MainScaffold(onLogout: () -> Unit) {
 
 @Composable
 private fun Placeholder(label: String) {
-    Text("$label — layar akan diisi langkah berikutnya", color = TextMuted)
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text("$label — layar akan diisi langkah berikutnya", color = TextMuted)
+    }
 }
 
 /**
