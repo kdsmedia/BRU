@@ -675,72 +675,185 @@
         let pendingTransferRecipient = null; // {uid, username, photo, acctId}
 
         // ===== ADMOB (Capacitor native: @capacitor-community/admob v6) =====
-        // Real production unit IDs. The plugin auto-registers on Android via
-        // capacitor.build.gradle (capacitor sync). Event names must match the
-        // plugin's RewardAdPluginEvents / BannerAdPluginEvents enums exactly,
-        // otherwise rewarded grants never fire.
+        // Production unit IDs. The plugin auto-registers on Android via
+        // capacitor.build.gradle (capacitor sync). Event-name strings match the
+        // plugin's v6 enums (InterstitialAdPluginEvents / RewardAdPluginEvents /
+        // BannerAdPluginEvents) exactly — see node_modules/@capacitor-community/admob.
+        //
+        // TESTING / DEBUG:
+        //   - Append ?adtest=1 to the URL (or set localStorage.adtest='1') to run
+        //     AdMob in test mode using Google's official sample ad-unit IDs. Test
+        //     ads render on every device and NEVER count real impressions/revenue.
+        //   - Append ?debug=1 to surface the on-screen log overlay with AdMob state.
+        //   - In production (no flag) real unit IDs below are used.
         const ADMOB = {
-            APP_ID:      'ca-app-pub-6881903056221433~1794482255',
-            BANNER_ID:   'ca-app-pub-6881903056221433/6548115489',
-            REWARDED_ID: 'ca-app-pub-6881903056221433/9174278828',
+            // Real production unit IDs (used when not in test mode).
+            APP_ID:          'ca-app-pub-6881903056221433~1794482255',
+            BANNER_ID:       'ca-app-pub-6881903056221433/6548115489',
+            REWARDED_ID:     'ca-app-pub-6881903056221433/9174278828',
             INTERSTITIAL_ID: 'ca-app-pub-6881903056221433/8432042798',
+            // Google's official sample (test) ad-unit IDs — safe, always fill.
+            TEST: {
+                BANNER_ID:       'ca-app-pub-3940256099942544/6300978111',
+                REWARDED_ID:     'ca-app-pub-3940256099942544/5224354917',
+                INTERSTITIAL_ID: 'ca-app-pub-3940256099942544/1033173712'
+            },
             // Minimum gap between two interstitial impressions (ms). 15 minutes.
             INTERSTITIAL_COOLDOWN: 15 * 60 * 1000,
             _initialized: false,
+            _initializing: false,
             _bannerShown: false,
+            _bannerWanted: false,        // whether the UI currently wants a banner
             _bannerTries: 0,
+            _bannerListenersBound: false,
             _interReady: false,
             _interPreparing: false,
             _lastInterstitialTs: 0,
             _interListenersBound: false,
+            // Per-call listener handles so we can remove ONLY those listeners
+            // (never use removeAllListeners — it would wipe the interstitial
+            // lifetime listeners and break interstitial reloads).
+            _rewardHandles: [],
+            // True when test mode is requested (?adtest=1 or localStorage.adtest).
+            isTest() {
+                try {
+                    if (new URLSearchParams(location.search).get('adtest') === '1') return true;
+                    if (localStorage.getItem('adtest') === '1') return true;
+                } catch (_) {}
+                return false;
+            },
+            // Resolve the active ad-unit IDs (test vs production).
+            unit(idKey) { return this.isTest() ? this.TEST[idKey] : this[idKey]; },
             // True only when running inside a Capacitor native shell with the plugin.
             isNative() {
                 return typeof window.Capacitor !== 'undefined'
                     && !!window.Capacitor.isNativeAvailable
                     && !!(window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob);
             },
+            // One-time MobileAds SDK initialization. Idempotent and re-entrant safe.
             async init() {
-                if (this._initialized || !this.isNative()) return;
+                if (!this.isNative()) return;
+                if (this._initialized) return;
+                if (this._initializing) {            // coalesce concurrent init calls
+                    return new Promise((res) => {
+                        const wait = () => this._initialized ? res() : setTimeout(wait, 50);
+                        wait();
+                    });
+                }
+                this._initializing = true;
                 try {
                     const { AdMob } = window.Capacitor.Plugins;
-                    await AdMob.initialize({ initializeForTesting: false });
+                    // initializeForTesting=true enables test devices; we keep the
+                    // per-request isTesting flag on each ad call for sample units.
+                    await AdMob.initialize({ initializeForTesting: this.isTest() });
                     this._initialized = true;
-                    window.__dbg && window.__dbg('AdMob initialized');
-                    // Kick off interstitial preload as soon as the SDK is ready.
+                    window.__dbg && window.__dbg('AdMob initialized (test=' + this.isTest() + ')');
+                    // Bind lifetime listeners and kick off the first interstitial preload.
+                    this._bindInterstitialListeners();
+                    this._bindBannerListeners();
                     this.prepareInterstitial();
-                } catch (e) { console.error('AdMob init failed', e); }
+                } catch (e) {
+                    console.error('AdMob init failed', e);
+                    window.__dbg && window.__dbg('AdMob init FAILED: ' + (e && e.message ? e.message : e));
+                } finally {
+                    this._initializing = false;
+                }
+            },
+            // ===== BANNER =====
+            // Bind banner load/fail listeners once. bannerAdFailedToLoad destroys
+            // the native AdView, so on failure we reset state and schedule a retry
+            // so a transient "no fill" / network blip self-heals.
+            _bindBannerListeners() {
+                if (this._bannerListenersBound || !this.isNative()) return;
+                const { AdMob } = window.Capacitor.Plugins;
+                try {
+                    AdMob.addListener('bannerAdLoaded', () => {
+                        window.__dbg && window.__dbg('banner loaded');
+                        this._bannerShown = true;
+                        this._bannerTries = 0;
+                        document.body.classList.add('has-native-banner');
+                    });
+                    AdMob.addListener('bannerAdFailedToLoad', (err) => {
+                        window.__dbg && window.__dbg('banner failed: ' + (err && err.code ? err.code : ''));
+                        this._bannerShown = false;
+                        document.body.classList.remove('has-native-banner');
+                        // The native AdView is destroyed on failure; reset so the
+                        // next showBanner creates a fresh one. Retry a few times.
+                        this._bannerWanted = false;
+                        if (++this._bannerTries < 5) setTimeout(() => this.showBanner(), 2000 * this._bannerTries);
+                    });
+                    this._bannerListenersBound = true;
+                } catch (e) { console.error('AdMob banner listener bind failed', e); }
             },
             // Show the native adaptive banner at the bottom of the screen.
             async showBanner() {
                 if (!this.isNative()) return;
-                if (!this._initialized) await this.init();
-                if (this._bannerShown) return;
+                this._bannerWanted = true;
+                if (!this._initialized) { await this.init(); }
+                if (this._bannerShown) return;       // already displayed
                 try {
                     const { AdMob } = window.Capacitor.Plugins;
                     await AdMob.showBanner({
-                        adId: this.BANNER_ID,
+                        adId: this.unit('BANNER_ID'),
                         adSize: 'ADAPTIVE_BANNER',
                         position: 'BOTTOM_CENTER',
-                        margin: 0
+                        margin: 0,
+                        isTesting: this.isTest()
                     });
-                    this._bannerShown = true;
-                    document.body.classList.add('has-native-banner');
+                    // bannerAdLoaded confirms the view; _bannerShown set in listener.
                 } catch (e) {
                     console.error('AdMob showBanner failed', e);
-                    // One guarded retry — the first request can race with init.
-                    if (++this._bannerTries < 3) setTimeout(() => this.showBanner(), 1500);
+                    window.__dbg && window.__dbg('showBanner err: ' + (e && e.message ? e.message : e));
+                    if (++this._bannerTries < 5) setTimeout(() => { if (this._bannerWanted) this.showBanner(); }, 2000 * this._bannerTries);
                 }
             },
             async hideBanner() {
-                if (!this.isNative() || !this._bannerShown) return;
+                if (!this.isNative()) return;
+                this._bannerWanted = false;
+                if (!this._bannerShown) return;
                 try {
                     const { AdMob } = window.Capacitor.Plugins;
                     await AdMob.hideBanner();
-                    this._bannerShown = false;
-                    document.body.classList.remove('has-native-banner');
                 } catch (e) { console.error('AdMob hideBanner failed', e); }
+                // keep _bannerShown true — banner still exists, just hidden; resumeBanner can bring it back
+            },
+            async resumeBanner() {
+                if (!this.isNative() || !this._bannerWanted) return;
+                if (!this._bannerShown) return;
+                try {
+                    const { AdMob } = window.Capacitor.Plugins;
+                    await AdMob.resumeBanner();
+                } catch (e) { console.error('AdMob resumeBanner failed', e); }
             },
             // ===== INTERSTITIAL =====
+            // Bind the load/dismiss listeners once — they live for the app
+            // lifetime and track readiness rather than per-show.
+            _bindInterstitialListeners() {
+                if (this._interListenersBound || !this.isNative()) return;
+                const { AdMob } = window.Capacitor.Plugins;
+                try {
+                    AdMob.addListener('interstitialAdLoaded', () => {
+                        this._interReady = true; this._interPreparing = false;
+                        window.__dbg && window.__dbg('interstitial loaded');
+                    });
+                    AdMob.addListener('interstitialAdFailedToLoad', (err) => {
+                        this._interReady = false; this._interPreparing = false;
+                        window.__dbg && window.__dbg('interstitial load failed: ' + (err && err.code ? err.code : ''));
+                        // Backoff retry so a transient no-fill doesn't permanently kill interstitials.
+                        setTimeout(() => this.prepareInterstitial(), 30000);
+                    });
+                    AdMob.addListener('interstitialAdDismissed', () => {
+                        this._interReady = false;
+                        // Preload the next one so a fresh ad is ready for the next window.
+                        setTimeout(() => this.prepareInterstitial(), 1500);
+                    });
+                    AdMob.addListener('interstitialAdFailedToShow', () => {
+                        this._interReady = false;
+                        setTimeout(() => this.prepareInterstitial(), 1500);
+                    });
+                    this._interListenersBound = true;
+                } catch (e) { console.error('AdMob interstitial listener bind failed', e); }
+            },
             // Preload a full-screen interstitial. Idempotent: no-op if already
             // ready or currently preparing. Event names match the plugin's
             // InterstitialAdPluginEvents enum exactly.
@@ -749,27 +862,13 @@
                 if (!this._initialized) await this.init();
                 if (this._interReady || this._interPreparing) return;
                 const { AdMob } = window.Capacitor.Plugins;
-                // Bind the load/dismiss listeners once — they live for the app
-                // lifetime and track readiness rather than per-show.
-                if (!this._interListenersBound) {
-                    try {
-                        AdMob.addListener('interstitialAdLoaded', () => { this._interReady = true; this._interPreparing = false; window.__dbg && window.__dbg('interstitial loaded'); });
-                        AdMob.addListener('interstitialAdFailedToLoad', () => { this._interReady = false; this._interPreparing = false; });
-                        AdMob.addListener('interstitialAdDismissed', () => {
-                            this._interReady = false;
-                            // Preload the next one so a fresh ad is ready for the next window.
-                            setTimeout(() => this.prepareInterstitial(), 1500);
-                        });
-                        AdMob.addListener('interstitialAdFailedToShow', () => { this._interReady = false; setTimeout(() => this.prepareInterstitial(), 1500); });
-                        this._interListenersBound = true;
-                    } catch (e) { console.error('AdMob interstitial listener bind failed', e); }
-                }
                 try {
                     this._interPreparing = true;
-                    await AdMob.prepareInterstitial({ adId: this.INTERSTITIAL_ID });
+                    await AdMob.prepareInterstitial({ adId: this.unit('INTERSTITIAL_ID'), isTesting: this.isTest() });
                 } catch (e) {
                     this._interPreparing = false;
                     console.error('AdMob prepareInterstitial failed', e);
+                    window.__dbg && window.__dbg('prepareInterstitial err: ' + (e && e.message ? e.message : e));
                 }
             },
             // Show a full-screen interstitial only if (a) an ad is loaded and
@@ -793,36 +892,50 @@
                     return false;
                 }
             },
+            // ===== REWARDED VIDEO =====
             // Show a rewarded video. Resolves { rewarded: true } only when the
-            // user completed the video. Uses the plugin's correct event names
-            // (onRewardedVideoAdReward / onRewardedVideoAdDismissed) plus the
+            // user completed the video. Uses the plugin's correct v6 event names
+            // (RewardAdPluginEvents: onRewardedVideoAdReward / onRewardedVideoAdDismissed
+            // / onRewardedVideoAdFailedToShow / onRewardedVideoAdFailedToLoad) plus the
             // showRewardVideoAd promise as the primary completion signal.
-            // Listeners are cleaned up after each call so they never accumulate.
+            // Only THIS call's listeners are removed afterwards — we never call
+            // removeAllListeners (that would wipe the interstitial lifetime listeners).
             async showRewarded() {
                 if (!this.isNative()) return { rewarded: false };
                 if (!this._initialized) await this.init();
                 const { AdMob } = window.Capacitor.Plugins;
                 let settled = false;
-                const cleanup = async () => { try { await AdMob.removeAllListeners(); } catch (_) {} };
+                const handles = this._rewardHandles;
+                const cleanup = async () => {
+                    for (const h of handles.splice(0, handles.length)) {
+                        try { await h.remove(); } catch (_) {}
+                    }
+                };
                 try {
-                    await AdMob.prepareRewardVideoAd({ adId: this.REWARDED_ID });
+                    await AdMob.prepareRewardVideoAd({ adId: this.unit('REWARDED_ID'), isTesting: this.isTest() });
                     const rewarded = await new Promise((resolve) => {
                         const done = (v) => { if (!settled) { settled = true; resolve(v); } };
+                        // Collect each handle so we can remove exactly these listeners.
+                        const track = (p) => { p.then(h => handles.push(h)); return p; };
                         // Correct v6 event names.
-                        AdMob.addListener('onRewardedVideoAdReward', () => done(true));
-                        AdMob.addListener('onRewardedVideoAdDismissed', () => done(false));
-                        AdMob.addListener('onRewardedVideoAdFailedToShow', () => done(false));
-                        AdMob.addListener('onRewardedVideoAdFailedToLoad', () => done(false));
+                        track(AdMob.addListener('onRewardedVideoAdReward', () => done(true)));
+                        track(AdMob.addListener('onRewardedVideoAdDismissed', () => done(false)));
+                        track(AdMob.addListener('onRewardedVideoAdFailedToShow', () => done(false)));
+                        track(AdMob.addListener('onRewardedVideoAdFailedToLoad', () => done(false)));
                         // Primary signal: showRewardVideoAd resolves with the reward
                         // item on completion, or rejects on failure/close.
                         AdMob.showRewardVideoAd()
                             .then((item) => done(!!(item && (item.type || item.amount !== undefined)) ? true : true))
                             .catch(() => done(false));
+                        // Safety net: if no event/promise ever fires within 90s,
+                        // resolve as not-rewarded and clean up listeners.
+                        setTimeout(() => done(false), 90000);
                     });
                     await cleanup();
                     return { rewarded };
                 } catch (e) {
                     console.error('AdMob rewarded failed', e);
+                    window.__dbg && window.__dbg('rewarded err: ' + (e && e.message ? e.message : e));
                     await cleanup();
                     return { rewarded: false };
                 }
