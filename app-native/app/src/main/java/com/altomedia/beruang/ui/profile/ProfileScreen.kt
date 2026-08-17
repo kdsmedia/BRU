@@ -78,12 +78,13 @@ fun ProfileScreen(
     val state by pvm.state.collectAsState()
     val wallet by wvm.state.collectAsState()
 
-    // Modal state (self only): edit, settings, QR, history, scanner.
+    // Modal state (self only): edit, settings, QR, history, scanner, upgrade.
     var showEdit by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
     var showQr by remember { mutableStateOf(false) }
     var showHistory by remember { mutableStateOf(false) }
     var showScanner by remember { mutableStateOf(false) }
+    var showUpgrade by remember { mutableStateOf(false) }
 
     LaunchedEffect(target, me.uid) { pvm.load(target, me.uid) }
     LaunchedEffect(me.uid) { wvm.start(me.uid) }
@@ -174,7 +175,7 @@ fun ProfileScreen(
                 onShowMyQr = { showQr = true },
                 onScanQr = { showScanner = true },
                 onHistory = { showHistory = true },
-                onUpgrade = onUpgrade,
+                onUpgrade = { showUpgrade = true },
             )
         }
 
@@ -234,6 +235,42 @@ fun ProfileScreen(
             myAcctId = wallet.acctId,
             myBalance = wallet.balance,
             onDismiss = { showScanner = false },
+        )
+    }
+    if (showUpgrade) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showUpgrade = false },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = { showUpgrade = false }) {
+                    Text("Tutup", color = TextMuted)
+                }
+            },
+            text = {
+                com.altomedia.beruang.ui.wallet.TierSheet(
+                    currentTier = state.tier,
+                    balance = wallet.balance,
+                    onBuy = { target ->
+                        scope.launch {
+                            val err = com.altomedia.beruang.data.WalletRepository
+                                .buyTier(me.uid, state.tier, target)
+                            showToast(
+                                context,
+                                if (err == null) "Berhasil naik ke $target" else err,
+                            )
+                            if (err == null) { showUpgrade = false; wvm.start(me.uid) }
+                        }
+                    },
+                    onSwitch = { target ->
+                        scope.launch {
+                            com.altomedia.beruang.data.WalletRepository
+                                .switchTier(me.uid, target)
+                            showToast(context, "Tier aktif: $target")
+                            showUpgrade = false
+                            wvm.start(me.uid)
+                        }
+                    },
+                )
+            },
         )
     }
 }

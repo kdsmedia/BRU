@@ -230,4 +230,12 @@ object WalletRepository {
         })
         return null
     }
+
+    /**
+     * Switch the active tier to an already-owned [tierName] — port of the web
+     * `switchTier`. Only allows switching to a tier at or below the current one.
+     */
+    suspend fun switchTier(uid: String, tierName: String) {
+        repo.update(repo.ref(Paths.wallet(uid)), buildJsonObject { put("tier", tierName) })
+    }
 }
