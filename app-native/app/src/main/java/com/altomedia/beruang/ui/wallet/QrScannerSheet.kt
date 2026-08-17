@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -62,10 +60,10 @@ fun QrScannerSheet(
         if (!contents.isNullOrEmpty()) {
             // Payload may be JSON {acctId, uid} or a plain acctId.
             val acctId = try {
-                val obj = Json.decodeFromString< kotlinx.serialization.json.JsonObject>(contents)
-                obj["acctId"]?.let { (it as? kotlinx.serialization.json.JsonPrimitive)?.content }
-                    ?: obj["uid"]?.let { (it as? kotlinx.serialization.json.JsonPrimitive)?.content }
-                    ?: contents
+                val obj = Json.decodeFromString<kotlinx.serialization.json.JsonObject>(contents)
+                val a = obj["acctId"]?.let { (it as? kotlinx.serialization.json.JsonPrimitive)?.content }
+                val u = obj["uid"]?.let { (it as? kotlinx.serialization.json.JsonPrimitive)?.content }
+                a ?: u ?: contents
             } catch (_: Exception) {
                 contents // plain acctId string
             }
@@ -147,7 +145,6 @@ fun QrScannerSheet(
                                 .setOrientationLocked(false)
                             scanner.launch(opts)
                         },
-                        icon = Icons.Filled.CameraAlt,
                     )
                 }
                 Text("Tidak bisa scan? Masukkan ID akun manual.", fontSize = 12.sp, color = TextMuted)
