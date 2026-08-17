@@ -36,6 +36,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.altomedia.beruang.data.PostRepository
+import com.altomedia.beruang.data.asObject
+import com.altomedia.beruang.data.str
 import com.altomedia.beruang.ui.auth.AuthUser
 import com.altomedia.beruang.ui.components.showToast
 import com.altomedia.beruang.ui.theme.BgBody
