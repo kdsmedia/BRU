@@ -731,6 +731,8 @@
                     && !!(window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob);
             },
             // One-time MobileAds SDK initialization. Idempotent and re-entrant safe.
+            // Order: (1) best-effort UMP consent, (2) initialize SDK,
+            // (3) await lifetime listener registration, (4) preload interstitial.
             async init() {
                 if (!this.isNative()) return;
                 if (this._initialized) return;
@@ -743,14 +745,21 @@
                 this._initializing = true;
                 try {
                     const { AdMob } = window.Capacitor.Plugins;
-                    // initializeForTesting=true enables test devices; we keep the
+                    // (1) Google UMP consent. Best-effort: never blocks ads if it
+                    // fails or times out. Required by Google policy in many regions;
+                    // without it the SDK may not serve ads to EEA users.
+                    await this._requestConsent();
+                    // (2) initializeForTesting=true enables test devices; we keep the
                     // per-request isTesting flag on each ad call for sample units.
                     await AdMob.initialize({ initializeForTesting: this.isTest() });
                     this._initialized = true;
                     window.__dbg && window.__dbg('AdMob initialized (test=' + this.isTest() + ')');
-                    // Bind lifetime listeners and kick off the first interstitial preload.
-                    this._bindInterstitialListeners();
-                    this._bindBannerListeners();
+                    // (3) Bind lifetime listeners and AWAIT registration so we don't
+                    // miss the first bannerAdLoaded / interstitialAdLoaded events
+                    // (addListener returns a Promise in Capacitor v6).
+                    await this._bindBannerListeners();
+                    await this._bindInterstitialListeners();
+                    // (4) kick off the first interstitial preload.
                     this.prepareInterstitial();
                 } catch (e) {
                     console.error('AdMob init failed', e);
@@ -759,21 +768,45 @@
                     this._initializing = false;
                 }
             },
+            // ===== UMP CONSENT (Google User Messaging Platform) =====
+            // Request consent info and show the consent form if required/available.
+            // Wrapped so any failure (no network, no Play services, etc.) never
+            // prevents ads from initializing. Times out after 6s.
+            async _requestConsent() {
+                if (!this.isNative()) return;
+                const { AdMob } = window.Capacitor.Plugins;
+                try {
+                    const info = await Promise.race([
+                        AdMob.requestConsentInfo({}),
+                        new Promise((_, rej) => setTimeout(() => rej(new Error('consent timeout')), 6000))
+                    ]);
+                    window.__dbg && window.__dbg('consent status=' + (info && info.status));
+                    if (info && info.isConsentFormAvailable) {
+                        try { await AdMob.showConsentForm(); } catch (e) {
+                            window.__dbg && window.__dbg('consent form error: ' + (e && e.message ? e.message : e));
+                        }
+                    }
+                } catch (e) {
+                    window.__dbg && window.__dbg('consent skipped: ' + (e && e.message ? e.message : e));
+                }
+            },
             // ===== BANNER =====
             // Bind banner load/fail listeners once. bannerAdFailedToLoad destroys
             // the native AdView, so on failure we reset state and schedule a retry
             // so a transient "no fill" / network blip self-heals.
-            _bindBannerListeners() {
+            async _bindBannerListeners() {
                 if (this._bannerListenersBound || !this.isNative()) return;
                 const { AdMob } = window.Capacitor.Plugins;
                 try {
-                    AdMob.addListener('bannerAdLoaded', () => {
+                    // Await each addListener so registration completes before we
+                    // request the first banner (avoids missing bannerAdLoaded).
+                    await AdMob.addListener('bannerAdLoaded', () => {
                         window.__dbg && window.__dbg('banner loaded');
                         this._bannerShown = true;
                         this._bannerTries = 0;
                         document.body.classList.add('has-native-banner');
                     });
-                    AdMob.addListener('bannerAdFailedToLoad', (err) => {
+                    await AdMob.addListener('bannerAdFailedToLoad', (err) => {
                         window.__dbg && window.__dbg('banner failed: ' + (err && err.code ? err.code : ''));
                         this._bannerShown = false;
                         document.body.classList.remove('has-native-banner');
@@ -827,27 +860,29 @@
             },
             // ===== INTERSTITIAL =====
             // Bind the load/dismiss listeners once — they live for the app
-            // lifetime and track readiness rather than per-show.
-            _bindInterstitialListeners() {
+            // lifetime and track readiness rather than per-show. Awaited so the
+            // interstitialAdLoaded event from the first prepareInterstitial is
+            // not missed (addListener is async in Capacitor v6).
+            async _bindInterstitialListeners() {
                 if (this._interListenersBound || !this.isNative()) return;
                 const { AdMob } = window.Capacitor.Plugins;
                 try {
-                    AdMob.addListener('interstitialAdLoaded', () => {
+                    await AdMob.addListener('interstitialAdLoaded', () => {
                         this._interReady = true; this._interPreparing = false;
                         window.__dbg && window.__dbg('interstitial loaded');
                     });
-                    AdMob.addListener('interstitialAdFailedToLoad', (err) => {
+                    await AdMob.addListener('interstitialAdFailedToLoad', (err) => {
                         this._interReady = false; this._interPreparing = false;
                         window.__dbg && window.__dbg('interstitial load failed: ' + (err && err.code ? err.code : ''));
                         // Backoff retry so a transient no-fill doesn't permanently kill interstitials.
                         setTimeout(() => this.prepareInterstitial(), 30000);
                     });
-                    AdMob.addListener('interstitialAdDismissed', () => {
+                    await AdMob.addListener('interstitialAdDismissed', () => {
                         this._interReady = false;
                         // Preload the next one so a fresh ad is ready for the next window.
                         setTimeout(() => this.prepareInterstitial(), 1500);
                     });
-                    AdMob.addListener('interstitialAdFailedToShow', () => {
+                    await AdMob.addListener('interstitialAdFailedToShow', () => {
                         this._interReady = false;
                         setTimeout(() => this.prepareInterstitial(), 1500);
                     });
