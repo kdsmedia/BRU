@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -77,11 +78,12 @@ fun ProfileScreen(
     val state by pvm.state.collectAsState()
     val wallet by wvm.state.collectAsState()
 
-    // Modal state (self only): edit, settings, QR, history.
+    // Modal state (self only): edit, settings, QR, history, scanner.
     var showEdit by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
     var showQr by remember { mutableStateOf(false) }
     var showHistory by remember { mutableStateOf(false) }
+    var showScanner by remember { mutableStateOf(false) }
 
     LaunchedEffect(target, me.uid) { pvm.load(target, me.uid) }
     LaunchedEffect(me.uid) { wvm.start(me.uid) }
@@ -107,6 +109,7 @@ fun ProfileScreen(
                 Text("Profil", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextMain)
             }
             if (isSelf) {
+                Icon(Icons.Filled.QrCodeScanner, "Scan QR", modifier = Modifier.clickable { showScanner = true }.padding(4.dp).size(22.dp), tint = TextMain)
                 Icon(Icons.Filled.Edit, "Edit", modifier = Modifier.clickable { showEdit = true }.padding(4.dp).size(22.dp), tint = TextMain)
                 Icon(Icons.Filled.Settings, "Pengaturan", modifier = Modifier.clickable { showSettings = true }.padding(4.dp).size(22.dp), tint = TextMain)
             }
@@ -169,7 +172,7 @@ fun ProfileScreen(
                 state = wallet,
                 myName = state.username,
                 onShowMyQr = { showQr = true },
-                onScanQr = onScanQr,
+                onScanQr = { showScanner = true },
                 onHistory = { showHistory = true },
                 onUpgrade = onUpgrade,
             )
@@ -223,6 +226,15 @@ fun ProfileScreen(
     }
     if (showHistory) {
         TxnHistorySheet(uid = me.uid, onDismiss = { showHistory = false })
+    }
+    if (showScanner) {
+        QrScannerSheet(
+            meUid = me.uid,
+            myName = state.username,
+            myAcctId = wallet.acctId,
+            myBalance = wallet.balance,
+            onDismiss = { showScanner = false },
+        )
     }
 }
 

@@ -146,6 +146,22 @@ object WalletRepository {
         repo.readValue(Paths.walletBalance(uid))?.asLong() ?: 0L
 
     /**
+     * Look up a recipient by acctId — port of the web `findUserByAcctId`.
+     * Scans `account_index` for the matching acctId, then reads the user.
+     */
+    suspend fun findUserByAcctId(acctId: String): Recipient? {
+        val idx = repo.readValue(Paths.accountIndex())?.asObject() ?: return null
+        val uid = idx.entries.firstOrNull { it.value.asString() == acctId }?.key ?: return null
+        val u = repo.readValue(Paths.user(uid))?.asObject() ?: return null
+        return Recipient(
+            uid = uid,
+            username = u.str("username") ?: "Pengguna",
+            photo = u.str("photo") ?: AppConstants.DEFAULT_AVATAR,
+            acctId = acctId,
+        )
+    }
+
+    /**
      * Transfer [amount] from [senderUid] to [recipient]. Verifies the PIN and
      * uses an atomic compare-and-swap so the sender can never go negative.
      * Returns null on success, an error message otherwise.
