@@ -9,6 +9,12 @@ ext {
     androidxFragmentVersion = '1.6.2'
     coreSplashScreenVersion = '1.0.1'
     androidxWebkitVersion = '1.9.0'
+    // Google Mobile Ads SDK — Google policy requires >= 18.1.0 (Android).
+    // Pinned at the project level (overriding the @capacitor-community/admob
+    // plugin default) so the compliant version is guaranteed regardless of
+    // plugin-default changes. 23.6.0 is a recent 23.x release, the same major
+    // series the plugin v6 was built and tested against.
+    playServicesAdsVersion = '23.6.0'
     junitVersion = '4.13.2'
     androidxJunitVersion = '1.1.5'
     androidxEspressoCoreVersion = '3.5.1'
