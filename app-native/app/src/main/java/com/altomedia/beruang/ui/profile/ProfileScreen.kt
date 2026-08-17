@@ -65,6 +65,9 @@ fun ProfileScreen(
     onScanQr: () -> Unit,
     onHistory: () -> Unit,
     onUpgrade: () -> Unit,
+    onLogout: () -> Unit = {},
+    isAdmin: Boolean = false,
+    onAdmin: () -> Unit = {},
     pvm: ProfileViewModel = viewModel(),
     wvm: WalletViewModel = viewModel(),
 ) {
@@ -73,6 +76,12 @@ fun ProfileScreen(
     val target = targetUid ?: me.uid
     val state by pvm.state.collectAsState()
     val wallet by wvm.state.collectAsState()
+
+    // Modal state (self only): edit, settings, QR, history.
+    var showEdit by remember { mutableStateOf(false) }
+    var showSettings by remember { mutableStateOf(false) }
+    var showQr by remember { mutableStateOf(false) }
+    var showHistory by remember { mutableStateOf(false) }
 
     LaunchedEffect(target, me.uid) { pvm.load(target, me.uid) }
     LaunchedEffect(me.uid) { wvm.start(me.uid) }
@@ -98,8 +107,8 @@ fun ProfileScreen(
                 Text("Profil", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = TextMain)
             }
             if (isSelf) {
-                Icon(Icons.Filled.Edit, "Edit", modifier = Modifier.clickable { onEdit() }.padding(4.dp).size(22.dp), tint = TextMain)
-                Icon(Icons.Filled.Settings, "Pengaturan", modifier = Modifier.clickable { onSettings() }.padding(4.dp).size(22.dp), tint = TextMain)
+                Icon(Icons.Filled.Edit, "Edit", modifier = Modifier.clickable { showEdit = true }.padding(4.dp).size(22.dp), tint = TextMain)
+                Icon(Icons.Filled.Settings, "Pengaturan", modifier = Modifier.clickable { showSettings = true }.padding(4.dp).size(22.dp), tint = TextMain)
             }
         }
 
@@ -108,7 +117,7 @@ fun ProfileScreen(
             AsyncImage(
                 model = state.photo,
                 contentDescription = null,
-                modifier = Modifier.size(90.dp).clip(CircleShape).clickable { onEdit() },
+                modifier = Modifier.size(90.dp).clip(CircleShape).clickable { if (isSelf) showEdit = true },
             )
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
                 Text(state.username, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextMain)
@@ -159,9 +168,9 @@ fun ProfileScreen(
             WalletCard(
                 state = wallet,
                 myName = state.username,
-                onShowMyQr = onShowMyQr,
+                onShowMyQr = { showQr = true },
                 onScanQr = onScanQr,
-                onHistory = onHistory,
+                onHistory = { showHistory = true },
                 onUpgrade = onUpgrade,
             )
         }
@@ -182,6 +191,38 @@ fun ProfileScreen(
                 )
             }
         }
+    }
+
+    // Self modals.
+    if (showEdit) {
+        EditProfileSheet(
+            uid = me.uid,
+            currentName = state.username,
+            currentPhoto = state.photo,
+            onSaved = { showEdit = false; pvm.load(me.uid, me.uid) },
+            onDismiss = { showEdit = false },
+        )
+    }
+    if (showSettings) {
+        SettingsSheet(
+            onEditProfile = { showSettings = false; showEdit = true },
+            onLogout = { showSettings = false; onLogout() },
+            onAdmin = { showSettings = false; onAdmin() },
+            isAdmin = isAdmin,
+            onDismiss = { showSettings = false },
+        )
+    }
+    if (showQr) {
+        QrSheet(
+            uid = me.uid,
+            acctId = wallet.acctId,
+            name = state.username,
+            balance = wallet.balance,
+            onDismiss = { showQr = false },
+        )
+    }
+    if (showHistory) {
+        TxnHistorySheet(uid = me.uid, onDismiss = { showHistory = false })
     }
 }
 

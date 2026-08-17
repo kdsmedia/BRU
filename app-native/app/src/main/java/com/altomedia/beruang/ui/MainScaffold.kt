@@ -138,11 +138,14 @@ fun MainScaffold(
                     onBack = {},
                     onMessage = { uid -> chatTarget = uid to "" },
                     onEdit = {},
-                    onSettings = { if (isAdmin) showAdmin = true },
+                    onSettings = {},
                     onShowMyQr = {},
                     onScanQr = {},
                     onHistory = {},
                     onUpgrade = {},
+                    onLogout = onLogout,
+                    isAdmin = isAdmin,
+                    onAdmin = { showAdmin = true },
                 )
             }
 
