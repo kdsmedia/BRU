@@ -40,6 +40,7 @@ import com.altomedia.beruang.data.NodesRepository
 import com.altomedia.beruang.data.Paths
 import com.altomedia.beruang.data.asObject
 import com.altomedia.beruang.data.str
+import com.altomedia.beruang.ui.admin.AdminScreen
 import com.altomedia.beruang.ui.auth.AuthUser
 import com.altomedia.beruang.ui.auth.AuthViewModel
 import com.altomedia.beruang.ui.chat.ChatListScreen
@@ -47,6 +48,7 @@ import com.altomedia.beruang.ui.chat.ChatScreen
 import com.altomedia.beruang.ui.feed.HomeScreen
 import com.altomedia.beruang.ui.notif.NotifScreen
 import com.altomedia.beruang.ui.profile.ProfileScreen
+import com.altomedia.beruang.ui.upload.UploadScreen
 import com.altomedia.beruang.ui.theme.BgBody
 import com.altomedia.beruang.ui.theme.BrandRed
 import com.altomedia.beruang.ui.theme.BrandYellow
@@ -78,6 +80,8 @@ fun MainScaffold(
     var chatTarget by remember { mutableStateOf<Pair<String, String>?>(null) }
     // Profile visit overlay: when non-null, ProfileScreen is shown on top.
     var profileTarget by remember { mutableStateOf<String?>(null) }
+    // Admin panel overlay (admin only).
+    var showAdmin by remember { mutableStateOf(false) }
 
     // Resolve admin flag from users/{uid}.role (set during bootstrap).
     LaunchedEffect(me.uid) {
@@ -102,7 +106,10 @@ fun MainScaffold(
                     onOpenChat = { uid, name -> chatTarget = uid to name },
                     onVisitProfile = { profileTarget = it },
                 )
-                Tab.Upload -> Placeholder("Unggah")
+                Tab.Upload -> UploadScreen(
+                    me = me,
+                    onPosted = { current = Tab.Home },
+                )
                 Tab.Notif -> NotifScreen(uid = me.uid)
                 Tab.Profile -> ProfileScreen(
                     me = me,
@@ -110,7 +117,7 @@ fun MainScaffold(
                     onBack = {},
                     onMessage = { uid -> chatTarget = uid to "" },
                     onEdit = {},
-                    onSettings = {},
+                    onSettings = { if (isAdmin) showAdmin = true },
                     onShowMyQr = {},
                     onScanQr = {},
                     onHistory = {},
@@ -144,6 +151,14 @@ fun MainScaffold(
                     onUpgrade = {},
                 )
             }
+
+            // Admin overlay (admin only).
+            if (showAdmin) {
+                AdminScreen(
+                    myUid = me.uid,
+                    onVisitProfile = { profileTarget = it; showAdmin = false },
+                )
+            }
         }
     }
 }
@@ -154,6 +169,7 @@ private fun Placeholder(label: String) {
         Text("$label — layar akan diisi langkah berikutnya", color = TextMuted)
     }
 }
+
 
 /**
  * Bottom navigation dock — port of `.nav-dock`: yellow bar, the center upload
