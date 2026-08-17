@@ -30,6 +30,16 @@ Perbaikan di v1.2.0:
 - Inisialisasi SDK AdMob kini idempoten dan aman dari panggilan
   bersamaan, mencegah kondisi balapan (race condition) saat aplikasi
   dibuka.
+- PERBAIKAN PENYEBAB IKLAN TIDAK TAMPIL: pendaftaran listener
+  banner/interstitial kini ditunggu (await) sebelum iklan pertama
+  diminta — sebelumnya event "iklan termuat" bisa terlewat sehingga
+  banner terlihat macet/tersembunyi. Kini banner selalu tampil.
+- PERSETUJUAN PENGGUNA (UMP/GDPR): sebelum iklan dimuat, aplikasi
+  kini meminta persetujuan iklan Google (User Messaging Platform)
+  sesuai kebijakan Google. Pengguna di wilayah EEA akan melihat
+  formulir persetujuan; di luar EEA (termasuk Indonesia) otomatis
+  berjalan tanpa formulir. Ini mengikuti kebijakan Google dan
+  memastikan iklan tetap dapat ditayangkan.
 - Mode uji iklan: developer dapat memverifikasi tampilan iklan
   dengan menambahkan ?adtest=1 (atau localStorage.adtest='1') untuk
   memakai unit iklan contoh resmi Google—tidak menimbulkan
@@ -127,6 +137,16 @@ Fixes in v1.2.0:
   breaks subsequent interstitial reloads.
 - AdMob SDK initialization is now idempotent and re-entrant safe,
   preventing race conditions on app launch.
+- ROOT-CAUSE FIX FOR ADS NOT SHOWING: banner/interstitial listener
+  registration is now awaited before the first ad is requested. The
+  previous code could miss the "ad loaded" event (Capacitor v6
+  addListener is async), leaving the banner stuck/hidden. Banners now
+  reliably display.
+- USER CONSENT (UMP/GDPR): before loading ads, the app now requests
+  Google ad consent via the User Messaging Platform, per Google
+  policy. EEA users see the consent form; outside the EEA (including
+  Indonesia) it runs automatically with no form. This complies with
+  Google policy and keeps ads eligible to serve.
 - Ad test mode: developers can verify ad rendering with ?adtest=1
   (or localStorage.adtest='1'), which uses Google's official sample
   ad-unit IDs and never produces real impressions/revenue.

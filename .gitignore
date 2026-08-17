@@ -13,3 +13,16 @@ android/app/src/main/assets/public/
 android/app/src/main/assets/capacitor.config.json
 android/app/src/main/assets/capacitor.plugins.json
 android/capacitor-cordova-android-plugins/
+.build_admob.sh
+
+# Build/temp logs
+.build_admob.sh
+.build_done
+.build_stdout.log
+.apt.log
+.capsync.log
+.cl.zip
+.gradle.log
+.lic.log
+.outputs.log
+.sdk.log
