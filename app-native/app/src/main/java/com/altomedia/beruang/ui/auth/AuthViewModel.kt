@@ -2,6 +2,7 @@ package com.altomedia.beruang.ui.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.altomedia.beruang.data.AuthRepository
 import com.altomedia.beruang.data.SupabaseProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +17,8 @@ data class AuthUser(
 )
 
 /**
- * Tracks the Supabase auth session. Implemented fully in the data-layer step.
+ * Tracks the Supabase auth session. On init it refreshes/import the stored
+ * session and exposes the current user (or null) for the navigation graph.
  */
 class AuthViewModel : ViewModel() {
     private val _currentUser = MutableStateFlow<AuthUser?>(null)
@@ -24,11 +26,12 @@ class AuthViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            SupabaseProvider.auth.refreshSession()
-            SupabaseProvider.currentAuthUser()?.let { _currentUser.value = it }
+            SupabaseProvider.refreshSession()
+            _currentUser.value = AuthRepository.currentUser()
         }
     }
 
+    /** Update the exposed user (called after login/register/logout). */
     fun setUser(user: AuthUser?) {
         _currentUser.value = user
     }
