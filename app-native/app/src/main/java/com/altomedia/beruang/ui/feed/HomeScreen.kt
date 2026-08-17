@@ -61,6 +61,8 @@ fun HomeScreen(
     val stories by vm.stories.collectAsState()
     val refreshing by vm.refreshing.collectAsState()
     val followingMap = remember { mutableStateMapOf<String, Boolean>() }
+    val activity = rememberActivity()
+    val quota = com.altomedia.beruang.ads.rememberRewardedQuotaPrompt(activity)
 
     LaunchedEffect(me.uid) { vm.start(me) }
     // Resolve follow state for all visible authors.
@@ -75,6 +77,7 @@ fun HomeScreen(
         contentPadding = PaddingValues(bottom = 16.dp),
     ) {
         item { StoriesRow(stories = stories, onAdd = onAddStory) }
+        item { com.altomedia.beruang.ads.BannerAd() }
         if (posts.isEmpty()) {
             item {
                 Box(
@@ -103,7 +106,26 @@ fun HomeScreen(
                     },
                     onComment = { text ->
                         scope.launch {
+                            // Enforce tier daily comment limit (web: checkLimit('comments')).
+                            val usage = com.altomedia.beruang.data.WalletRepository.loadUsage(me.uid)
+                            val tierName = com.altomedia.beruang.data.NodesRepository
+                                .readValue(com.altomedia.beruang.data.Paths.wallet(me.uid))?.asObject()
+                                ?.str("tier") ?: "Star"
+                            val c = com.altomedia.beruang.data.WalletRepository.checkLimit(tierName, usage, "comments")
+                            if (!c.ok) {
+                                com.altomedia.beruang.ui.components.showToast(context, "Batas komentar harian tercapai (${c.limit}x untuk $tierName).")
+                                quota.request("comments") { granted ->
+                                    if (granted) scope.launch {
+                                        PostRepository.postComment(me, post.id, post.authorUid, text)
+                                        showToast(context, "+${com.altomedia.beruang.data.AppConstants.POINTS_COMMENT} poin (berkomentar)")
+                                        vm.refresh()
+                                    }
+                                }
+                                return@launch
+                            }
                             PostRepository.postComment(me, post.id, post.authorUid, text)
+                            com.altomedia.beruang.data.WalletRepository.recordUsage(me.uid, usage, "comments")
+                            com.altomedia.beruang.data.WalletRepository.awardPoints(me.uid, com.altomedia.beruang.data.AppConstants.POINTS_COMMENT, "comment")
                             showToast(context, "+${com.altomedia.beruang.data.AppConstants.POINTS_COMMENT} poin (berkomentar)")
                             vm.refresh()
                         }
@@ -133,6 +155,18 @@ fun HomeScreen(
             }
         }
     }
+    quota.Render(me.uid)
+}
+
+/** Resolve the hosting Activity from the current Compose context (for AdMob). */
+@Composable
+fun rememberActivity(): android.app.Activity {
+    var ctx: android.content.Context = LocalContext.current
+    while (ctx is android.content.ContextWrapper) {
+        if (ctx is android.app.Activity) return ctx
+        ctx = ctx.baseContext
+    }
+    error("No Activity in context chain")
 }
 
 /** Horizontal stories row — port of `.stories-wrapper` (add button + thumbnails). */

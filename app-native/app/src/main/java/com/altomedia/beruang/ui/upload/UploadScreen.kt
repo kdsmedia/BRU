@@ -137,14 +137,11 @@ fun UploadScreen(
                 }
                 scope.launch {
                     // Check tier daily limit (mirrors checkLimit('posts')).
-                    val w = NodesRepository.readValue(Paths.wallet(me.uid))?.asObject()
-                    val tier = w?.str("tier") ?: "Star"
-                    val usage = w?.get("usage")?.asObject()
-                    val today = com.altomedia.beruang.data.todayStr()
-                    val usedToday = if (usage?.str("date") == today) (usage.long("posts") ?: 0) else 0
-                    val limit = AppConstants.tier(tier).postLimit
-                    if (usedToday >= limit) {
-                        showToast(context, "Batas posting harian tercapai ($limit x untuk $tier). Naik kelas akun untuk lebih.")
+                    val usage = WalletRepository.loadUsage(me.uid)
+                    val tierName = NodesRepository.readValue(Paths.wallet(me.uid))?.asObject()?.str("tier") ?: "Star"
+                    val c = WalletRepository.checkLimit(tierName, usage, "posts")
+                    if (!c.ok) {
+                        showToast(context, "Batas posting harian tercapai (${c.limit}x untuk $tierName). Naik kelas akun untuk lebih.")
                         return@launch
                     }
                     busy = true
@@ -152,7 +149,7 @@ fun UploadScreen(
                         StorageRepository.uploadImage(context, imageUri!!, "posts", maxWidth = 800, quality = 0.7f)
                     } else null
                     PostRepository.createPost(me, caption.trim(), imageUrl)
-                    WalletRepository.recordUsage(me.uid, "posts")
+                    WalletRepository.recordUsage(me.uid, usage, "posts")
                     WalletRepository.awardPoints(me.uid, AppConstants.POINTS_POST, "post")
                     showToast(context, "+${AppConstants.POINTS_POST} poin (posting)")
                     busy = false

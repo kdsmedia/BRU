@@ -68,6 +68,17 @@ object WalletRepository {
 
     fun isUnlimited(limit: Int) = limit == Int.MAX_VALUE
 
+    /** Load the persisted daily usage state for [uid] (empty if none). */
+    suspend fun loadUsage(uid: String): UsageState {
+        val o = repo.readValue(Paths.walletUsage(uid))?.asObject()
+        return UsageState(
+            date = o?.str("date") ?: "",
+            posts = o?.int("posts") ?: 0,
+            comments = o?.int("comments") ?: 0,
+            adGrants = (o?.get("adGrants") as? JsonObject) ?: JsonObject(emptyMap()),
+        )
+    }
+
     fun checkLimit(tierName: String, usage: UsageState, action: String): LimitCheck {
         val tier = AppConstants.tier(tierName)
         val limit = if (action == "posts") tier.postLimit else tier.commentLimit

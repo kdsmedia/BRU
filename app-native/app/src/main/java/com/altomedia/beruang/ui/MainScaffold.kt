@@ -36,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.altomedia.beruang.ads.AdMobManager
 import com.altomedia.beruang.data.NodesRepository
 import com.altomedia.beruang.data.Paths
 import com.altomedia.beruang.data.asObject
@@ -88,10 +89,30 @@ fun MainScaffold(
         val u = NodesRepository.readValue(Paths.user(me.uid))?.asObject()
         isAdmin = u?.str("role") == "admin"
     }
+    // Preload the first interstitial so a fresh ad is ready for the first
+    // tab change (mirrors web `ADMOB.init().then(prepareInterstitial)`).
+    LaunchedEffect(Unit) {
+        AdMobManager.init()
+        AdMobManager.prepareInterstitial()
+    }
 
     Scaffold(
         containerColor = BgBody,
-        bottomBar = { NavDock(current = current, onSelect = { current = it }) },
+        bottomBar = {
+            NavDock(
+                current = current,
+                onSelect = { next ->
+                    // Full-screen interstitial: only fires on a real view change,
+                    // only if an ad is preloaded & ready, and at most once per 15
+                    // minutes. Mirrors web `nav()` → `ADMOB.maybeShowInterstitial`.
+                    if (next != current) {
+                        val activity = com.altomedia.beruang.ui.feed.rememberActivity()
+                        AdMobManager.maybeShowInterstitial(activity)
+                    }
+                    current = next
+                },
+            )
+        },
     ) { inner ->
         Box(modifier = Modifier.fillMaxSize().padding(inner)) {
             when (current) {

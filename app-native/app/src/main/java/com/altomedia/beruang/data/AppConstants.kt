@@ -44,6 +44,20 @@ object AppConstants {
 
     fun tier(name: String?): Tier = TIERS.firstOrNull { it.name == name } ?: TIERS[0]
     fun tierIndex(name: String?): Int = TIERS.indexOfFirst { it.name == name }.let { if (it < 0) 0 else it }
+
+    // AdMob config (web: const ADMOB). Test IDs are Google's official samples.
+    object AdMob {
+        const val APP_ID = "ca-app-pub-6881903056221433~1794482255"
+        const val BANNER_ID = "ca-app-pub-6881903056221433/6548115489"
+        const val REWARDED_ID = "ca-app-pub-6881903056221433/9174278828"
+        const val INTERSTITIAL_ID = "ca-app-pub-6881903056221433/8432042798"
+        // Google official test ad-unit IDs (safe, always fill).
+        const val TEST_BANNER_ID = "ca-app-pub-3940256099942544/6300978111"
+        const val TEST_REWARDED_ID = "ca-app-pub-3940256099942544/5224354917"
+        const val TEST_INTERSTITIAL_ID = "ca-app-pub-3940256099942544/1033173712"
+        // Minimum gap between two interstitial impressions (ms). 15 minutes.
+        const val INTERSTITIAL_COOLDOWN_MS = 15L * 60 * 1000
+    }
 }
 
 /** Data path helpers — single source of truth for the `nodes` tree layout. */
