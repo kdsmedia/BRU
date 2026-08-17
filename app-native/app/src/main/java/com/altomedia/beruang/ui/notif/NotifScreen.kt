@@ -1,0 +1,74 @@
+package com.altomedia.beruang.ui.notif
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.altomedia.beruang.ui.theme.BgBody
+import com.altomedia.beruang.ui.theme.BrandYellow
+import com.altomedia.beruang.ui.theme.TextMain
+import com.altomedia.beruang.ui.theme.TextMuted
+
+/** Notifications — port of the web `#view-notif` / `listenNotifications`. */
+@Composable
+fun NotifScreen(uid: String, vm: NotifViewModel = viewModel()) {
+    val items by vm.items.collectAsState()
+    LaunchedEffect(uid) { vm.start(uid) }
+
+    Column(modifier = Modifier.fillMaxSize().background(BgBody)) {
+        Text(
+            "Aktivitas",
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            color = TextMain,
+            modifier = Modifier.padding(16.dp),
+        )
+        if (items.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Belum ada aktivitas.", color = TextMuted)
+            }
+        } else {
+            LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = androidx.compose.foundation.layout.PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(items, key = { it.key }) { n ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.White, androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Box(
+                            modifier = Modifier.size(36.dp).clip(CircleShape).background(BrandYellow.copy(alpha = 0.15f)),
+                            contentAlignment = Alignment.Center,
+                        ) { Icon(Icons.Filled.Bolt, null, tint = BrandYellow, modifier = Modifier.size(18.dp)) }
+                        Text(n.text, fontSize = 14.sp, color = Color(0xFF333333), modifier = Modifier.padding(start = 12.dp))
+                    }
+                }
+            }
+        }
+    }
+}

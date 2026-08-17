@@ -42,7 +42,11 @@ import com.altomedia.beruang.data.asObject
 import com.altomedia.beruang.data.str
 import com.altomedia.beruang.ui.auth.AuthUser
 import com.altomedia.beruang.ui.auth.AuthViewModel
+import com.altomedia.beruang.ui.chat.ChatListScreen
+import com.altomedia.beruang.ui.chat.ChatScreen
 import com.altomedia.beruang.ui.feed.HomeScreen
+import com.altomedia.beruang.ui.notif.NotifScreen
+import com.altomedia.beruang.ui.profile.ProfileScreen
 import com.altomedia.beruang.ui.theme.BgBody
 import com.altomedia.beruang.ui.theme.BrandRed
 import com.altomedia.beruang.ui.theme.BrandYellow
@@ -70,9 +74,13 @@ fun MainScaffold(
 ) {
     var current by remember { mutableStateOf(Tab.Home) }
     var isAdmin by remember { mutableStateOf(false) }
+    // Chat window overlay state: when non-null, a ChatScreen is shown on top.
+    var chatTarget by remember { mutableStateOf<Pair<String, String>?>(null) }
+    // Profile visit overlay: when non-null, ProfileScreen is shown on top.
+    var profileTarget by remember { mutableStateOf<String?>(null) }
 
     // Resolve admin flag from users/{uid}.role (set during bootstrap).
-    androidx.compose.runtime.LaunchedEffect(me.uid) {
+    LaunchedEffect(me.uid) {
         val u = NodesRepository.readValue(Paths.user(me.uid))?.asObject()
         isAdmin = u?.str("role") == "admin"
     }
@@ -81,22 +89,60 @@ fun MainScaffold(
         containerColor = BgBody,
         bottomBar = { NavDock(current = current, onSelect = { current = it }) },
     ) { inner ->
-        Box(
-            modifier = Modifier.fillMaxSize().padding(inner),
-        ) {
+        Box(modifier = Modifier.fillMaxSize().padding(inner)) {
             when (current) {
                 Tab.Home -> HomeScreen(
                     me = me,
                     isAdmin = isAdmin,
-                    onAddStory = {
-                        // Story picker handled in the upload step.
-                    },
-                    onVisitProfile = { /* navigate to profile — wired in profile step */ },
+                    onAddStory = { /* upload step */ },
+                    onVisitProfile = { profileTarget = it },
                 )
-                Tab.Chat -> Placeholder("Pesan")
+                Tab.Chat -> ChatListScreen(
+                    myUid = me.uid,
+                    onOpenChat = { uid, name -> chatTarget = uid to name },
+                    onVisitProfile = { profileTarget = it },
+                )
                 Tab.Upload -> Placeholder("Unggah")
-                Tab.Notif -> Placeholder("Aktivitas")
-                Tab.Profile -> Placeholder("Profil")
+                Tab.Notif -> NotifScreen(uid = me.uid)
+                Tab.Profile -> ProfileScreen(
+                    me = me,
+                    targetUid = null,
+                    onBack = {},
+                    onMessage = { uid -> chatTarget = uid to "" },
+                    onEdit = {},
+                    onSettings = {},
+                    onShowMyQr = {},
+                    onScanQr = {},
+                    onHistory = {},
+                    onUpgrade = {},
+                )
+            }
+
+            // Chat overlay (full screen on top of the current tab).
+            chatTarget?.let { (uid, name) ->
+                ChatScreen(
+                    me = me,
+                    targetUid = uid,
+                    targetName = name,
+                    onBack = { chatTarget = null },
+                    onVisitProfile = { profileTarget = it },
+                )
+            }
+
+            // Visited profile overlay (full screen on top).
+            profileTarget?.let { uid ->
+                ProfileScreen(
+                    me = me,
+                    targetUid = uid,
+                    onBack = { profileTarget = null },
+                    onMessage = { puid -> chatTarget = puid to ""; profileTarget = null },
+                    onEdit = {},
+                    onSettings = {},
+                    onShowMyQr = {},
+                    onScanQr = {},
+                    onHistory = {},
+                    onUpgrade = {},
+                )
             }
         }
     }
