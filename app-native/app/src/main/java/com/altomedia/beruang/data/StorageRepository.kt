@@ -54,4 +54,23 @@ object StorageRepository {
         val base = "${SupabaseProvider.SUPABASE_URL}/storage/v1/object/public/${SupabaseProvider.STORAGE_BUCKET}"
         return "$base/$path"
     }
+
+    /**
+     * Convenience: compress [uri] (max [maxWidth] px, JPEG [quality] 0..1)
+     * then upload to [prefix]; returns the public URL or null on failure.
+     * Port of the web `uploadToStorage(file, prefix, maxW, quality)`.
+     */
+    suspend fun uploadImage(
+        context: Context,
+        uri: Uri,
+        prefix: String,
+        maxWidth: Int = MAX_WIDTH,
+        quality: Float = (QUALITY / 100f),
+        uid: String = "_anon",
+    ): String? {
+        val bytes = compress(context, uri, maxWidth, (quality * 100).toInt())
+        if (bytes.isEmpty()) return null
+        val url = upload(bytes, prefix, uid)
+        return url.ifEmpty { null }
+    }
 }

@@ -84,6 +84,28 @@ fun MainScaffold(
     // Admin panel overlay (admin only).
     var showAdmin by remember { mutableStateOf(false) }
 
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+
+    // Story upload picker — port of web `uploadStory` (image → stories, 300px q0.5).
+    val storyPicker = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.GetContent(),
+    ) { uri ->
+        if (uri != null) {
+            scope.launch {
+                val url = com.altomedia.beruang.data.StorageRepository.uploadImage(
+                    context, uri, "stories", maxWidth = 300, quality = 0.5f, uid = me.uid,
+                )
+                if (url != null) {
+                    com.altomedia.beruang.data.PostRepository.createStory(me, url)
+                    com.altomedia.beruang.ui.components.showToast(context, "Story ditambahkan")
+                } else {
+                    com.altomedia.beruang.ui.components.showToast(context, "Gagal mengunggah story")
+                }
+            }
+        }
+    }
+
     // Resolve admin flag from users/{uid}.role (set during bootstrap).
     LaunchedEffect(me.uid) {
         val u = NodesRepository.readValue(Paths.user(me.uid))?.asObject()
@@ -119,7 +141,7 @@ fun MainScaffold(
                 Tab.Home -> HomeScreen(
                     me = me,
                     isAdmin = isAdmin,
-                    onAddStory = { /* upload step */ },
+                    onAddStory = { storyPicker.launch("image/*") },
                     onVisitProfile = { profileTarget = it },
                 )
                 Tab.Chat -> ChatListScreen(

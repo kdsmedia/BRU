@@ -146,7 +146,7 @@ fun UploadScreen(
                     }
                     busy = true
                     val imageUrl = if (imageUri != null) {
-                        StorageRepository.uploadImage(context, imageUri!!, "posts", maxWidth = 800, quality = 0.7f)
+                        StorageRepository.uploadImage(context, imageUri!!, "posts", maxWidth = 800, quality = 0.7f, uid = me.uid)
                     } else null
                     PostRepository.createPost(me, caption.trim(), imageUrl)
                     WalletRepository.recordUsage(me.uid, usage, "posts")

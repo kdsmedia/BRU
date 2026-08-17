@@ -203,7 +203,7 @@ fun EditProfileSheet(
                     scope.launch {
                         busy = true
                         val finalPhoto = if (photoUri != null) {
-                            StorageRepository.uploadImage(context, photoUri!!, "avatars", maxWidth = 400, quality = 0.7f)
+                            StorageRepository.uploadImage(context, photoUri!!, "avatars", maxWidth = 400, quality = 0.7f, uid = uid)
                         } else photoUrl
                         NodesRepository.update(NodesRepository.ref(Paths.user(uid)), buildJsonObject {
                             put("username", name.trim())
