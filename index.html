@@ -85,10 +85,11 @@
         .comment-input-box button { border: none; background: transparent; color: var(--bg-nav); font-weight: 600; cursor: pointer; font-size: 13px; }
         .upload-area { margin: 15px; height: 140px; border: 2px dashed #cbd5e1; border-radius: 18px; display: flex; align-items: center; justify-content: center; flex-direction: column; cursor: pointer; position: relative; overflow: hidden; background: #f8fafc; transition: 0.3s; }
         .upload-area:active { background: #f1f5f9; border-color: var(--bg-nav); }
-        /* When a native bottom banner overlay is active, add bottom padding so
-           the nav-dock / content is not covered. */
-        body.has-native-banner .nav-dock { bottom: 60px; }
-        body.has-native-banner #app-container { padding-bottom: 60px; }
+        /* Native AdMob banner appears as a pinned block directly below the
+           stories row on the home view (TOP_CENTER overlay with margin =
+           header+stories height). Reserve space at the top of the home feed so
+           the first posts are not hidden behind the pinned banner. */
+        body.has-native-banner #view-home #feed-container { padding-top: 64px; }
         .upload-preview { width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0; display: none; }
         textarea { width: 100%; background: #fff; border: 2px solid #e2e8f0; padding: 15px; color: #333; border-radius: 15px; resize: none; margin-bottom: 15px; font-size: 14.5px; font-family: 'Poppins'; }
         textarea:focus { border-color: var(--bg-nav); outline: none; }
@@ -818,27 +819,58 @@
                     this._bannerListenersBound = true;
                 } catch (e) { console.error('AdMob banner listener bind failed', e); }
             },
-            // Show the native adaptive banner at the bottom of the screen.
+            // Show the native adaptive banner as an inline block directly below
+            // the stories row on the home view. The AdMob banner is a fixed
+            // screen overlay, so we place it at TOP_CENTER with a top margin
+            // equal to (header + stories) height — it then visually sits right
+            // under the stories. Margin is recomputed each show for robustness.
             async showBanner() {
                 if (!this.isNative()) return;
                 this._bannerWanted = true;
                 if (!this._initialized) { await this.init(); }
-                if (this._bannerShown) return;       // already displayed
+                if (this._bannerShown && !this._bannerMarginDirty) return;
                 try {
                     const { AdMob } = window.Capacitor.Plugins;
+                    const margin = this._storiesBottomMargin();
+                    // If a banner already exists at a different margin, destroy
+                    // it first so showBanner creates a fresh one at the new spot.
+                    if (this._bannerShown) {
+                        try { await AdMob.removeBanner(); this._bannerShown = false; document.body.classList.remove('has-native-banner'); } catch (_) {}
+                    }
                     await AdMob.showBanner({
                         adId: this.unit('BANNER_ID'),
                         adSize: 'ADAPTIVE_BANNER',
-                        position: 'BOTTOM_CENTER',
-                        margin: 0,
+                        position: 'TOP_CENTER',
+                        margin: margin,
                         isTesting: this.isTest()
                     });
+                    this._bannerMarginDirty = false;
                     // bannerAdLoaded confirms the view; _bannerShown set in listener.
                 } catch (e) {
                     console.error('AdMob showBanner failed', e);
                     window.__dbg && window.__dbg('showBanner err: ' + (e && e.message ? e.message : e));
                     if (++this._bannerTries < 5) setTimeout(() => { if (this._bannerWanted) this.showBanner(); }, 2000 * this._bannerTries);
                 }
+            },
+            // Distance (px) from the top of the screen to the bottom of the home
+            // stories row = header height + stories-wrapper height. The native
+            // banner's TOP_CENTER margin places its top edge at this offset, so
+            // it appears directly below the stories. Falls back to 0 off-home.
+            _storiesBottomMargin() {
+                const home = document.getElementById('view-home');
+                if (!home) return 0;
+                const header = home.querySelector('.header');
+                const stories = home.querySelector('.stories-wrapper');
+                let m = 0;
+                if (header) m += header.offsetHeight;
+                if (stories) m += stories.offsetHeight;
+                return m || 0;
+            },
+            // Recompute margin on resize/orientation and re-place the banner.
+            _refreshBannerPosition() {
+                if (!this.isNative() || !this._bannerShown) return;
+                this._bannerMarginDirty = true;
+                if (currentView === 'view-home' && this._bannerWanted) this.showBanner();
             },
             async hideBanner() {
                 if (!this.isNative()) return;
@@ -1467,9 +1499,13 @@
             listenMyWallet();
             loadProfile();
             initPullToRefresh();
-            // Initialize AdMob (no-op on web) and show the bottom banner on the
-            // starting view. Inline ad slots are rendered in the views themselves.
+            // Initialize AdMob (no-op on web) and show the banner block directly
+            // below the stories row on the home feed.
             ADMOB.init().then(() => ADMOB.showBanner());
+            // Keep the banner's TOP_CENTER margin aligned to the stories row on
+            // resize / orientation change (header+stories height may change).
+            window.addEventListener('resize', () => ADMOB._refreshBannerPosition());
+            window.addEventListener('orientationchange', () => setTimeout(() => ADMOB._refreshBannerPosition(), 300));
         }
 
         // ===== PULL-TO-REFRESH =====
@@ -1570,10 +1606,10 @@
                 chatCount = 0;
                 document.getElementById('badge-chat').classList.add('hidden');
             }
-            // Show the native bottom banner on content views; hide on the upload
-            // screen so it never interferes with image picking / caption input.
-            if (viewId === 'view-upload') ADMOB.hideBanner();
-            else ADMOB.showBanner();
+            // The native banner sits directly below the stories row, so it is
+            // only meaningful on the home feed. Hide it on every other view.
+            if (viewId === 'view-home') ADMOB.showBanner();
+            else ADMOB.hideBanner();
         };
 
         const processImage = (file, maxWidth = 800, quality = 0.7) => {
