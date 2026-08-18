@@ -1,6 +1,6 @@
 RELEASE NOTES — BERUANG
 ==================================================
-Versi: 2.0.0 (versionCode 4)
+Versi: 2.2.0 (versionCode 6)
 Tanggal rilis: 18 Agustus 2026
 Package: com.altomedia.beruang
 Developer: ALTOMEDIA
@@ -8,57 +8,37 @@ Developer: ALTOMEDIA
 ------------------------------------------------------------
 BAHASA INDONESIA
 ------------------------------------------------------------
-BERUANG v2.0.0 — Migrasi Penuh ke Android Native (Kotlin + Jetpack Compose)
+BERUANG v2.2.0 — Tugas Bonus Undang Teman, Navigasi Kembali, & Perbaikan Iklan
 
-Pembaruan besar: BERUANG kini ditulis ulang sepenuhnya sebagai
-aplikasi Android NATIVE menggunakan Kotlin dan Jetpack Compose —
-menggantikan versi sebelumnya yang berbasis pembungkus HTML (Capacitor).
-Tampilan, fitur, dan alur aplikasi tetap identik, namun kini jauh
-lebih cepat, lebih ringan, dan lebih hemat data karena tidak lagi
-memuat webview.
+Pembaruan v2.2.0 menambahkan tugas bonus undang teman, tombol kembali
+yang konsisten di semua halaman/popup, serta perbaikan tampilan iklan
+AdMob dan interval interstitial.
 
-Yang baru & diperbaiki di v2.0.0:
-- ARSITEKTUR NATIVE: seluruh antarmuka kini dirender dengan Jetpack
-  Compose (Material 3), bukan HTML/webview. Navigasi, animasi, dan
-  respons sentuh kini secepat aplikasi Android asli.
-- PERFORMANCE: startup lebih cepat, penggunaan memori lebih rendah,
-  dan konsumsi data berkurang signifikan karena tidak ada layer web.
-- Pull-to-refresh di feed beranda: tarik ke bawah untuk memuat ulang
-  postingan terbaru (menggantikan indikator #ptr-indiger versi web).
-- Like dengan double-tap: ketuk ganda pada gambar postingan untuk
-  menyukai, persis seperti versi sebelumnya.
-- Baris WhatsApp di Pengaturan: tautan langsung ke channel WhatsApp
-  resmi BERUANG kini tersedia di menu Pengaturan.
-- POSISI NAV BOTTOM RESPONSIF: navigation bar bawah kini memakai
-  inset sistem (navigationBarsPadding) sehingga tidak terpotong/
-  tersembunyi di semua ukuran ponsel.
-- IKLAN BANNER SEBAGAI BLOK POSTINGAN: banner AdMob kini tampil sebagai
-  kartu menyerupai postingan — di bawah stories, setiap 5 postingan di
-  beranda, setiap 5 aktivitas di halaman aktivitas, dan tepat di atas
-  grid postingan profil.
-- SCANNER QR PORTRAIT: layar scan QR kini terkunci portrait agar tidak
-  perlu memiringkan ponsel.
-- AKTIVITAS: hapus aktivitas, tandai sudah dibaca (titik hijau hilang &
-  notifikasi terbaca dibersihkan), indikator titik hijau untuk yang
-  belum dibaca.
-- ADMIN ATUR SALDO: admin dapat menambah/mengurangi saldo poin pengguna
-  secara atomik (dengan alasan + riwayat transaksi).
-- POPUP RATING PLAY STORE: dialog ajakan memberi rating muncul maksimal
-  sekali per hari, membuka langsung ke halaman Play Store.
-- BACKEND: migrasi ke Supabase Kotlin SDK 3.0 (realtime, autentikasi,
-  penyimpanan, dan query dengan API DSL terbaru). Realtime kini
-  menggunakan StateFlow untuk pembaruan langsung yang lebih andal.
-- Fitur lengkap dipertahankan: feed & stories, komentar, chat real-time,
-  profil dengan tier berlangganan, dompet/QR, upload media, notifikasi,
-  panel admin, sistem tier harian (Star/Bronze/Silver/Gold/Master),
-  iklan AdMob (banner/interstitial/reward) dengan persetujuan UMP.
-- Keamanan: kunci Supabase (anon/service-role) dikelola di luar repo
-  (out-of-band), tidak pernah dikomit ke repositori.
+Yang baru & diperbaiki di v2.2.0:
+- TUGAS BONUS UNDANG TEMAN: ajak 10 teman bergabung memakai kode
+  referral dan dapatkan 5000 poin (sekali klaim). Kartu "Undang Teman"
+  di halaman Tugas Bonus menampilkan progres X/10, tombol "Bagikan"
+  untuk menyebar kode undangan (via share sheet Android), dan tombol
+  "Klaim 5000" yang aktif otomatis setelah 10 teman bergabung.
+- TOMBOL KEMBALI (⬅️) DI SEMUA HALAMAN/POPUP: kini semua layar overlay
+  (Pesan, Aktivitas, Obrolan, Profil, dan panel Admin) memiliki tombol
+  kembali yang jelas serta merespons tombol back sistem (BackHandler).
+  Pada Profil, tombol back menutup modal yang terbuka dulu sebelum
+  kembali. Dialog popup (AlertDialog) otomatis ditutup oleh back sistem.
+- EDIT SALDO ADMIN (penyempurnaan): dialog atur saldo kini memakai
+  pemilih mode Tambah/Kurangi, satu kolom nominal, kolom catatan,
+  dan tombol OKE tunggal (dengan tombol Batal).
+- IKLAN BANNER AdMob: perbaikan konteks activity, ukuran adaptive,
+  dan ikat ke lifecycle agar banner tampil andal di semua layar.
+- IKLAN INTERSTITIAL: cooldown 15 menit antar tampil, guard activity,
+  dan reload otomatis setelah ditampilkan.
+- IKLAN REWARD: perbaikan crash setelah iklan selesai.
+- LOGO "K" sebelum splash dihapus.
 
 Catatan teknis:
 - Android minSdk 23 (Android 6.0+) sampai targetSdk/compileSdk 37.
-- Dibangun dengan Kotlin + Jetpack Compose (BOM 2024.09.03),
-  Supabase Kotlin 3.0.0, Coil (gambar), AdMob.
+- Dibangun dengan Kotlin + Jetpack Compose, Supabase Kotlin 3.0.0,
+  Coil (gambar), AdMob.
 - Backend: Supabase (Postgres, Auth, Storage, Realtime).
 
 Catatan:
@@ -66,56 +46,40 @@ Catatan:
 - Dukungan: altomediaindonesia@gmail.com.
 
 ------------------------------------------------------------
-RIWAYAT VERSI SEBELUMNYA (arsip)
+ENGLISH — v2.2.0
 ------------------------------------------------------------
-- v1.2.0 (versionCode 3): Penyempurnaan iklan AdMob (banner tampil
-  andal, interstitial dimuat awal, reward stabil, inisialisasi
-  idempoten, persetujuan UMP/GDPR).
-- v1.1.0 (versionCode 2): Tautan klik di postingan/komentar/chat,
-  pin postingan oleh admin, tombol chat di profil, hapus postingan,
-  hapus pesan/chat, lokalisasi penuh Bahasa Indonesia.
-- v1.0.0 (versionCode 1): Rilis awal (feed, upload, komentar, chat,
-  profil tier, sistem batas harian, iklan banner). Dibangun dengan
-  Capacitor + webview.
+BERUANG v2.2.0 — Invite-Friends Bonus Task, Back Navigation, & Ad Fixes
 
-------------------------------------------------------------
-ENGLISH — v2.0.0
-------------------------------------------------------------
-BERUANG v2.0.0 — Full migration to native Android (Kotlin + Jetpack Compose)
+The v2.2.0 update adds an invite-friends bonus task, consistent back
+buttons across all screens/popups, and fixes to AdMob banner display
+and interstitial cadence.
 
-A major rewrite: BERUANG is now a fully native Android app built with
-Kotlin and Jetpack Compose, replacing the previous HTML-wrapper
-(Capacitor) version. The look, features, and flows remain identical,
-but the app is now much faster, lighter, and more data-efficient
-because it no longer loads a webview.
-
-What's new / fixed in v2.0.0:
-- NATIVE ARCHITECTURE: the entire UI is now rendered with Jetpack
-  Compose (Material 3) instead of HTML/webview. Navigation, animation,
-  and touch response are now as fast as a native Android app.
-- PERFORMANCE: faster startup, lower memory usage, and significantly
-  reduced data consumption with no web layer.
-- Pull-to-refresh on the home feed: pull down to reload the latest
-  posts (replaces the web #ptr-indicator).
-- Double-tap to like: double-tap a post image to like it, just like
-  before.
-- WhatsApp row in Settings: a direct link to the official BERUANG
-  WhatsApp channel is now available in the Settings menu.
-- BACKEND: migrated to Supabase Kotlin SDK 3.0 (realtime, auth,
-  storage, and queries with the new DSL API). Realtime now uses
-  StateFlow for more reliable live updates.
-- All features retained: feed & stories, comments, real-time chat,
-  profile with subscription tiers, wallet/QR, media upload,
-  notifications, admin panel, daily tier system
-  (Star/Bronze/Silver/Gold/Master), AdMob ads
-  (banner/interstitial/reward) with UMP consent.
-- Security: Supabase keys (anon/service-role) are managed
-  out-of-band and never committed to the repository.
+What's new / fixed in v2.2.0:
+- INVITE-FRIENDS BONUS TASK: invite 10 friends to join using your
+  referral code and earn 5000 points (one-time claim). The "Undang
+  Teman" card on the Bonus Tasks screen shows live X/10 progress, a
+  "Bagikan" button to share the invite code (via the Android share
+  sheet), and a "Klaim 5000" button that auto-enables once 10 friends
+  have joined.
+- BACK BUTTON (⬅️) ON ALL SCREENS/POPUPS: all overlay screens (Messages,
+  Activity, Chat, Profile, and the Admin panel) now have a clear back
+  button and respond to the system back key (BackHandler). On Profile,
+  back first closes any open modal before navigating back. AlertDialog
+  popups are dismissed automatically by the system back key.
+- ADMIN SALDO EDIT (refinement): the adjust-saldo dialog now uses an
+  Add/Subtract mode picker, a single nominal field, a note field, and
+  a single OK button (plus Cancel).
+- ADMOB BANNER ADS: fixed activity context, adaptive size, and
+  lifecycle binding so banners display reliably on all screens.
+- INTERSTITIAL ADS: 15-minute cooldown between shows, activity guard,
+  and automatic reload after display.
+- REWARDED ADS: fixed a crash after the ad completed.
+- Removed the stray "K" logo before the splash screen.
 
 Technical notes:
 - Android minSdk 23 (Android 6.0+) up to targetSdk/compileSdk 37.
-- Built with Kotlin + Jetpack Compose (BOM 2024.09.03),
-  Supabase Kotlin 3.0.0, Coil (images), AdMob.
+- Built with Kotlin + Jetpack Compose, Supabase Kotlin 3.0.0,
+  Coil (images), AdMob.
 - Backend: Supabase (Postgres, Auth, Storage, Realtime).
 
 Notes:
@@ -123,3 +87,22 @@ Notes:
 - Support: altomediaindonesia@gmail.com.
 
 ==================================================
+RIWAYAT VERSI SEBELUMNYA (arsip)
+==================================================
+- v2.1.0 (versionCode 5): Redesign dialog atur saldo admin (pilih
+  tambah/kurangi + nominal + catatan + tombol OKE); perbaikan iklan
+  AdMob (banner, interstitial 15 menit, reward); perbaikan crash
+  rewarded ad; hapus logo "K" sebelum splash.
+- v2.0.0 (versionCode 4): Migrasi penuh ke Android native (Kotlin +
+  Jetpack Compose); pull-to-refresh; double-tap like; baris WhatsApp
+  di Pengaturan; nav bottom responsif; banner AdMob sebagai kartu
+  postingan; scanner QR portrait; aktivitas (hapus/tandai dibaca);
+  admin atur saldo; popup rating Play Store; backend Supabase SDK 3.0.
+- v1.2.0 (versionCode 3): Penyempurnaan iklan AdMob (banner, interstitial
+  dimuat awal, reward stabil, inisialisasi idempoten, persetujuan UMP/GDPR).
+- v1.1.0 (versionCode 2): Tautan klik di postingan/komentar/chat,
+  pin postingan oleh admin, tombol chat di profil, hapus postingan,
+  hapus pesan/chat, lokalisasi penuh Bahasa Indonesia.
+- v1.0.0 (versionCode 1): Rilis awal (feed, upload, komentar, chat,
+  profil tier, sistem batas harian, iklan banner). Dibangun dengan
+  Capacitor + webview.
