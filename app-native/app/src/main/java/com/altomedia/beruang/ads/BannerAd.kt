@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,7 +52,7 @@ fun BannerAd(testMode: Boolean = false) {
     val adSize = remember { adaptiveBannerSize(activity) }
 
     // Ensure the Mobile Ads SDK is initialized before the first load.
-    remember { AdMobManager.init() }
+    LaunchedEffect(Unit) { AdMobManager.init() }
 
     val adView = remember(activity) {
         AdView(activity).apply {
