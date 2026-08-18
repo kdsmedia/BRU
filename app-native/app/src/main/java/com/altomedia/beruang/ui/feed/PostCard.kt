@@ -333,7 +333,7 @@ private fun buildAnnotatedCaption(name: String, text: String, highlight: String?
     val mention = "@$highlight"
     var idx = 0
     while (idx <= text.length - mention.length) {
-        val found = text.regionMatches(idx, mention, 0, ignoreCase = false)
+        val found = text.regionMatches(idx, mention, 0, mention.length, ignoreCase = false)
         if (found) {
             withStyle(SpanStyle(color = LinkBlue, fontWeight = FontWeight.Bold)) { append(mention) }
             idx += mention.length

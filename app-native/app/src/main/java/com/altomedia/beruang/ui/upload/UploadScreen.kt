@@ -63,6 +63,7 @@ import kotlinx.coroutines.launch
 fun UploadScreen(
     me: AuthUser,
     onPosted: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -75,7 +76,7 @@ fun UploadScreen(
     }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(BgBody)
             .verticalScroll(rememberScrollState())

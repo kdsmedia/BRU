@@ -61,16 +61,17 @@ import kotlinx.coroutines.launch
 @Composable
 fun BonusScreen(
     meUid: String,
+    modifier: Modifier = Modifier,
     vm: BonusViewModel = viewModel(),
 ) {
     val context = LocalContext.current
-    val scope = kotlinx.coroutines.runtime.rememberCoroutineScope()
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
     val state by vm.state.collectAsState()
     val activity = rememberActivity()
 
     LaunchedEffect(meUid) { vm.start(meUid) }
 
-    Column(modifier = Modifier.fillMaxSize().background(BgBody)) {
+    Column(modifier = modifier.fillMaxSize().background(BgBody)) {
         // Header.
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),

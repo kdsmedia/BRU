@@ -73,6 +73,7 @@ fun ProfileScreen(
     onLogout: () -> Unit = {},
     isAdmin: Boolean = false,
     onAdmin: () -> Unit = {},
+    modifier: Modifier = Modifier,
     pvm: ProfileViewModel = viewModel(),
     wvm: WalletViewModel = viewModel(),
 ) {
@@ -96,7 +97,7 @@ fun ProfileScreen(
     val isSelf = target == me.uid
     val tier = AppConstants.tier(state.tier)
 
-    Column(modifier = Modifier.fillMaxSize().background(BgBody)) {
+    Column(modifier = modifier.fillMaxSize().background(BgBody)) {
         // Top bar
         Row(
             modifier = Modifier.fillMaxWidth().padding(12.dp),

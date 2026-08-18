@@ -50,6 +50,7 @@ import com.altomedia.beruang.ui.auth.AuthUser
 import com.altomedia.beruang.ui.components.showToast
 import com.altomedia.beruang.ui.theme.BgBody
 import com.altomedia.beruang.ui.theme.BrandYellow
+import com.altomedia.beruang.ui.theme.TextMain
 import com.altomedia.beruang.ui.theme.TextMuted
 import kotlinx.coroutines.launch
 
@@ -66,6 +67,7 @@ fun HomeScreen(
     onVisitProfile: (String) -> Unit,
     onOpenMessages: () -> Unit,
     onOpenNotif: () -> Unit,
+    modifier: Modifier = Modifier,
     vm: FeedViewModel = viewModel(),
 ) {
     val context = LocalContext.current
@@ -88,7 +90,7 @@ fun HomeScreen(
     PullToRefreshBox(
         isRefreshing = refreshing,
         onRefresh = { vm.refresh() },
-        modifier = Modifier.fillMaxSize().background(BgBody),
+        modifier = modifier.fillMaxSize().background(BgBody),
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),

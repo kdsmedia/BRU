@@ -27,9 +27,9 @@ import com.altomedia.beruang.ui.theme.TextMuted
  * Game hub — placeholder for upcoming games. Full games will be added later.
  */
 @Composable
-fun GameScreen() {
+fun GameScreen(modifier: Modifier = Modifier) {
     Column(
-        modifier = Modifier.fillMaxSize().background(BgBody),
+        modifier = modifier.fillMaxSize().background(BgBody),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(

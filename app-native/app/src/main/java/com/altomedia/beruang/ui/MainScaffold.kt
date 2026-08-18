@@ -35,9 +35,12 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.altomedia.beruang.ads.AdMobManager
 import com.altomedia.beruang.data.NodesRepository
@@ -146,37 +149,50 @@ fun MainScaffold(
         },
     ) { inner ->
         Box(modifier = Modifier.fillMaxSize().padding(inner)) {
-            when (current) {
-                Tab.Home -> HomeScreen(
-                    me = me,
-                    isAdmin = isAdmin,
-                    onAddStory = { storyPicker.launch("image/*") },
-                    onVisitProfile = { profileTarget = it },
-                    onOpenMessages = { showMessages = true },
-                    onOpenNotif = { showNotif = true },
-                )
-                Tab.Bonus -> BonusScreen(meUid = me.uid)
-                Tab.Upload -> UploadScreen(
-                    me = me,
-                    onPosted = { current = Tab.Home },
-                )
-                Tab.Game -> GameScreen()
-                Tab.Profile -> ProfileScreen(
-                    me = me,
-                    targetUid = null,
-                    onBack = {},
-                    onMessage = { uid -> chatTarget = uid to "" },
-                    onEdit = {},
-                    onSettings = {},
-                    onShowMyQr = {},
-                    onScanQr = {},
-                    onHistory = {},
-                    onUpgrade = {},
-                    onLogout = onLogout,
-                    isAdmin = isAdmin,
-                    onAdmin = { showAdmin = true },
-                )
-            }
+            // Keep every bottom-nav tab composed and merely toggle visibility so
+            // switching is instant: scroll positions, AdMob banner loads, and
+            // ViewModel state are preserved instead of being rebuilt on each tap
+            // (the previous `when(current)` disposed the leaving tab entirely).
+            fun Modifier.ifVisible(show: Boolean) =
+                if (show) this.fillMaxSize().alpha(1f).zIndex(1f)
+                else this.fillMaxSize().alpha(0f).zIndex(0f)
+                    .pointerInput(Unit) { detectTapGestures(onTap = {}) }
+
+            HomeScreen(
+                me = me,
+                isAdmin = isAdmin,
+                onAddStory = { storyPicker.launch("image/*") },
+                onVisitProfile = { profileTarget = it },
+                onOpenMessages = { showMessages = true },
+                onOpenNotif = { showNotif = true },
+                modifier = Modifier.ifVisible(current == Tab.Home),
+            )
+            BonusScreen(
+                meUid = me.uid,
+                modifier = Modifier.ifVisible(current == Tab.Bonus),
+            )
+            UploadScreen(
+                me = me,
+                onPosted = { current = Tab.Home },
+                modifier = Modifier.ifVisible(current == Tab.Upload),
+            )
+            GameScreen(modifier = Modifier.ifVisible(current == Tab.Game))
+            ProfileScreen(
+                me = me,
+                targetUid = null,
+                onBack = {},
+                onMessage = { uid -> chatTarget = uid to "" },
+                onEdit = {},
+                onSettings = {},
+                onShowMyQr = {},
+                onScanQr = {},
+                onHistory = {},
+                onUpgrade = {},
+                onLogout = onLogout,
+                isAdmin = isAdmin,
+                onAdmin = { showAdmin = true },
+                modifier = Modifier.ifVisible(current == Tab.Profile),
+            )
 
             // Chat overlay (full screen on top of the current tab).
             chatTarget?.let { (uid, name) ->
