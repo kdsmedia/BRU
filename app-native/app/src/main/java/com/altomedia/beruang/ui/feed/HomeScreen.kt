@@ -20,6 +20,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -51,6 +53,7 @@ import kotlinx.coroutines.launch
  * Home view — port of the web `#view-home`: stories row + post feed, live.
  * [onAddStory] launches the image picker for story upload.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     me: AuthUser,
@@ -76,10 +79,15 @@ fun HomeScreen(
         }
     }
 
-    LazyColumn(
+    PullToRefreshBox(
+        isRefreshing = refreshing,
+        onRefresh = { vm.refresh() },
         modifier = Modifier.fillMaxSize().background(BgBody),
-        contentPadding = PaddingValues(bottom = 16.dp),
     ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 16.dp),
+        ) {
         item { StoriesRow(stories = stories, onAdd = onAddStory) }
         item { com.altomedia.beruang.ads.BannerAd() }
         if (posts.isEmpty()) {
@@ -157,6 +165,7 @@ fun HomeScreen(
                     },
                 )
             }
+        }
         }
     }
     quota.Render(me.uid)

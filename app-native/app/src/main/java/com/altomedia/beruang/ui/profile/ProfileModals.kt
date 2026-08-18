@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Logout
@@ -251,6 +252,11 @@ fun SettingsSheet(
                 SettingsRow(Icons.Filled.PrivacyTip, "Kebijakan Privasi", "Kebijakan privasi") { info = "Kebijakan Privasi" to PRIVACY_TEXT }
                 SettingsRow(Icons.Filled.Warning, "Sangkalan", "Sangkalan") { info = "Sangkalan" to DISCLAIMER_TEXT }
                 SettingsRow(Icons.Filled.Info, "Syarat & Ketentuan", "Syarat & ketentuan") { info = "Syarat & Ketentuan" to TERMS_TEXT }
+                val context = androidx.compose.ui.platform.LocalContext.current
+                SettingsRow(Icons.Filled.Chat, "WhatsApp", "Gabung channel WhatsApp") {
+                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://whatsapp.com/channel/0029Vb8X1feA89MnppCqMy40")).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                    runCatching { context.startActivity(intent) }
+                }
             }
         },
         confirmButton = {
