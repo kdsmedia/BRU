@@ -13,21 +13,29 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.activity.compose.BackHandler
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
+import androidx.activity.compose.BackHandler
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -47,10 +55,17 @@ fun ChatListScreen(
     vm: ChatListViewModel = viewModel(),
 ) {
     val users by vm.users.collectAsState()
+    var query by remember { mutableStateOf("") }
 
     // System back closes the chat list overlay.
     if (onClose != null) {
         BackHandler(enabled = true) { onClose() }
+    }
+
+    val visible = remember(users, query) {
+        val others = users.filter { it.uid != myUid }
+        if (query.isBlank()) others
+        else others.filter { it.username.contains(query.trim(), ignoreCase = true) }
     }
 
     Column(modifier = Modifier.fillMaxSize().background(BgBody)) {
@@ -66,13 +81,45 @@ fun ChatListScreen(
                 fontSize = 18.sp,
                 color = TextMain,
             )
+            Text(
+                "  · ${visible.size}",
+                fontSize = 13.sp,
+                color = TextMuted,
+            )
         }
+
+        OutlinedTextField(
+            value = query,
+            onValueChange = { query = it },
+            placeholder = { Text("Cari teman…", fontSize = 14.sp) },
+            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null, tint = TextMuted) },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+        )
+
+        if (visible.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, tint = TextMuted, modifier = Modifier.size(56.dp))
+                    Text(
+                        if (query.isBlank()) "Belum ada teman untuk diajak obrolan" else "Tidak ada teman yang cocok",
+                        color = TextMuted,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(top = 12.dp),
+                    )
+                }
+            }
+            return@Column
+        }
+
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(12.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            items(users.filter { it.uid != myUid }) { u ->
+            items(visible, key = { it.uid }) { u ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -94,12 +141,14 @@ fun ChatListScreen(
                         }
                         Text("Ketuk untuk mengobrol", fontSize = 13.sp, color = TextMuted)
                     }
-                    Icon(
-                        Icons.Filled.Person,
-                        contentDescription = "Lihat profil",
-                        tint = Color(0xFF94A3B8),
-                        modifier = Modifier.size(20.dp).clickable { onVisitProfile(u.uid) },
-                    )
+                    IconButton(onClick = { onVisitProfile(u.uid) }, modifier = Modifier.size(36.dp)) {
+                        Icon(
+                            Icons.Filled.Person,
+                            contentDescription = "Lihat profil",
+                            tint = Color(0xFF94A3B8),
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
                 }
             }
         }

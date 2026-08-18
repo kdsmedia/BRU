@@ -3,8 +3,8 @@ package com.altomedia.beruang.ui.chat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.altomedia.beruang.data.AppConstants
-import com.altomedia.beruang.data.NodesRepository
 import com.altomedia.beruang.data.Paths
+import com.altomedia.beruang.data.RealtimeRepository
 import com.altomedia.beruang.data.asObject
 import com.altomedia.beruang.data.str
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,8 +22,9 @@ data class ChatListUser(
 )
 
 /**
- * The chat list tab — port of the web `renderChatList`: all users in the global
- * usersCache minus the signed-in user. Live-subscribes the `users` node.
+ * The chat list — live-subscribes the `users` node so the roster updates when
+ * someone joins. Mirrors the web `renderChatList` behaviour (all users minus
+ * the signed-in user) but keeps the list fresh via realtime.
  */
 class ChatListViewModel : ViewModel() {
 
@@ -32,23 +33,33 @@ class ChatListViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            val raw = NodesRepository.readValue(Paths.users())?.asObject() ?: JsonObject(emptyMap())
-            _users.value = raw.entries.mapNotNull { (uid, u) ->
-                val o = u.asObject()
-                ChatListUser(
-                    uid = uid,
-                    username = o.str("username") ?: "Pengguna",
-                    photo = o.str("photo") ?: AppConstants.DEFAULT_AVATAR,
-                    isAdmin = o.str("role") == "admin",
-                    isAi = o["is_ai"]?.asBooleanSafe() == true,
-                )
-            }.filter { it.uid.isNotEmpty() }
+            val sub = RealtimeRepository.watch(Paths.users(), viewModelScope)
+            // Snapshot immediately + on every change.
+            launch {
+                sub.stateFlow.collect { el ->
+                    val raw = el?.asObject() ?: JsonObject(emptyMap())
+                    _users.value = raw.entries.mapNotNull { (uid, u) ->
+                        val o = u.asObject() ?: return@mapNotNull null
+                        ChatListUser(
+                            uid = uid,
+                            username = o.str("username") ?: "Pengguna",
+                            photo = o.str("photo") ?: AppConstants.DEFAULT_AVATAR,
+                            isAdmin = o.str("role") == "admin",
+                            isAi = o["is_ai"]?.asBooleanSafe() == true,
+                        )
+                    }.filter { it.uid.isNotEmpty() }
+                        .sortedWith(
+                            compareByDescending<ChatListUser> { it.isAdmin }
+                                .thenByDescending { it.isAi }
+                                .thenBy { it.username.lowercase() },
+                        )
+                }
+            }
         }
     }
 
     override fun onCleared() {}
 }
 
-// Local helper to avoid leaking asBoolean import noise.
 private fun kotlinx.serialization.json.JsonElement.asBooleanSafe(): Boolean =
     (this as? kotlinx.serialization.json.JsonPrimitive)?.content?.toBooleanStrictOrNull() == true
