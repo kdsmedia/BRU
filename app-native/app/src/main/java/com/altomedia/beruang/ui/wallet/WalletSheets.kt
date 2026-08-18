@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -28,6 +29,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.altomedia.beruang.data.AppConstants
+import com.altomedia.beruang.ui.components.tierIcon
 import com.altomedia.beruang.data.AuthRepository
 import com.altomedia.beruang.data.WalletRepository
 import com.altomedia.beruang.ui.components.PrimaryButton
@@ -190,7 +192,14 @@ fun TierSheet(
                 Box(
                     modifier = Modifier.size(40.dp).background(t.colorHex.toColor().copy(alpha = 0.15f), RoundedCornerShape(10.dp)),
                     contentAlignment = Alignment.Center,
-                ) { Text(t.name.first().toString(), color = t.colorHex.toColor(), fontWeight = FontWeight.Bold) }
+                ) {
+                    Icon(
+                        tierIcon(t.name),
+                        contentDescription = null,
+                        tint = t.colorHex.toColor(),
+                        modifier = Modifier.size(22.dp),
+                    )
+                }
                 Column(modifier = Modifier.weight(1f).padding(horizontal = 12.dp)) {
                     Text(t.name, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = TextMain)
                     val limitTxt = if (t.postLimit == Int.MAX_VALUE) "Tanpa batas" else "${t.postLimit}x/hari"

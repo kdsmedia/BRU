@@ -45,6 +45,7 @@ import com.altomedia.beruang.data.AppConstants
 import com.altomedia.beruang.data.PostRepository
 import com.altomedia.beruang.ui.auth.AuthUser
 import com.altomedia.beruang.ui.components.showToast
+import com.altomedia.beruang.ui.components.tierIcon
 import com.altomedia.beruang.ui.theme.BgBody
 import com.altomedia.beruang.ui.theme.BrandYellow
 import com.altomedia.beruang.ui.theme.TextMain
@@ -155,7 +156,13 @@ fun ProfileScreen(
                     .padding(horizontal = 10.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(tier.name, color = tier.colorHex.toColor(), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Icon(
+                    tierIcon(state.tier),
+                    contentDescription = null,
+                    tint = tier.colorHex.toColor(),
+                    modifier = Modifier.size(14.dp),
+                )
+                Text(" " + tier.name, color = tier.colorHex.toColor(), fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
 
             // Stats row
