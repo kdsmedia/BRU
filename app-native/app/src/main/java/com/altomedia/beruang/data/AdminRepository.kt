@@ -1,6 +1,8 @@
 package com.altomedia.beruang.data
 
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 /**
  * Admin actions — port of the web admin helpers (`adminBlockUser`,
@@ -41,5 +43,31 @@ object AdminRepository {
     suspend fun loadBlocked(): Map<String, Boolean> {
         val o = NodesRepository.readValue("blocked")?.asObject() ?: return emptyMap()
         return o.entries.associate { (uid, v) -> uid to (v.asBoolean() == true) }
+    }
+
+    /**
+     * Admin: add to (delta > 0) or deduct from (delta < 0) a user's wallet
+     * balance atomically, then record a history entry. Mirrors
+     * `WalletRepository.awardPoints` but allows negative deltas and clamps at 0.
+     * Returns the new balance, or null if the CAS did not commit.
+     */
+    suspend fun adjustBalance(uid: String, delta: Long, reason: String): Long? {
+        if (uid.isEmpty() || delta == 0L) return null
+        val res = NodesRepository.runTransaction(NodesRepository.ref(Paths.walletBalance(uid))) { cur ->
+            val next = (cur?.asLong() ?: 0L) + delta
+            if (next < 0) return@runTransaction JsonPrimitive(0L)
+            JsonPrimitive(next)
+        }
+        if (!res.committed) return null
+        NodesRepository.push(
+            NodesRepository.ref(Paths.walletHistory(uid)),
+            buildJsonObject {
+                put("type", if (delta > 0) "admin_credit" else "admin_debit")
+                put("amount", delta)
+                put("reason", reason)
+                put("timestamp", System.currentTimeMillis())
+            },
+        )
+        return (res.value?.asLong() ?: 0L)
     }
 }

@@ -1,6 +1,7 @@
 package com.altomedia.beruang.ui.notif
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,9 +14,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -58,15 +62,34 @@ fun NotifScreen(uid: String, vm: NotifViewModel = viewModel()) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color.White, androidx.compose.foundation.shape.RoundedCornerShape(12.dp))
-                            .padding(12.dp),
+                            .background(Color.White, RoundedCornerShape(12.dp))
+                            .clickable { if (!n.read) vm.markRead(uid, n.key) }
+                            .padding(start = 12.dp, top = 12.dp, bottom = 12.dp, end = 4.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
+                        // Unread indicator (green dot) — disappears once opened.
                         Box(
-                            modifier = Modifier.size(36.dp).clip(CircleShape).background(BrandYellow.copy(alpha = 0.15f)),
+                            modifier = Modifier.size(8.dp).clip(CircleShape)
+                                .background(if (n.read) Color.Transparent else Color(0xFF22C55E)),
+                        )
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(BrandYellow.copy(alpha = 0.15f))
+                                .padding(start = 8.dp),
                             contentAlignment = Alignment.Center,
                         ) { Icon(Icons.Filled.Bolt, null, tint = BrandYellow, modifier = Modifier.size(18.dp)) }
-                        Text(n.text, fontSize = 14.sp, color = Color(0xFF333333), modifier = Modifier.padding(start = 12.dp))
+                        Text(
+                            n.text,
+                            fontSize = 14.sp,
+                            color = Color(0xFF333333),
+                            fontWeight = if (n.read) FontWeight.Normal else FontWeight.Medium,
+                            modifier = Modifier.weight(1f).padding(start = 12.dp),
+                        )
+                        IconButton(onClick = { vm.deleteNotif(uid, n.key) }) {
+                            Icon(Icons.Filled.Delete, "Hapus aktivitas", tint = TextMuted, modifier = Modifier.size(18.dp))
+                        }
                     }
                     // Inline banner ad every 5 activities.
                     if ((index + 1) % 5 == 0 && index + 1 < items.size) {

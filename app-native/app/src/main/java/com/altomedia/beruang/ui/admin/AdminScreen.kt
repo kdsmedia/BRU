@@ -13,13 +13,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Savings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -41,6 +44,7 @@ import com.altomedia.beruang.data.AdminRepository
 import com.altomedia.beruang.data.AppConstants
 import com.altomedia.beruang.data.NodesRepository
 import com.altomedia.beruang.data.Paths
+import com.altomedia.beruang.data.WalletRepository
 import com.altomedia.beruang.data.asObject
 import com.altomedia.beruang.data.str
 import com.altomedia.beruang.ui.components.showToast
@@ -49,6 +53,7 @@ import com.altomedia.beruang.ui.theme.BrandYellow
 import com.altomedia.beruang.ui.theme.ErrorRed
 import com.altomedia.beruang.ui.theme.TextMain
 import com.altomedia.beruang.ui.theme.TextMuted
+import androidx.compose.ui.text.input.KeyboardType
 import kotlinx.coroutines.launch
 
 /** Admin panel — port of the web `renderAdminUserList` + admin actions. */
@@ -117,6 +122,7 @@ fun AdminScreen(myUid: String, onVisitProfile: (String) -> Unit) {
                             } else {
                                 IconBtn(Icons.Filled.Block, "Blokir") { pending = AdminAction.Block(u) }
                             }
+                            IconBtn(Icons.Filled.Savings, "Atur saldo") { pending = AdminAction.AdjustBalance(u) }
                             IconBtn(Icons.Filled.Delete, "Hapus akun", danger = true) { pending = AdminAction.Delete(u) }
                         }
                     }
@@ -125,11 +131,90 @@ fun AdminScreen(myUid: String, onVisitProfile: (String) -> Unit) {
         }
     }
 
+    // Adjust-balance dialog (own UI: amount + add/deduct + reason).
+    val adjust = pending as? AdminAction.AdjustBalance
+    if (adjust != null) {
+        val u = adjust.user
+        var balance by remember(u.uid) { mutableStateOf<Long?>(null) }
+        var amountText by remember { mutableStateOf("") }
+        var reason by remember { mutableStateOf("Penyesuaian admin") }
+        LaunchedEffect(u.uid) { balance = WalletRepository.readBalance(u.uid) }
+        AlertDialog(
+            onDismissRequest = { pending = null },
+            title = { Text("Atur Saldo — ${u.username}") },
+            text = {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        "Saldo saat ini: ${balance?.let { "%,d".format(it) } ?: "…"} poin",
+                        fontSize = 13.sp,
+                        color = TextMuted,
+                    )
+                    OutlinedTextField(
+                        value = amountText,
+                        onValueChange = { s -> amountText = s.filter { c -> c.isDigit() }.take(9) },
+                        label = { Text("Nominal (poin)") },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                    )
+                    Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(onClick = { amountText = "100" }) { Text("+100") }
+                        TextButton(onClick = { amountText = "500" }) { Text("+500") }
+                        TextButton(onClick = { amountText = "1000" }) { Text("+1.000") }
+                    }
+                    OutlinedTextField(
+                        value = reason,
+                        onValueChange = { reason = it },
+                        label = { Text("Alasan") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    )
+                }
+            },
+            confirmButton = {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TextButton(onClick = {
+                        val amt = amountText.toLongOrNull() ?: 0L
+                        if (amt <= 0) { showToast(context, "Masukkan nominal valid"); return@TextButton }
+                        scope.launch {
+                            val newBal = AdminRepository.adjustBalance(u.uid, -amt, reason)
+                            if (newBal != null) {
+                                showToast(context, "Saldo dikurangi $amt → ${"%,d".format(newBal)} poin")
+                                balance = newBal
+                            } else {
+                                showToast(context, "Gagal memperbarui saldo")
+                            }
+                            pending = null
+                        }
+                    }) { Text("− Kurangi", color = ErrorRed) }
+                    TextButton(onClick = {
+                        val amt = amountText.toLongOrNull() ?: 0L
+                        if (amt <= 0) { showToast(context, "Masukkan nominal valid"); return@TextButton }
+                        scope.launch {
+                            val newBal = AdminRepository.adjustBalance(u.uid, amt, reason)
+                            if (newBal != null) {
+                                showToast(context, "Saldo ditambah $amt → ${"%,d".format(newBal)} poin")
+                                balance = newBal
+                            } else {
+                                showToast(context, "Gagal memperbarui saldo")
+                            }
+                            pending = null
+                        }
+                    }) { Text("+ Tambah", color = BrandYellow, fontWeight = FontWeight.Bold) }
+                }
+            },
+            dismissButton = { TextButton(onClick = { pending = null }) { Text("Tutup") } },
+        )
+    }
+
     pending?.let { action ->
+        // AdjustBalance has its own dialog above; skip the generic confirm here.
+        if (action is AdminAction.AdjustBalance) return@let
         val (title, msg) = when (action) {
             is AdminAction.Block -> "Blokir akun" to "Blokir akun \"${action.user.username}\"? Pengguna tidak dapat masuk lagi."
             is AdminAction.Unblock -> "Buka blokir" to "Buka blokir akun ini?"
             is AdminAction.Delete -> "Hapus akun" to "Hapus akun \"${action.user.username}\"? Semua data pengguna (profil, dompet, postingan) akan dihapus permanen."
+            is AdminAction.AdjustBalance -> return@let
         }
         AlertDialog(
             onDismissRequest = { pending = null },
@@ -173,4 +258,5 @@ sealed class AdminAction(val user: AdminUser) {
     class Block(user: AdminUser) : AdminAction(user)
     class Unblock(user: AdminUser) : AdminAction(user)
     class Delete(user: AdminUser) : AdminAction(user)
+    class AdjustBalance(user: AdminUser) : AdminAction(user)
 }
