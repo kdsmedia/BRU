@@ -4,6 +4,7 @@ Nama aplikasi: BERUANG
 Nama singkat (maks 50 karakter): BERUANG
 Package: com.altomedia.beruang
 Developer: ALTOMEDIA
+Versi: 2.0.0 (versionCode 4) — Native Android (Kotlin + Jetpack Compose)
 
 ------------------------------------------------------------
 DESKRIPSI SINGKAT (maks 80 karakter)
@@ -84,9 +85,9 @@ konten yang Anda kendalikan.
 
 DETAIL TEKNIS
 
-• Ukuran aplikasi: ringan (~7 MB APK)
+• Ukuran aplikasi: ringan (~25 MB APK native)
 • Kompatibilitas: Android 6.0 (API 23) ke atas, target API 37
-• Dibangun dengan Capacitor, Firebase/Supabase, dan Google AdMob
+• Dibangun dengan Kotlin + Jetpack Compose (Material 3), Supabase, Google AdMob
 • Bahasa: Indonesia & English
 
 HUBUNGI KAMI
@@ -126,4 +127,14 @@ KONTAK PUBLIK
 ------------------------------------------------------------
 Email developer: altomediaindonesia@gmail.com
 Situs privasi: (isi URL hosting PRIVACY_POLICY.md)
+
+------------------------------------------------------------
+RINGKASAN PEMBARUAN v2.0.0 (untuk "What's new" di Play Console)
+------------------------------------------------------------
+BERUANG v2.0.0 — kini 100% native Android (Kotlin + Jetpack Compose).
+Ditulis ulang sepenuhnya menggantikan versi pembungkus HTML (Capacitor).
+Tampilan & fitur tetap identik, kini jauh lebih cepat, ringan, dan
+hemat data. Baru: pull-to-refresh di feed, like dengan double-tap,
+tautan channel WhatsApp di Pengaturan. Backend migrasi ke Supabase
+Kotlin SDK 3.0 dengan realtime yang lebih andal.
 ==================================================

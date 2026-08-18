@@ -1,215 +1,106 @@
 RELEASE NOTES — BERUANG
 ==================================================
-Versi: 1.2.0 (versionCode 3)
-Tanggal rilis: 17 Agustus 2026
+Versi: 2.0.0 (versionCode 4)
+Tanggal rilis: 18 Agustus 2026
 Package: com.altomedia.beruang
 Developer: ALTOMEDIA
 
 ------------------------------------------------------------
 BAHASA INDONESIA
 ------------------------------------------------------------
-BERUANG v1.2.0 — Perbaikan & Penyempurnaan Iklan (AdMob)
+BERUANG v2.0.0 — Migrasi Penuh ke Android Native (Kotlin + Jetpack Compose)
 
-Pembaruan penting yang memastikan iklan Google AdMob tampil dan
-berfungsi dengan sempurna pada perangkat Android.
+Pembaruan besar: BERUANG kini ditulis ulang sepenuhnya sebagai
+aplikasi Android NATIVE menggunakan Kotlin dan Jetpack Compose —
+menggantikan versi sebelumnya yang berbasis pembungkus HTML (Capacitor).
+Tampilan, fitur, dan alur aplikasi tetap identik, namun kini jauh
+lebih cepat, lebih ringan, dan lebih hemat data karena tidak lagi
+memuat webview.
 
-Perbaikan di v1.2.0:
-- Iklan banner kini benar-benar muncul di bagian bawah layar.
-  Sebelumnya banner sering tidak tampil karena status pemuatan
-  tidak dipantau; kini sistem mendeteksi keberhasilan/kegagalan
-  muat iklan dan mencoba ulang otomatis bila terjadi gangguan
-  jaringan atau "no fill" sementara.
-- Iklan interstisial (layar penuh) kini lebih andal: iklan
-  dimuat lebih awal dan dimuat ulang otomatis setelah ditutup,
-  sehingga siap ditampilkan pada perpindahan layar (jarak
-  minimum 15 menit antar tayangan tetap berlaku).
-- Iklan reward (rewarded video) kini stabil: perbaikan manajemen
-  listener agar pemberian kuota bonus (+1 posting/komentar)
-  selalu terdeteksi dan tidak menggangu iklan interstisial
-  berikutnya.
-- Inisialisasi SDK AdMob kini idempoten dan aman dari panggilan
-  bersamaan, mencegah kondisi balapan (race condition) saat aplikasi
-  dibuka.
-- PERBAIKAN PENYEBAB IKLAN TIDAK TAMPIL: pendaftaran listener
-  banner/interstitial kini ditunggu (await) sebelum iklan pertama
-  diminta — sebelumnya event "iklan termuat" bisa terlewat sehingga
-  banner terlihat macet/tersembunyi. Kini banner selalu tampil.
-- PERSETUJUAN PENGGUNA (UMP/GDPR): sebelum iklan dimuat, aplikasi
-  kini meminta persetujuan iklan Google (User Messaging Platform)
-  sesuai kebijakan Google. Pengguna di wilayah EEA akan melihat
-  formulir persetujuan; di luar EEA (termasuk Indonesia) otomatis
-  berjalan tanpa formulir. Ini mengikuti kebijakan Google dan
-  memastikan iklan tetap dapat ditayangkan.
-- Mode uji iklan: developer dapat memverifikasi tampilan iklan
-  dengan menambahkan ?adtest=1 (atau localStorage.adtest='1') untuk
-  memakai unit iklan contoh resmi Google—tidak menimbulkan
-  impresi/pendapatan iklan nyata.
-- Catatan status AdMob kini tampil pada panel debug (?debug=1)
-  untuk memudahkan pengecekan.
+Yang baru & diperbaiki di v2.0.0:
+- ARSITEKTUR NATIVE: seluruh antarmuka kini dirender dengan Jetpack
+  Compose (Material 3), bukan HTML/webview. Navigasi, animasi, dan
+  respons sentuh kini secepat aplikasi Android asli.
+- PERFORMANCE: startup lebih cepat, penggunaan memori lebih rendah,
+  dan konsumsi data berkurang signifikan karena tidak ada layer web.
+- Pull-to-refresh di feed beranda: tarik ke bawah untuk memuat ulang
+  postingan terbaru (menggantikan indikator #ptr-indiger versi web).
+- Like dengan double-tap: ketuk ganda pada gambar postingan untuk
+  menyukai, persis seperti versi sebelumnya.
+- Baris WhatsApp di Pengaturan: tautan langsung ke channel WhatsApp
+  resmi BERUANG kini tersedia di menu Pengaturan.
+- BACKEND: migrasi ke Supabase Kotlin SDK 3.0 (realtime, autentikasi,
+  penyimpanan, dan query dengan API DSL terbaru). Realtime kini
+  menggunakan StateFlow untuk pembaruan langsung yang lebih andal.
+- Fitur lengkap dipertahankan: feed & stories, komentar, chat real-time,
+  profil dengan tier berlangganan, dompet/QR, upload media, notifikasi,
+  panel admin, sistem tier harian (Star/Bronze/Silver/Gold/Master),
+  iklan AdMob (banner/interstitial/reward) dengan persetujuan UMP.
+- Keamanan: kunci Supabase (anon/service-role) dikelola di luar repo
+  (out-of-band), tidak pernah dikomit ke repositori.
 
 Catatan teknis:
-- Android minSdk 23 (Android 6.0+) hingga targetSdk 37.
-- Plugin @capacitor-community/admob v6.
-
-------------------------------------------------------------
-BAHASA INDONESIA — v1.1.0
-------------------------------------------------------------
-BERUANG v1.1.0 — Pembaruan fitur & lokalisasi penuh
-
-Pembaruan besar dengan fitur baru dan pelokalan aplikasi
-sepenuhnya ke Bahasa Indonesia.
-
-Fitur baru di v1.1.0:
-- Link aktif pada postingan, komentar, dan pesan chat.
-  URL (http/https) yang ditulis di caption, komentar, atau
-  pesan otomatis menjadi tautan yang bisa diklik dan membuka
-  browser sistem perangkat.
-- Admin dapat menyematkan (pin) postingan ke bagian teratas
-  umpan, lengkap dengan lencana "Disematkan" dan tombol
-  semat/lepas sematan.
-- Tombol Chat pada kunjungan profil untuk memulai obrolan
-  pribadi langsung dari profil pengguna lain.
-- Hapus postingan (pemilik atau admin) — tombol hapus pada
-  setiap kiriman.
-- Hapus pesan chat per pesan dan hapus seluruh percakapan
-  (tombol tempat sampah di header obrolan).
-
-Perubahan lain:
-- Seluruh teks antarmuka pengguna kini dalam Bahasa Indonesia
-  (layar autentikasi, navigasi, umpan, komentar, obrolan,
-  dompet poin, transfer, notifikasi, pengaturan, modal info,
-  dan toast/notifikasi singkat).
-- Perbaikan kecil dan peningkatan stabilitas.
-
-------------------------------------------------------------
-BAHASA INDONESIA — v1.0.0 (rilis awal)
-------------------------------------------------------------
-BERUANG v1.0.0 — Rilis awal!
-
-Selamat datang di BERUANG, aplikasi sosial ringan dan menghibur
-dari ALTOMEDIA. Bagikan momen Anda, terhubung dengan teman, dan
-nikmati pengalaman sosial yang simpel.
-
-Fitur utama:
-- Umpan beranda untuk melihat kiriman terbaru.
-- Unggah kiriman dengan foto dan caption.
-- Berkomentar pada kiriman.
-- Obrolan/chat dalam aplikasi.
-- Profil pengguna dengan tier langganan.
-- Sistem tier dengan batas harian:
-    Star (5/hari), Bronze (10), Silver (20), Gold (50),
-    Master (tak terbatas).
-- Iklan reward (rewarded) sukarela untuk mendapatkan kuota
-  tambahan saat batas harian tercapai.
-- Iklan interstisial layar penuh (jarak 15 menit).
-- Banner iklan native yang tidak mengganggu konten.
-- Integrasi AI User untuk pengalaman sosial yang lebih hidup.
-
-Dukungan teknis:
-- Android minSdk 23 (Android 6.0+) hingga targetSdk 37.
-- Dibangun dengan Capacitor + Supabase backend.
-- Integrasi Google AdMob.
+- Android minSdk 23 (Android 6.0+) sampai targetSdk/compileSdk 37.
+- Dibangun dengan Kotlin + Jetpack Compose (BOM 2024.09.03),
+  Supabase Kotlin 3.0.0, Coil (gambar), AdMob.
+- Backend: Supabase (Postgres, Auth, Storage, Realtime).
 
 Catatan:
-- Aplikasi gratis dan mengandung iklan.
-- Untuk pertanyaan: altomediaindonesia@gmail.com.
+- Aplikasi gratis dengan iklan.
+- Dukungan: altomediaindonesia@gmail.com.
 
 ------------------------------------------------------------
-ENGLISH
+RIWAYAT VERSI SEBELUMNYA (arsip)
 ------------------------------------------------------------
-BERUANG v1.2.0 — AdMob reliability & polish
+- v1.2.0 (versionCode 3): Penyempurnaan iklan AdMob (banner tampil
+  andal, interstitial dimuat awal, reward stabil, inisialisasi
+  idempoten, persetujuan UMP/GDPR).
+- v1.1.0 (versionCode 2): Tautan klik di postingan/komentar/chat,
+  pin postingan oleh admin, tombol chat di profil, hapus postingan,
+  hapus pesan/chat, lokalisasi penuh Bahasa Indonesia.
+- v1.0.0 (versionCode 1): Rilis awal (feed, upload, komentar, chat,
+  profil tier, sistem batas harian, iklan banner). Dibangun dengan
+  Capacitor + webview.
 
-Important update ensuring Google AdMob ads display and function
-correctly on Android devices.
+------------------------------------------------------------
+ENGLISH — v2.0.0
+------------------------------------------------------------
+BERUANG v2.0.0 — Full migration to native Android (Kotlin + Jetpack Compose)
 
-Fixes in v1.2.0:
-- Banner ads now actually appear at the bottom of the screen.
-  Previously the banner often failed to show because load status
-  was not monitored; the app now detects ad load success/failure
-  and automatically retries on transient network or "no fill"
-  errors so the banner self-heals.
-- Interstitial (full-screen) ads are more reliable: they are
-  preloaded earlier and automatically reloaded after dismissal,
-  ready to show on screen changes (the 15-minute minimum gap
-  between impressions still applies).
-- Rewarded video ads are stable: listener management was fixed so
-  the +1 post/comment quota grant is always detected and no longer
-  breaks subsequent interstitial reloads.
-- AdMob SDK initialization is now idempotent and re-entrant safe,
-  preventing race conditions on app launch.
-- ROOT-CAUSE FIX FOR ADS NOT SHOWING: banner/interstitial listener
-  registration is now awaited before the first ad is requested. The
-  previous code could miss the "ad loaded" event (Capacitor v6
-  addListener is async), leaving the banner stuck/hidden. Banners now
-  reliably display.
-- USER CONSENT (UMP/GDPR): before loading ads, the app now requests
-  Google ad consent via the User Messaging Platform, per Google
-  policy. EEA users see the consent form; outside the EEA (including
-  Indonesia) it runs automatically with no form. This complies with
-  Google policy and keeps ads eligible to serve.
-- Ad test mode: developers can verify ad rendering with ?adtest=1
-  (or localStorage.adtest='1'), which uses Google's official sample
-  ad-unit IDs and never produces real impressions/revenue.
-- AdMob status is now surfaced in the debug panel (?debug=1) for
-  easier troubleshooting.
+A major rewrite: BERUANG is now a fully native Android app built with
+Kotlin and Jetpack Compose, replacing the previous HTML-wrapper
+(Capacitor) version. The look, features, and flows remain identical,
+but the app is now much faster, lighter, and more data-efficient
+because it no longer loads a webview.
+
+What's new / fixed in v2.0.0:
+- NATIVE ARCHITECTURE: the entire UI is now rendered with Jetpack
+  Compose (Material 3) instead of HTML/webview. Navigation, animation,
+  and touch response are now as fast as a native Android app.
+- PERFORMANCE: faster startup, lower memory usage, and significantly
+  reduced data consumption with no web layer.
+- Pull-to-refresh on the home feed: pull down to reload the latest
+  posts (replaces the web #ptr-indicator).
+- Double-tap to like: double-tap a post image to like it, just like
+  before.
+- WhatsApp row in Settings: a direct link to the official BERUANG
+  WhatsApp channel is now available in the Settings menu.
+- BACKEND: migrated to Supabase Kotlin SDK 3.0 (realtime, auth,
+  storage, and queries with the new DSL API). Realtime now uses
+  StateFlow for more reliable live updates.
+- All features retained: feed & stories, comments, real-time chat,
+  profile with subscription tiers, wallet/QR, media upload,
+  notifications, admin panel, daily tier system
+  (Star/Bronze/Silver/Gold/Master), AdMob ads
+  (banner/interstitial/reward) with UMP consent.
+- Security: Supabase keys (anon/service-role) are managed
+  out-of-band and never committed to the repository.
 
 Technical notes:
-- Android minSdk 23 (Android 6.0+) up to targetSdk 37.
-- Plugin @capacitor-community/admob v6.
-
-------------------------------------------------------------
-ENGLISH — v1.1.0
-------------------------------------------------------------
-BERUANG v1.1.0 — Feature update & full localization
-
-Major update with new features and full Indonesian localization
-of the entire user interface.
-
-New in v1.1.0:
-- Clickable links in posts, comments, and chat messages. URLs
-  (http/https) written in captions, comments, or messages are
-  automatically turned into clickable links that open the
-  device's system browser.
-- Admin can pin posts to the top of the feed, with a "Pinned"
-  badge and pin/unpin controls.
-- Chat button on profile visits to start a private conversation
-  directly from another user's profile.
-- Delete post (owner or admin) with a delete control on each
-  post.
-- Delete individual chat messages and clear an entire
-  conversation (trash icon in chat header).
-
-Other changes:
-- The entire user interface is now in Bahasa Indonesia (auth
-  screen, navigation, feed, comments, chat, points wallet,
-  transfer, notifications, settings, info modals, and toasts).
-- Minor fixes and stability improvements.
-
-------------------------------------------------------------
-ENGLISH — v1.0.0 (initial release)
-------------------------------------------------------------
-BERUANG v1.0.0 — Initial release!
-
-Welcome to BERUANG, a lightweight and entertaining social app
-from ALTOMEDIA. Share your moments, connect with friends, and
-enjoy a simple social experience.
-
-Key features:
-- Home feed to browse the latest posts.
-- Upload posts with photos and captions.
-- Comment on posts.
-- In-app chat.
-- User profile with subscription tiers.
-- Tier system with daily limits:
-    Star (5/day), Bronze (10), Silver (20), Gold (50),
-    Master (unlimited).
-- Optional rewarded ads to grant extra daily quota.
-- Non-intrusive native banner ads.
-
-Technical notes:
-- Android minSdk 23 (Android 6.0+) up to targetSdk 37.
-- Built with Capacitor + Firebase/Supabase backend.
-- Google AdMob integration.
+- Android minSdk 23 (Android 6.0+) up to targetSdk/compileSdk 37.
+- Built with Kotlin + Jetpack Compose (BOM 2024.09.03),
+  Supabase Kotlin 3.0.0, Coil (images), AdMob.
+- Backend: Supabase (Postgres, Auth, Storage, Realtime).
 
 Notes:
 - Free app with ads.
