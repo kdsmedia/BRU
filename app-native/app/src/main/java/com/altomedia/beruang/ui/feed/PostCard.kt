@@ -134,6 +134,12 @@ fun PostCard(
             )
         }
 
+        // Auto-embed YouTube when the caption contains a YouTube link.
+        val ytId = remember(post.caption) { extractYouTubeId(post.caption) }
+        if (ytId != null) {
+            YouTubeEmbed(videoId = ytId)
+        }
+
         // Actions
         Row(
             modifier = Modifier.padding(vertical = 8.dp),
