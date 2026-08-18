@@ -84,7 +84,7 @@ fun SplashLoadingScreen(onComplete: () -> Unit) {
             modifier = Modifier.padding(horizontal = 48.dp),
         ) {
             Image(
-                painter = painterResource(R.mipmap.ic_launcher),
+                painter = painterResource(R.mipmap.ic_launcher_foreground),
                 contentDescription = "BERUANG",
                 modifier = Modifier.size(132.dp),
             )
