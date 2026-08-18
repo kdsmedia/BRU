@@ -44,6 +44,7 @@ import coil.compose.AsyncImage
 import com.altomedia.beruang.ui.theme.BgCard
 import com.altomedia.beruang.ui.theme.BrandYellow
 import com.altomedia.beruang.ui.theme.ErrorRed
+import com.altomedia.beruang.ui.theme.LinkBlue
 import com.altomedia.beruang.ui.theme.TextMuted
 
 /**
@@ -58,7 +59,7 @@ fun PostCard(
     isFollowing: Boolean,
     isAdmin: Boolean,
     onLike: () -> Unit,
-    onComment: (String) -> Unit,
+    onComment: (text: String, replyToUid: String?, replyToName: String?) -> Unit,
     onToggleFollow: () -> Unit,
     onVisitProfile: () -> Unit,
     onDelete: () -> Unit,
@@ -67,6 +68,9 @@ fun PostCard(
     var showComments by remember { mutableStateOf(false) }
     var commentText by remember { mutableStateOf("") }
     var previewImage by remember { mutableStateOf<String?>(null) }
+    // Active reply target (uid + username) — when set, the comment box shows a
+    // "replying to @name" hint and the mention is sent with the comment.
+    var replyTarget by remember { mutableStateOf<Pair<String, String>?>(null) }
 
     Column(
         modifier = Modifier
@@ -196,14 +200,72 @@ fun PostCard(
         if (showComments) {
             Column(modifier = Modifier.padding(top = 4.dp)) {
                 post.comments.forEach { c ->
-                    Text(
-                        buildAnnotatedCaption(c.username, c.text),
-                        fontSize = 13.sp,
-                        modifier = Modifier
-                            .padding(vertical = 2.dp)
-                            .clickable { },
-                    )
+                    Column(modifier = Modifier.padding(vertical = 2.dp)) {
+                        // Reply-to mention line ("membalas @name") for replies.
+                        if (!c.replyTo.isNullOrBlank()) {
+                            Text(
+                                "↳ membalas @${c.replyTo}",
+                                fontSize = 11.sp,
+                                color = LinkBlue,
+                                modifier = Modifier.padding(start = 2.dp, bottom = 1.dp),
+                            )
+                        }
+                        Row(verticalAlignment = Alignment.Top) {
+                            Text(
+                                buildAnnotatedCaption(c.username, c.text, highlight = c.replyTo),
+                                fontSize = 13.sp,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable {
+                                        // Tap a comment to start a reply to its author.
+                                        replyTarget = c.uid to c.username
+                                        commentText = "@${c.username} "
+                                    },
+                            )
+                            Text(
+                                "Balas",
+                                color = LinkBlue,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .clickable {
+                                        replyTarget = c.uid to c.username
+                                        commentText = "@${c.username} "
+                                    }
+                                    .padding(start = 6.dp, top = 2.dp),
+                            )
+                        }
+                    }
                 }
+
+                // Reply-to hint banner above the input when replying.
+                replyTarget?.let { (ruId, ruName) ->
+                    Row(
+                        modifier = Modifier
+                            .padding(top = 6.dp)
+                            .background(BrandYellow.copy(alpha = 0.12f), RoundedCornerShape(8.dp))
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            "Membalas @${ruName}",
+                            fontSize = 12.sp,
+                            color = TextMuted,
+                            modifier = Modifier.weight(1f),
+                        )
+                        Text(
+                            "Batal",
+                            color = LinkBlue,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.clickable {
+                                replyTarget = null
+                                commentText = ""
+                            }.padding(start = 6.dp),
+                        )
+                    }
+                }
+
                 Row(
                     modifier = Modifier.padding(top = 6.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -211,7 +273,13 @@ fun PostCard(
                     OutlinedTextField(
                         value = commentText,
                         onValueChange = { commentText = it },
-                        placeholder = { Text("Tambahkan komentar...", fontSize = 13.sp) },
+                        placeholder = {
+                            Text(
+                                if (replyTarget != null) "Balas @${replyTarget!!.second}..."
+                                else "Tambahkan komentar...",
+                                fontSize = 13.sp,
+                            )
+                        },
                         singleLine = true,
                         shape = RoundedCornerShape(20.dp),
                         modifier = Modifier.weight(1f),
@@ -223,8 +291,10 @@ fun PostCard(
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.clickable {
                             if (commentText.isNotBlank()) {
-                                onComment(commentText.trim())
+                                val (ruId, ruName) = replyTarget ?: (null to null)
+                                onComment(commentText.trim(), ruId, ruName)
                                 commentText = ""
+                                replyTarget = null
                             }
                         }.padding(8.dp),
                     )
@@ -250,9 +320,27 @@ private fun FollowButton(following: Boolean, onClick: () -> Unit) {
     )
 }
 
-// Caption with bold author prefix (mirrors `<b>name</b> caption`).
-private fun buildAnnotatedCaption(name: String, text: String): AnnotatedString = buildAnnotatedString {
+// Caption with bold author prefix (mirrors `<b>name</b> caption`). When
+// [highlight] is non-null, the `@highlight` mention in the text is styled as
+// a blue link so replies stand out.
+private fun buildAnnotatedCaption(name: String, text: String, highlight: String? = null): AnnotatedString = buildAnnotatedString {
     withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(name) }
     append(" ")
-    append(text)
+    if (highlight.isNullOrBlank()) {
+        append(text)
+        return@buildAnnotatedString
+    }
+    val mention = "@$highlight"
+    var idx = 0
+    while (idx <= text.length - mention.length) {
+        val found = text.regionMatches(idx, mention, 0, ignoreCase = false)
+        if (found) {
+            withStyle(SpanStyle(color = LinkBlue, fontWeight = FontWeight.Bold)) { append(mention) }
+            idx += mention.length
+        } else {
+            append(text[idx])
+            idx++
+        }
+    }
+    if (idx < text.length) append(text.substring(idx))
 }

@@ -29,6 +29,8 @@ data class CommentItem(
     val username: String,
     val text: String,
     val timestamp: Long,
+    /** Username being replied to (mention), if this comment is a reply. */
+    val replyTo: String? = null,
 )
 
 /** Public profile of a user shown on feed avatars / cards. */
@@ -61,6 +63,7 @@ fun parsePost(
             username = o.str("username") ?: "Pengguna",
             text = o.str("text") ?: "",
             timestamp = o.long("timestamp") ?: 0L,
+            replyTo = o.str("replyTo"),
         )
     }?.sortedBy { it.timestamp } ?: emptyList()
     return PostItem(

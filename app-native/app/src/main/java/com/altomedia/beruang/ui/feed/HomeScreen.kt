@@ -127,7 +127,7 @@ fun HomeScreen(
                                 vm.refresh()
                             }
                         },
-                        onComment = { text ->
+                        onComment = { text, replyToUid, replyToName ->
                             scope.launch {
                                 // Enforce tier daily comment limit (web: checkLimit('comments')).
                                 val usage = com.altomedia.beruang.data.WalletRepository.loadUsage(me.uid)
@@ -139,14 +139,14 @@ fun HomeScreen(
                                     com.altomedia.beruang.ui.components.showToast(context, "Batas komentar harian tercapai (${c.limit}x untuk $tierName).")
                                     quota.request("comments") { granted ->
                                         if (granted) scope.launch {
-                                            PostRepository.postComment(me, post.id, post.authorUid, text)
+                                            PostRepository.postComment(me, post.id, post.authorUid, text, replyToUid, replyToName)
                                             showToast(context, "+${com.altomedia.beruang.data.AppConstants.POINTS_COMMENT} poin (berkomentar)")
                                             vm.refresh()
                                         }
                                     }
                                     return@launch
                                 }
-                                PostRepository.postComment(me, post.id, post.authorUid, text)
+                                PostRepository.postComment(me, post.id, post.authorUid, text, replyToUid, replyToName)
                                 com.altomedia.beruang.data.WalletRepository.recordUsage(me.uid, usage, "comments")
                                 com.altomedia.beruang.data.WalletRepository.awardPoints(me.uid, com.altomedia.beruang.data.AppConstants.POINTS_COMMENT, "comment")
                                 showToast(context, "+${com.altomedia.beruang.data.AppConstants.POINTS_COMMENT} poin (berkomentar)")

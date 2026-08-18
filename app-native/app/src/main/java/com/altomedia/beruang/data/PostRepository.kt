@@ -70,15 +70,23 @@ object PostRepository {
         pid: String,
         ownerUid: String,
         text: String,
+        replyToUid: String? = null,
+        replyToName: String? = null,
     ) {
         repo.push(repo.ref("posts/$pid/comments"), buildJsonObject {
             put("text", text)
             put("uid", me.uid)
             put("username", me.displayName ?: "Pengguna")
             put("timestamp", System.currentTimeMillis())
+            if (!replyToName.isNullOrBlank()) put("replyTo", replyToName)
         })
+        // Notify the post owner (unless the commenter is the owner).
         if (ownerUid != me.uid) {
             sendNotif(ownerUid, me.displayName ?: "Seseorang", "berkomentar: $text")
+        }
+        // Notify the user being replied to (mention), if any and not self.
+        if (replyToUid != null && replyToUid != me.uid && replyToUid != ownerUid) {
+            sendNotif(replyToUid, me.displayName ?: "Seseorang", "membalas komentar Anda: $text")
         }
         WalletRepository.awardPoints(me.uid, AppConstants.POINTS_COMMENT, "comment $pid")
         BonusRepository.recordComment(me.uid)
