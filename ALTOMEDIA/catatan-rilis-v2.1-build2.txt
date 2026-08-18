@@ -1,0 +1,100 @@
+CATATAN RILIS — BERUANG v2.1 (build 2, versionCode 5)
+Tanggal build: 18 Agustus 2026
+ID Paket: com.altomedia.beruang
+minSdk: 23 (Android 6.0) | targetSdk: 37 (Android 16) | compileSdk: 37
+
+------------------------------------------------------------
+RINGKASAN
+------------------------------------------------------------
+Build hasil perbaikan bug dan optimasi iklan. File rilis (AAB/APK
+bertanda tangan) dan file pengujian (APK/AAB debug) diperbarui di
+folder ALTOMEDIA/release. Tidak ada perubahan versionCode/versionName;
+build ini menggantikan artefak v2.1 sebelumnya dengan kode yang sudah
+diperbaiki.
+
+------------------------------------------------------------
+PERBAIKAN PADA BUILD INI
+------------------------------------------------------------
+1. Logo "K" sebelum splash DIHILANGKAN
+   - Penyebab: tema splash sistem Android (Theme.BERUANG.Splash)
+     mereferensikan @drawable/ic_splash_logo via
+     windowSplashScreenAnimatedIcon, sehingga sistem menampilkan ikon
+     tersebut (terlihat seperti huruf "K") saat cold-start sebelum
+     Compose SplashLoadingScreen sempat dirender.
+   - Perbaikan: atribut windowSplashScreenAnimatedIcon dihapus dari
+     themes.xml; splash sistem kini putih polos. Drawable
+     ic_splash_logo.xml yang tidak terpakai ikut dihapus. Branding
+     splash ditangani sepenuhnya oleh Compose SplashLoadingScreen.
+
+2. Banner AdMob TIDAK tampil — DIPERBAIKI
+   - Banner kini dibuat dengan context Activity (sebelumnya context
+     biasa yang mencegah iklan mengembang), ukuran adaptif anchored
+     banner sesuai lebar layar nyata, SDK MobileAds dipastikan
+     terinisialisasi sebelum load, serta pause/resume/destroy
+     sejajar dengan lifecycle Compose agar tidak blank/kosong.
+
+3. Interstitial 15 menit sekali — DIPERKUAT
+   - Cooldown 15 menit (INTERSTITIAL_COOLDOWN_MS) tetap dipertahankan.
+     Tambahan penjaga: tidak menampilkan iklan jika Activity sedang
+     finishing/destroyed, dan reload otomatis bila gagal tampil/load.
+
+4. Crash setelah iklan rewarded selesai — DIPERBAIKI
+   - Penyebab: ad.show(activity) melempar IllegalStateException ketika
+     Activity tidak valid, dan callback menyentuh state yang sudah
+     ter-dispose.
+   - Perbaikan: ad.show(activity) dibungkus try/catch, penjaga
+     activity.isFinishing/isDestroyed sebelum show, dan
+     CompletableDeferred diselesaikan di setiap jalur kode sehingga
+     coroutine pemanggil tidak menggantung atau resume ke UI yang
+     sudah terbuang.
+
+------------------------------------------------------------
+SPESIFIKASI BUILD
+------------------------------------------------------------
+- applicationId: com.altomedia.beruang
+- versionCode: 5
+- versionName: 2.1
+- compileSdk: 37 | targetSdk: 37 | minSdk: 23
+- JDK build: OpenJDK 21 (javac 21.0.12), bytecode jvmTarget 17
+- Android SDK: platform-tools 37.0.1, build-tools 35.0.0,
+  platforms;android-37.0
+- Penandatanganan release: ALTOMEDIA/ALTOMEDIA.jks
+  (alias kdsmedia, validity 10000 hari)
+- Format rilis: .aab bertanda tangan + .apk bertanda tangan
+- Format pengujian: APK debug + AAB debug
+
+------------------------------------------------------------
+FILE HASIL BUILD (di ALTOMEDIA/release/)
+------------------------------------------------------------
+- BERUANG-v2.1-release.aab   -> upload ke Play Console (produksi)
+- BERUANG-v2.1-release.apk   -> instal langsung (produksi, signed)
+- BERUANG-v2.1-debug.apk     -> pengujian (debug, logcat aktif)
+- BERUANG-v2.1-debug.aab     -> pengujian (debug bundle)
+
+------------------------------------------------------------
+VERIFIKASI
+------------------------------------------------------------
+- jarsigner -verify BERUANG-v2.1-release.aab -> "jar verified."
+- jarsigner -verify BERUANG-v2.1-release.apk  -> "jar verified."
+- :app:compileDebugKotlin  -> BUILD SUCCESSFUL (hanya peringatan
+  deprecation, tanpa error)
+
+------------------------------------------------------------
+CATATAN UNTUK PLAY CONSOLE
+------------------------------------------------------------
+- Upload file: BERUANG-v2.1-release.aab
+- Karena versionCode tetap 5, gunakan jalur "Replace existing APK/AAB"
+  pada track yang sama, atau naikkan versionCode bila Play menolak
+  duplikat.
+- Pastikan Data Safety dan izin (kamera) terisi sesuai
+  kebijakan-privasi.txt.
+
+------------------------------------------------------------
+TUGAS LANJUTAN (belum termasuk build ini)
+------------------------------------------------------------
+Perbaikan berikut sedang dikerjakan terpisah dan akan dirilis pada
+build berikutnya:
+- Edit saldo admin: pilihan (tambah/kurangi) + nominal + catatan +
+  tombol OKE.
+- Tombol kembali (⬅️) di semua halaman/popup, termasuk popup admin.
+- Tugas bonus: undang 10 teman (dapat 5000 poin).
