@@ -13,14 +13,20 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Savings
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -131,16 +137,18 @@ fun AdminScreen(myUid: String, onVisitProfile: (String) -> Unit) {
         }
     }
 
-    // Adjust-balance dialog (own UI: amount + add/deduct + reason).
+    // Adjust-balance dialog: pilih tambah/kurangi + nominal + catatan + OKE.
     val adjust = pending as? AdminAction.AdjustBalance
     if (adjust != null) {
         val u = adjust.user
         var balance by remember(u.uid) { mutableStateOf<Long?>(null) }
         var amountText by remember { mutableStateOf("") }
         var reason by remember { mutableStateOf("Penyesuaian admin") }
+        var isAdd by remember { mutableStateOf(true) } // true = tambah, false = kurangi
+        var busy by remember { mutableStateOf(false) }
         LaunchedEffect(u.uid) { balance = WalletRepository.readBalance(u.uid) }
         AlertDialog(
-            onDismissRequest = { pending = null },
+            onDismissRequest = { if (!busy) pending = null },
             title = { Text("Atur Saldo — ${u.username}") },
             text = {
                 Column(modifier = Modifier.fillMaxWidth()) {
@@ -149,6 +157,34 @@ fun AdminScreen(myUid: String, onVisitProfile: (String) -> Unit) {
                         fontSize = 13.sp,
                         color = TextMuted,
                     )
+                    // Pilihan: Tambah / Kurangi (segmen).
+                    val modes = listOf(
+                        Triple(true, "Tambah", Icons.Filled.Add),
+                        Triple(false, "Kurangi", Icons.Filled.Remove),
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 12.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(BgBody),
+                    ) {
+                        modes.forEach { (mode, label, icon) ->
+                            Row(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(if (isAdd == mode) BrandYellow else Color.Transparent)
+                                    .clickable(enabled = !busy) { isAdd = mode }
+                                    .padding(vertical = 10.dp),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(icon, contentDescription = null, tint = if (isAdd == mode) Color.White else TextMuted, modifier = Modifier.size(18.dp))
+                                Text(" $label", color = if (isAdd == mode) Color.White else TextMuted, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            }
+                        }
+                    }
                     OutlinedTextField(
                         value = amountText,
                         onValueChange = { s -> amountText = s.filter { c -> c.isDigit() }.take(9) },
@@ -158,52 +194,51 @@ fun AdminScreen(myUid: String, onVisitProfile: (String) -> Unit) {
                         modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
                     )
                     Row(modifier = Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TextButton(onClick = { amountText = "100" }) { Text("+100") }
-                        TextButton(onClick = { amountText = "500" }) { Text("+500") }
-                        TextButton(onClick = { amountText = "1000" }) { Text("+1.000") }
+                        TextButton(onClick = { amountText = "100" }, enabled = !busy) { Text("+100") }
+                        TextButton(onClick = { amountText = "500" }, enabled = !busy) { Text("+500") }
+                        TextButton(onClick = { amountText = "1000" }, enabled = !busy) { Text("+1.000") }
                     }
                     OutlinedTextField(
                         value = reason,
                         onValueChange = { reason = it },
-                        label = { Text("Alasan") },
+                        label = { Text("Catatan") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     )
                 }
             },
             confirmButton = {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextButton(onClick = {
+                Button(
+                    onClick = {
+                        if (busy) return@Button
                         val amt = amountText.toLongOrNull() ?: 0L
-                        if (amt <= 0) { showToast(context, "Masukkan nominal valid"); return@TextButton }
+                        if (amt <= 0) { showToast(context, "Masukkan nominal valid"); return@Button }
+                        busy = true
                         scope.launch {
-                            val newBal = AdminRepository.adjustBalance(u.uid, -amt, reason)
+                            val delta = if (isAdd) amt else -amt
+                            val newBal = AdminRepository.adjustBalance(u.uid, delta, reason)
                             if (newBal != null) {
-                                showToast(context, "Saldo dikurangi $amt → ${"%,d".format(newBal)} poin")
+                                showToast(context, "Saldo ${if (isAdd) "ditambah" else "dikurangi"} $amt → ${"%,d".format(newBal)} poin")
                                 balance = newBal
                             } else {
                                 showToast(context, "Gagal memperbarui saldo")
                             }
+                            busy = false
                             pending = null
                         }
-                    }) { Text("− Kurangi", color = ErrorRed) }
-                    TextButton(onClick = {
-                        val amt = amountText.toLongOrNull() ?: 0L
-                        if (amt <= 0) { showToast(context, "Masukkan nominal valid"); return@TextButton }
-                        scope.launch {
-                            val newBal = AdminRepository.adjustBalance(u.uid, amt, reason)
-                            if (newBal != null) {
-                                showToast(context, "Saldo ditambah $amt → ${"%,d".format(newBal)} poin")
-                                balance = newBal
-                            } else {
-                                showToast(context, "Gagal memperbarui saldo")
-                            }
-                            pending = null
-                        }
-                    }) { Text("+ Tambah", color = BrandYellow, fontWeight = FontWeight.Bold) }
+                    },
+                    enabled = !busy,
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = BrandYellow),
+                ) {
+                    if (busy) {
+                        CircularProgressIndicator(strokeWidth = 2.dp, color = Color.White, modifier = Modifier.size(18.dp))
+                    } else {
+                        Text("OKE", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
                 }
             },
-            dismissButton = { TextButton(onClick = { pending = null }) { Text("Tutup") } },
+            dismissButton = { TextButton(onClick = { if (!busy) pending = null }, enabled = !busy) { Text("Batal") } },
         )
     }
 
