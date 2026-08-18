@@ -19,6 +19,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -37,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.altomedia.beruang.ads.AdMobManager
 import com.altomedia.beruang.data.AppConstants
 import com.altomedia.beruang.data.NodesRepository
 import com.altomedia.beruang.data.Paths
@@ -49,7 +53,9 @@ import com.altomedia.beruang.data.str
 import com.altomedia.beruang.ui.auth.AuthUser
 import com.altomedia.beruang.ui.components.PrimaryButton
 import com.altomedia.beruang.ui.components.showToast
+import com.altomedia.beruang.ui.feed.rememberActivity
 import com.altomedia.beruang.ui.theme.BgBody
+import com.altomedia.beruang.ui.theme.BrandYellow
 import com.altomedia.beruang.ui.theme.TextMain
 import com.altomedia.beruang.ui.theme.TextMuted
 import kotlinx.coroutines.launch
@@ -67,9 +73,14 @@ fun UploadScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val activity = rememberActivity()
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var caption by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
+    // True when the daily post quota is exhausted; reveals the "watch ad → +1
+    // post" button so the user can keep posting without upgrading tier.
+    var exhausted by remember { mutableStateOf(false) }
+    var granting by remember { mutableStateOf(false) }
 
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         imageUri = uri
@@ -142,9 +153,11 @@ fun UploadScreen(
                     val tierName = NodesRepository.readValue(Paths.wallet(me.uid))?.asObject()?.str("tier") ?: "Star"
                     val c = WalletRepository.checkLimit(tierName, usage, "posts")
                     if (!c.ok) {
-                        showToast(context, "Batas posting harian tercapai (${c.limit}x untuk $tierName). Naik kelas akun untuk lebih.")
+                        exhausted = true
+                        showToast(context, "Batas posting harian tercapai (${c.limit}x untuk $tierName).")
                         return@launch
                     }
+                    exhausted = false
                     busy = true
                     val imageUrl = if (imageUri != null) {
                         StorageRepository.uploadImage(context, imageUri!!, "posts", maxWidth = 800, quality = 0.7f, uid = me.uid)
@@ -163,5 +176,38 @@ fun UploadScreen(
             loading = busy,
             modifier = Modifier.padding(top = 16.dp),
         )
+
+        // Free-post opportunity: watch a rewarded ad to grant +1 post quota.
+        if (exhausted) {
+            Button(
+                onClick = {
+                    if (granting) return@Button
+                    scope.launch {
+                        granting = true
+                        val valid = AdMobManager.showRewarded(activity)
+                        if (valid) {
+                            WalletRepository.grantAdQuota(me.uid, WalletRepository.loadUsage(me.uid), "posts")
+                            exhausted = false
+                            showToast(context, "+1 kesempatan posting. Silakan terbitkan.")
+                        } else {
+                            showToast(context, "Iklan belum selesai / di-skip. Coba lagi.")
+                        }
+                        granting = false
+                    }
+                },
+                enabled = !granting,
+                colors = ButtonDefaults.buttonColors(containerColor = BrandYellow),
+                modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+            ) {
+                Icon(Icons.Filled.PlayCircle, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                Text(if (granting) "Memuat iklan…" else "SATU KESEMPATAN", color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 8.dp))
+            }
+            Text(
+                "Tonton iklan untuk dapat 1x kesempatan posting gratis.",
+                color = TextMuted,
+                fontSize = 12.sp,
+                modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+            )
+        }
     }
 }
