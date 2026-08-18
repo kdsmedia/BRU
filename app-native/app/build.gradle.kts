@@ -15,8 +15,8 @@ android {
         applicationId = "com.altomedia.beruang"
         minSdk = 23
         targetSdk = 37
-        versionCode = 4
-        versionName = "2.0"
+        versionCode = 5
+        versionName = "2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
@@ -29,7 +29,7 @@ android {
             val ksFile = rootProject.file("../ALTOMEDIA/keystore.properties")
             if (ksFile.exists()) {
                 val props = Properties().apply { ksFile.inputStream().use { load(it) } }
-                storeFile = file(props.getProperty("storeFile"))
+                storeFile = rootProject.file("../" + props.getProperty("storeFile"))
                 storePassword = props.getProperty("storePassword")
                 keyAlias = props.getProperty("keyAlias")
                 keyPassword = props.getProperty("keyPassword")
