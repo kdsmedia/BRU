@@ -9,10 +9,12 @@
         <item name="android:windowBackground">@color/bg_body</item>
     </style>
 
-    <!-- Splash screen theme (shown until MainActivity content is drawn). -->
+    <!-- Splash screen theme (shown until MainActivity content is drawn).
+         No windowSplashScreenAnimatedIcon is set on purpose: an empty white
+         splash avoids the generic launcher glyph/"K" flash before the Compose
+         SplashLoadingScreen takes over. -->
     <style name="Theme.BERUANG.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/white</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
         <item name="postSplashScreenTheme">@style/Theme.BERUANG</item>
     </style>
 </resources>

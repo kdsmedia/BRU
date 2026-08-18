@@ -37,7 +37,8 @@ object AdMobManager {
     private fun rewardedId() =
         if (testMode) AppConstants.AdMob.TEST_REWARDED_ID else AppConstants.AdMob.REWARDED_ID
 
-    /** One-time MobileAds SDK initialization (idempotent). */
+    /** One-time MobileAds SDK initialization (idempotent, thread-safe). */
+    @Synchronized
     fun init() {
         if (initialized) return
         initialized = true
@@ -51,7 +52,7 @@ object AdMobManager {
     // ---- interstitial ------------------------------------------------
     private var interstitialAd: InterstitialAd? = null
     private var interstitialLoading = false
-    private var lastInterstitialTs: Long = 0L
+    @Volatile private var lastInterstitialTs: Long = 0L
 
     /** Preload a full-screen interstitial (idempotent). Mirrors `prepareInterstitial`. */
     fun prepareInterstitial() {
@@ -90,6 +91,7 @@ object AdMobManager {
         }
         val now = System.currentTimeMillis()
         if (now - lastInterstitialTs < AppConstants.AdMob.INTERSTITIAL_COOLDOWN_MS) return false
+        if (activity.isFinishing || activity.isDestroyed) return false
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdDismissedFullScreenContent() {
                 interstitialAd = null
@@ -101,19 +103,32 @@ object AdMobManager {
                 prepareInterstitial()
             }
         }
-        ad.show(activity)
-        lastInterstitialTs = System.currentTimeMillis()
-        interstitialAd = null // consumed; dismissed callback will reload
-        return true
+        return try {
+            ad.show(activity)
+            lastInterstitialTs = System.currentTimeMillis()
+            interstitialAd = null // consumed; dismissed callback will reload
+            true
+        } catch (e: Exception) {
+            Log.e(TAG, "interstitial show failed", e)
+            interstitialAd = null
+            prepareInterstitial()
+            false
+        }
     }
 
     // ---- rewarded video ----------------------------------------------
     /**
      * Show a rewarded video. Resolves true only when the user completed the
      * video (earned the reward). Mirrors web `ADMOB.showRewarded`.
+     *
+     * Crash-safe: `ad.show(activity)` is wrapped in try/catch (it throws
+     * IllegalStateException when the activity is not in a valid state), and the
+     * CompletableDeferred is completed in every code path so the awaiting
+     * coroutine never hangs or resumes into disposed UI.
      */
     suspend fun showRewarded(activity: Activity): Boolean {
         val deferred = CompletableDeferred<Boolean>()
+        if (activity.isFinishing || activity.isDestroyed) return false
         RewardedAd.load(
             BeruangApp.applicationContext(),
             rewardedId(),
@@ -129,8 +144,19 @@ object AdMobManager {
                             if (!deferred.isCompleted) deferred.complete(false)
                         }
                     }
-                    ad.show(activity) { _ ->
-                        if (!deferred.isCompleted) deferred.complete(true)
+                    // Guard again: the activity may have been destroyed while
+                    // the ad was loading. show() throws otherwise.
+                    if (activity.isFinishing || activity.isDestroyed) {
+                        if (!deferred.isCompleted) deferred.complete(false)
+                        return
+                    }
+                    try {
+                        ad.show(activity) { _ ->
+                            if (!deferred.isCompleted) deferred.complete(true)
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "rewarded show failed", e)
+                        if (!deferred.isCompleted) deferred.complete(false)
                     }
                 }
 
