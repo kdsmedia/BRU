@@ -1,6 +1,6 @@
 RELEASE NOTES — BERUANG
 ==================================================
-Versi: 2.2.0 (versionCode 6)
+Versi: 2.3.0 (versionCode 7)
 Tanggal rilis: 18 Agustus 2026
 Package: com.altomedia.beruang
 Developer: ALTOMEDIA
@@ -8,37 +8,38 @@ Developer: ALTOMEDIA
 ------------------------------------------------------------
 BAHASA INDONESIA
 ------------------------------------------------------------
-BERUANG v2.2.0 — Tugas Bonus Undang Teman, Navigasi Kembali, & Perbaikan Iklan
+BERUANG v2.3.0 — Perbaikan Bug Checkin/Iklan, Ikon Tier, AI Gratis & Saldo
 
-Pembaruan v2.2.0 menambahkan tugas bonus undang teman, tombol kembali
-yang konsisten di semua halaman/popup, serta perbaikan tampilan iklan
-AdMob dan interval interstitial.
+Pembaruan v2.3.0 memperbaiki sejumlah bug kritis (crash checkin & tonton
+iklan, interstitial terlalu sering, saldo admin gagal), menambah ikon
+kelas, menyempurnakan layar Pesan, dan mengganti AI ke provider gratis.
 
-Yang baru & diperbaiki di v2.2.0:
-- TUGAS BONUS UNDANG TEMAN: ajak 10 teman bergabung memakai kode
-  referral dan dapatkan 5000 poin (sekali klaim). Kartu "Undang Teman"
-  di halaman Tugas Bonus menampilkan progres X/10, tombol "Bagikan"
-  untuk menyebar kode undangan (via share sheet Android), dan tombol
-  "Klaim 5000" yang aktif otomatis setelah 10 teman bergabung.
-- TOMBOL KEMBALI (⬅️) DI SEMUA HALAMAN/POPUP: kini semua layar overlay
-  (Pesan, Aktivitas, Obrolan, Profil, dan panel Admin) memiliki tombol
-  kembali yang jelas serta merespons tombol back sistem (BackHandler).
-  Pada Profil, tombol back menutup modal yang terbuka dulu sebelum
-  kembali. Dialog popup (AlertDialog) otomatis ditutup oleh back sistem.
-- EDIT SALDO ADMIN (penyempurnaan): dialog atur saldo kini memakai
-  pemilih mode Tambah/Kurangi, satu kolom nominal, kolom catatan,
-  dan tombol OKE tunggal (dengan tombol Batal).
-- IKLAN BANNER AdMob: perbaikan konteks activity, ukuran adaptive,
-  dan ikat ke lifecycle agar banner tampil andal di semua layar.
-- IKLAN INTERSTITIAL: cooldown 15 menit antar tampil, guard activity,
-  dan reload otomatis setelah ditampilkan.
-- IKLAN REWARD: perbaikan crash setelah iklan selesai.
-- LOGO "K" sebelum splash dihapus.
+Yang baru & diperbaiki di v2.3.0:
+- CHECK-IN HARIAN (fix crash): klik tombol check-in tidak lagi crash.
+  Penyebab: toast ditampilkan dari background thread → kini thread-safe.
+- TONTON IKLAN (fix crash): crash setelah iklan reward selesai diperbaiki
+  (root cause sama: toast dari IO thread).
+- INTERSTITIAL 30 MENIT (akurat): iklan interstitial kini tampil tepat
+  30 menit sekali. Cooldown disimpan di SharedPreferences agar tidak reset
+  saat app ditutup/dibuka ulang (sebelumnya bisa tampil lagi ~1 menit).
+- IKON KELAS (naik kelas): tiap tier kini menampilkan ikon Material yang
+  sesuai — Star, Bronze (WorkspacePremium), Silver, Gold (EmojiEvents),
+  Master (MilitaryTech) — pada pill profil & kartu sheet "Naik Kelas".
+- ATUR SALDO ADMIN (fix gagal): saldo kini selalu terperbarui setelah klik
+  OKE. Sebelumnya gagal untuk wallet yang belum punya node saldo; kini
+  fallback ke read-then-set bila transaksi CAS tidak commit.
+- LAYAR PESAN (penyempurnaan): daftar kontak realtime (update otomatis),
+  kolom pencarian teman, empty state, jumlah kontak di header, urut
+  (admin/AI/alfabetis), area ketuk profil lebih besar.
+- AI GRATIS (Groq, OpenAI-compatible): backend AI kini default memakai
+  Groq — provider OpenAI-compatible GRATIS selamanya (API key gratis dari
+  console.groq.com, tanpa kartu kredit/billing, model open-source).
+  Tidak perlu lagi akun OpenAI berbayar. (Bisa tetap pakai OpenAI via env.)
 
 Catatan teknis:
 - Android minSdk 23 (Android 6.0+) sampai targetSdk/compileSdk 37.
 - Dibangun dengan Kotlin + Jetpack Compose, Supabase Kotlin 3.0.0,
-  Coil (gambar), AdMob.
+  Coil (gambar), AdMob. Backend AI: Supabase Edge Function (Groq).
 - Backend: Supabase (Postgres, Auth, Storage, Realtime).
 
 Catatan:
@@ -46,40 +47,40 @@ Catatan:
 - Dukungan: altomediaindonesia@gmail.com.
 
 ------------------------------------------------------------
-ENGLISH — v2.2.0
+ENGLISH — v2.3.0
 ------------------------------------------------------------
-BERUANG v2.2.0 — Invite-Friends Bonus Task, Back Navigation, & Ad Fixes
+BERUANG v2.3.0 — Bug Fixes (Checkin/Ads), Tier Icons, Free AI & Saldo
 
-The v2.2.0 update adds an invite-friends bonus task, consistent back
-buttons across all screens/popups, and fixes to AdMob banner display
-and interstitial cadence.
+The v2.3.0 update fixes several critical bugs (checkin & rewarded-ad
+crashes, interstitial too frequent, admin saldo failing), adds tier icons,
+refines the Messages screen, and switches AI to a free provider.
 
-What's new / fixed in v2.2.0:
-- INVITE-FRIENDS BONUS TASK: invite 10 friends to join using your
-  referral code and earn 5000 points (one-time claim). The "Undang
-  Teman" card on the Bonus Tasks screen shows live X/10 progress, a
-  "Bagikan" button to share the invite code (via the Android share
-  sheet), and a "Klaim 5000" button that auto-enables once 10 friends
-  have joined.
-- BACK BUTTON (⬅️) ON ALL SCREENS/POPUPS: all overlay screens (Messages,
-  Activity, Chat, Profile, and the Admin panel) now have a clear back
-  button and respond to the system back key (BackHandler). On Profile,
-  back first closes any open modal before navigating back. AlertDialog
-  popups are dismissed automatically by the system back key.
-- ADMIN SALDO EDIT (refinement): the adjust-saldo dialog now uses an
-  Add/Subtract mode picker, a single nominal field, a note field, and
-  a single OK button (plus Cancel).
-- ADMOB BANNER ADS: fixed activity context, adaptive size, and
-  lifecycle binding so banners display reliably on all screens.
-- INTERSTITIAL ADS: 15-minute cooldown between shows, activity guard,
-  and automatic reload after display.
-- REWARDED ADS: fixed a crash after the ad completed.
-- Removed the stray "K" logo before the splash screen.
+What's new / fixed in v2.3.0:
+- DAILY CHECK-IN (crash fix): tapping the check-in button no longer
+  crashes. Cause: toast shown from a background thread → now thread-safe.
+- WATCH-AD (crash fix): crash after the rewarded ad completed is fixed
+  (same root cause: toast from the IO thread).
+- INTERSTITIAL 30 MIN (accurate): interstitials now show exactly every 30
+  minutes. The cooldown is persisted in SharedPreferences so it survives
+  app restarts (previously could re-show after ~1 minute).
+- TIER ICONS (class upgrade): each tier now shows a matching Material icon
+  — Star, Bronze (WorkspacePremium), Silver, Gold (EmojiEvents), Master
+  (MilitaryTech) — on the profile pill & "Naik Kelas" sheet cards.
+- ADMIN SALDO (fail fix): the balance now always updates after tapping OK.
+  Previously failed for wallets with no balance node yet; now falls back to
+  read-then-set when the CAS transaction doesn't commit.
+- MESSAGES SCREEN (refinement): realtime contact list (auto-updates), a
+  friend search field, empty state, contact count in the header, sorting
+  (admin/AI/alphabetical), larger profile tap target.
+- FREE AI (Groq, OpenAI-compatible): the AI backend now defaults to Groq
+  — an OpenAI-compatible provider that is FREE forever (free API key from
+  console.groq.com, no credit card/billing, open-source models). No paid
+  OpenAI account needed anymore. (OpenAI still usable via env override.)
 
 Technical notes:
 - Android minSdk 23 (Android 6.0+) up to targetSdk/compileSdk 37.
 - Built with Kotlin + Jetpack Compose, Supabase Kotlin 3.0.0,
-  Coil (images), AdMob.
+  Coil (images), AdMob. AI backend: Supabase Edge Function (Groq).
 - Backend: Supabase (Postgres, Auth, Storage, Realtime).
 
 Notes:
@@ -89,10 +90,11 @@ Notes:
 ==================================================
 RIWAYAT VERSI SEBELUMNYA (arsip)
 ==================================================
-- v2.1.0 (versionCode 5): Redesign dialog atur saldo admin (pilih
-  tambah/kurangi + nominal + catatan + tombol OKE); perbaikan iklan
-  AdMob (banner, interstitial 15 menit, reward); perbaikan crash
-  rewarded ad; hapus logo "K" sebelum splash.
+- v2.2.0 (versionCode 6): Tugas bonus undang 10 teman (5000 poin) +
+  tombol Bagikan/Klaim; tombol kembali (⬅️) + BackHandler di semua
+  halaman/popup; edit saldo admin (mode Tambah/Kurangi + nominal + catatan
+  + OKE); AdMob banner (activity context + adaptive + lifecycle);
+  interstitial 15 menit; rewarded ad crash fix; hapus logo "K" pre-splash.
 - v2.0.0 (versionCode 4): Migrasi penuh ke Android native (Kotlin +
   Jetpack Compose); pull-to-refresh; double-tap like; baris WhatsApp
   di Pengaturan; nav bottom responsif; banner AdMob sebagai kartu
