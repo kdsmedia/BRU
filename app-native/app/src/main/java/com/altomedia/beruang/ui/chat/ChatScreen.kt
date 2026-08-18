@@ -27,6 +27,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -54,6 +56,7 @@ import kotlinx.coroutines.launch
  * Chat window — port of the web chat overlay (`openChat` / `sendMsg` /
  * `deleteChatMsg` / `clearChat`). Bubbles align right (mine) or left (theirs).
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
     me: AuthUser,
@@ -64,6 +67,7 @@ fun ChatScreen(
     vm: ChatViewModel = viewModel(),
 ) {
     val messages by vm.messages.collectAsState()
+    val refreshing by vm.refreshing.collectAsState()
     val scope = rememberCoroutineScope()
 
     // System back returns to the chat list.
@@ -98,29 +102,35 @@ fun ChatScreen(
         }
 
         // Messages
-        LazyColumn(
-            modifier = Modifier.weight(1f).fillMaxWidth().padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+        PullToRefreshBox(
+            isRefreshing = refreshing,
+            onRefresh = { vm.refresh() },
+            modifier = Modifier.weight(1f).fillMaxWidth(),
         ) {
-            items(messages, key = { it.key }) { msg ->
-                val isMine = msg.uid == me.uid
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = if (isMine) Alignment.CenterEnd else Alignment.CenterStart,
-                ) {
-                    Text(
-                        msg.text,
-                        color = if (isMine) Color.White else TextMain,
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .background(
-                                if (isMine) BrandYellow else Color.White,
-                                RoundedCornerShape(16.dp),
-                            )
-                            .clickable { if (isMine) pendingDelete = msg }
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
-                            .width(200.dp),
-                    )
+            LazyColumn(
+                modifier = Modifier.fillMaxSize().padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                items(messages, key = { it.key }) { msg ->
+                    val isMine = msg.uid == me.uid
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = if (isMine) Alignment.CenterEnd else Alignment.CenterStart,
+                    ) {
+                        Text(
+                            msg.text,
+                            color = if (isMine) Color.White else TextMain,
+                            fontSize = 14.sp,
+                            modifier = Modifier
+                                .background(
+                                    if (isMine) BrandYellow else Color.White,
+                                    RoundedCornerShape(16.dp),
+                                )
+                                .clickable { if (isMine) pendingDelete = msg }
+                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                                .width(200.dp),
+                        )
+                    }
                 }
             }
         }

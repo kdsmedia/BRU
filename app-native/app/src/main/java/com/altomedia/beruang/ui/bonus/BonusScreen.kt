@@ -30,6 +30,8 @@ import androidx.compose.material.icons.filled.Today
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -66,6 +68,7 @@ import kotlinx.coroutines.launch
  * Mini cards in a 2-column grid: checkin + 4 daily tasks (watch ads, comments,
  * posts, add-friend).
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BonusScreen(
     meUid: String,
@@ -75,6 +78,7 @@ fun BonusScreen(
     val context = LocalContext.current
     val scope = androidx.compose.runtime.rememberCoroutineScope()
     val state by vm.state.collectAsState()
+    val refreshing by vm.refreshing.collectAsState()
     val activity = rememberActivity()
 
     LaunchedEffect(meUid) { vm.start(meUid) }
@@ -90,14 +94,19 @@ fun BonusScreen(
             Text("Tugas Bonus", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextMain)
         }
 
-        if (state.loading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = BrandYellow, modifier = Modifier.size(28.dp))
+        PullToRefreshBox(
+            isRefreshing = refreshing,
+            onRefresh = { vm.refresh(meUid) },
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            if (state.loading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = BrandYellow, modifier = Modifier.size(28.dp))
+                }
+                return@PullToRefreshBox
             }
-            return@Column
-        }
 
-        val cards = listOf(
+            val cards = listOf(
             BonusCardData(
                 title = "Checkin Harian",
                 subtitle = "Dapat ${AppConstants.Bonus.POINTS_CHECKIN} poin",
@@ -204,6 +213,7 @@ fun BonusScreen(
                 )
             }
             items(cards) { c -> BonusCard(c) }
+        }
         }
     }
 }

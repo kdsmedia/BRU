@@ -34,6 +34,10 @@ class NotifViewModel : ViewModel() {
     private val _unread = MutableStateFlow(0)
     val unread: StateFlow<Int> = _unread.asStateFlow()
 
+    /** Pull-to-refresh spinner state. */
+    private val _refreshing = MutableStateFlow(false)
+    val refreshing: StateFlow<Boolean> = _refreshing.asStateFlow()
+
     private var sub: com.altomedia.beruang.data.NodeSubscription? = null
 
     fun start(uid: String) {
@@ -51,6 +55,17 @@ class NotifViewModel : ViewModel() {
                     _unread.value = list.count { !it.read }
                 }
             }
+        }
+    }
+
+    /** Force a one-shot re-read of notifications (pull-to-refresh). */
+    fun refresh(uid: String) {
+        if (sub == null) { start(uid); return }
+        _refreshing.value = true
+        sub?.refreshNow()
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(500)
+            _refreshing.value = false
         }
     }
 

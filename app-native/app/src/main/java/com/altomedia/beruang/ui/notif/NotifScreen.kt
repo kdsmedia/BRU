@@ -23,6 +23,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -43,9 +45,11 @@ import com.altomedia.beruang.ui.theme.TextMuted
 /** Notifications — port of the web `#view-notif` / `listenNotifications`. When
  *  [onClose] is supplied the screen renders as a full-screen overlay with a
  *  back button (used by the Home header icon). */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotifScreen(uid: String, onClose: (() -> Unit)? = null, vm: NotifViewModel = viewModel()) {
     val items by vm.items.collectAsState()
+    val refreshing by vm.refreshing.collectAsState()
     LaunchedEffect(uid) { vm.start(uid) }
 
     // System back closes the notifications overlay.
@@ -67,49 +71,55 @@ fun NotifScreen(uid: String, onClose: (() -> Unit)? = null, vm: NotifViewModel =
                 color = TextMain,
             )
         }
-        if (items.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Belum ada aktivitas.", color = TextMuted)
-            }
-        } else {
-            LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = androidx.compose.foundation.layout.PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                itemsIndexed(items, key = { _, n -> n.key }) { index, n ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color.White, RoundedCornerShape(12.dp))
-                            .clickable { if (!n.read) vm.markRead(uid, n.key) }
-                            .padding(start = 12.dp, top = 12.dp, bottom = 12.dp, end = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        // Unread indicator (green dot) — disappears once opened.
-                        Box(
-                            modifier = Modifier.size(8.dp).clip(CircleShape)
-                                .background(if (n.read) Color.Transparent else Color(0xFF22C55E)),
-                        )
-                        Box(
+        PullToRefreshBox(
+            isRefreshing = refreshing,
+            onRefresh = { vm.refresh(uid) },
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            if (items.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Belum ada aktivitas.", color = TextMuted)
+                }
+            } else {
+                LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = androidx.compose.foundation.layout.PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    itemsIndexed(items, key = { _, n -> n.key }) { index, n ->
+                        Row(
                             modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(BrandYellow.copy(alpha = 0.15f))
-                                .padding(start = 8.dp),
-                            contentAlignment = Alignment.Center,
-                        ) { Icon(Icons.Filled.Bolt, null, tint = BrandYellow, modifier = Modifier.size(18.dp)) }
-                        Text(
-                            n.text,
-                            fontSize = 14.sp,
-                            color = Color(0xFF333333),
-                            fontWeight = if (n.read) FontWeight.Normal else FontWeight.Medium,
-                            modifier = Modifier.weight(1f).padding(start = 12.dp),
-                        )
-                        IconButton(onClick = { vm.deleteNotif(uid, n.key) }) {
-                            Icon(Icons.Filled.Delete, "Hapus aktivitas", tint = TextMuted, modifier = Modifier.size(18.dp))
+                                .fillMaxWidth()
+                                .background(Color.White, RoundedCornerShape(12.dp))
+                                .clickable { if (!n.read) vm.markRead(uid, n.key) }
+                                .padding(start = 12.dp, top = 12.dp, bottom = 12.dp, end = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            // Unread indicator (green dot) — disappears once opened.
+                            Box(
+                                modifier = Modifier.size(8.dp).clip(CircleShape)
+                                    .background(if (n.read) Color.Transparent else Color(0xFF22C55E)),
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(BrandYellow.copy(alpha = 0.15f))
+                                    .padding(start = 8.dp),
+                                contentAlignment = Alignment.Center,
+                            ) { Icon(Icons.Filled.Bolt, null, tint = BrandYellow, modifier = Modifier.size(18.dp)) }
+                            Text(
+                                n.text,
+                                fontSize = 14.sp,
+                                color = Color(0xFF333333),
+                                fontWeight = if (n.read) FontWeight.Normal else FontWeight.Medium,
+                                modifier = Modifier.weight(1f).padding(start = 12.dp),
+                            )
+                            IconButton(onClick = { vm.deleteNotif(uid, n.key) }) {
+                                Icon(Icons.Filled.Delete, "Hapus aktivitas", tint = TextMuted, modifier = Modifier.size(18.dp))
+                            }
                         }
-                    }
-                    // Inline banner ad every 5 activities.
-                    if ((index + 1) % 5 == 0 && index + 1 < items.size) {
-                        Box(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
-                            com.altomedia.beruang.ads.BannerAdBlock()
+                        // Inline banner ad every 5 activities.
+                        if ((index + 1) % 5 == 0 && index + 1 < items.size) {
+                            Box(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+                                com.altomedia.beruang.ads.BannerAdBlock()
+                            }
                         }
                     }
                 }

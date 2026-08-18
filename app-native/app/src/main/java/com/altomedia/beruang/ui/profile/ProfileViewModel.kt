@@ -42,6 +42,10 @@ class ProfileViewModel : ViewModel() {
     private val _state = MutableStateFlow(ProfileState())
     val state: StateFlow<ProfileState> = _state.asStateFlow()
 
+    /** Pull-to-refresh spinner state. */
+    private val _refreshing = MutableStateFlow(false)
+    val refreshing: StateFlow<Boolean> = _refreshing.asStateFlow()
+
     private var myUid: String = ""
     private var userSub: com.altomedia.beruang.data.NodeSubscription? = null
     private var postsSub: com.altomedia.beruang.data.NodeSubscription? = null
@@ -61,6 +65,16 @@ class ProfileViewModel : ViewModel() {
             subscribe(targetUid, myUid)
         } else if (_state.value.email.isBlank() && authEmail.isNotBlank()) {
             _state.value = _state.value.copy(email = authEmail)
+        }
+    }
+
+    /** Force a one-shot re-read of all profile subscriptions (pull-to-refresh). */
+    fun refresh() {
+        _refreshing.value = true
+        listOf(userSub, postsSub, followersSub, followingSub, walletSub, followingMeSub).forEach { it?.refreshNow() }
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(500)
+            _refreshing.value = false
         }
     }
 

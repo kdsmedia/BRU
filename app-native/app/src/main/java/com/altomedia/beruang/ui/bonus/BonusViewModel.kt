@@ -30,6 +30,10 @@ class BonusViewModel : ViewModel() {
     private val _state = MutableStateFlow(State())
     val state: StateFlow<State> = _state.asStateFlow()
 
+    /** Pull-to-refresh spinner state. */
+    private val _refreshing = MutableStateFlow(false)
+    val refreshing: StateFlow<Boolean> = _refreshing.asStateFlow()
+
     fun start(uid: String) {
         viewModelScope.launch(Dispatchers.IO) {
             val s = BonusRepository.load(uid)
@@ -48,7 +52,14 @@ class BonusViewModel : ViewModel() {
         }
     }
 
-    fun refresh(uid: String) = start(uid)
+    fun refresh(uid: String) {
+        _refreshing.value = true
+        viewModelScope.launch(Dispatchers.IO) {
+            start(uid)
+            kotlinx.coroutines.delay(500)
+            _refreshing.value = false
+        }
+    }
 
     fun doCheckin(uid: String, onResult: (Boolean, Long) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {

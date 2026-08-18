@@ -29,6 +29,10 @@ class ChatViewModel : ViewModel() {
     private val _messages = MutableStateFlow<List<ChatMessage>>(emptyList())
     val messages: StateFlow<List<ChatMessage>> = _messages.asStateFlow()
 
+    /** Pull-to-refresh spinner state. */
+    private val _refreshing = MutableStateFlow(false)
+    val refreshing: StateFlow<Boolean> = _refreshing.asStateFlow()
+
     private var sub: com.altomedia.beruang.data.NodeSubscription? = null
 
     fun open(chatId: String) {
@@ -37,6 +41,17 @@ class ChatViewModel : ViewModel() {
             viewModelScope.launch {
                 s.stateFlow.collect { rebuild(it?.asObject()) }
             }
+        }
+    }
+
+    /** Force a one-shot re-read of the chat (pull-to-refresh). */
+    fun refresh() {
+        val s = sub ?: return
+        _refreshing.value = true
+        s.refreshNow()
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(500)
+            _refreshing.value = false
         }
     }
 

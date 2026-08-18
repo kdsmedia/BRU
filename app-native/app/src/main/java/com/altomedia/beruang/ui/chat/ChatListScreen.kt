@@ -24,6 +24,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -46,6 +48,7 @@ import com.altomedia.beruang.ui.theme.TextMuted
 
 /** Chat list — port of the web `#view-chat` / `renderChatList`. When [onClose]
  *  is supplied the screen renders as a full-screen overlay with a back button. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatListScreen(
     myUid: String,
@@ -55,6 +58,7 @@ fun ChatListScreen(
     vm: ChatListViewModel = viewModel(),
 ) {
     val users by vm.users.collectAsState()
+    val refreshing by vm.refreshing.collectAsState()
     var query by remember { mutableStateOf("") }
 
     // System back closes the chat list overlay.
@@ -99,26 +103,31 @@ fun ChatListScreen(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
         )
 
-        if (visible.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, tint = TextMuted, modifier = Modifier.size(56.dp))
-                    Text(
-                        if (query.isBlank()) "Belum ada teman untuk diajak obrolan" else "Tidak ada teman yang cocok",
-                        color = TextMuted,
-                        fontSize = 14.sp,
-                        modifier = Modifier.padding(top = 12.dp),
-                    )
-                }
-            }
-            return@Column
-        }
-
-        LazyColumn(
+        PullToRefreshBox(
+            isRefreshing = refreshing,
+            onRefresh = { vm.refresh() },
             modifier = Modifier.fillMaxSize(),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
+            if (visible.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, tint = TextMuted, modifier = Modifier.size(56.dp))
+                        Text(
+                            if (query.isBlank()) "Belum ada teman untuk diajak obrolan" else "Tidak ada teman yang cocok",
+                            color = TextMuted,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(top = 12.dp),
+                        )
+                    }
+                }
+                return@PullToRefreshBox
+            }
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(12.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
             items(visible, key = { it.uid }) { u ->
                 Row(
                     modifier = Modifier
@@ -151,6 +160,7 @@ fun ChatListScreen(
                     }
                 }
             }
+        }
         }
     }
 }

@@ -31,12 +31,18 @@ class ChatListViewModel : ViewModel() {
     private val _users = MutableStateFlow<List<ChatListUser>>(emptyList())
     val users: StateFlow<List<ChatListUser>> = _users.asStateFlow()
 
+    /** Pull-to-refresh spinner state. */
+    private val _refreshing = MutableStateFlow(false)
+    val refreshing: StateFlow<Boolean> = _refreshing.asStateFlow()
+
+    private var sub: com.altomedia.beruang.data.NodeSubscription? = null
+
     init {
         viewModelScope.launch {
-            val sub = RealtimeRepository.watch(Paths.users(), viewModelScope)
+            sub = RealtimeRepository.watch(Paths.users(), viewModelScope)
             // Snapshot immediately + on every change.
             launch {
-                sub.stateFlow.collect { el ->
+                sub!!.stateFlow.collect { el ->
                     val raw = el?.asObject() ?: JsonObject(emptyMap())
                     _users.value = raw.entries.mapNotNull { (uid, u) ->
                         val o = u.asObject() ?: return@mapNotNull null
@@ -55,6 +61,17 @@ class ChatListViewModel : ViewModel() {
                         )
                 }
             }
+        }
+    }
+
+    /** Force a one-shot re-read of the roster (pull-to-refresh). */
+    fun refresh() {
+        val s = sub ?: return
+        _refreshing.value = true
+        s.refreshNow()
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(500)
+            _refreshing.value = false
         }
     }
 

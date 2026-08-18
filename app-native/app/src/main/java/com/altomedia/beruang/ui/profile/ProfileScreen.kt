@@ -25,6 +25,8 @@ import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -60,6 +62,7 @@ import kotlinx.coroutines.launch
  * header (avatar, name, badges, tier pill), stats (posts/followers/following),
  * own-profile wallet card + action row, and a 3-column post grid.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     me: AuthUser,
@@ -84,6 +87,7 @@ fun ProfileScreen(
     val target = targetUid ?: me.uid
     val state by pvm.state.collectAsState()
     val wallet by wvm.state.collectAsState()
+    val refreshing by pvm.refreshing.collectAsState()
 
     // Modal state (self only): edit, settings, QR, history, scanner, upgrade.
     var showEdit by remember { mutableStateOf(false) }
@@ -136,8 +140,15 @@ fun ProfileScreen(
             }
         }
 
-        // Header
-        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        // Scrollable body wrapped in pull-to-refresh.
+        PullToRefreshBox(
+            isRefreshing = refreshing,
+            onRefresh = { pvm.refresh() },
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                // Header
+                Column(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             AsyncImage(
                 model = state.photo,
                 contentDescription = null,
@@ -216,7 +227,7 @@ fun ProfileScreen(
             contentPadding = androidx.compose.foundation.layout.PaddingValues(8.dp),
             horizontalArrangement = Arrangement.spacedBy(2.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().weight(1f),
         ) {
             items(state.gridImages) { url ->
                 AsyncImage(
@@ -224,6 +235,8 @@ fun ProfileScreen(
                     contentDescription = null,
                     modifier = Modifier.fillMaxWidth().height(120.dp).clip(RoundedCornerShape(8.dp)),
                 )
+            }
+        }
             }
         }
     }
