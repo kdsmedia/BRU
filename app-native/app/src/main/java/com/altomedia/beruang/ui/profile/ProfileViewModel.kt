@@ -3,6 +3,7 @@ package com.altomedia.beruang.ui.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.altomedia.beruang.data.AppConstants
+import com.altomedia.beruang.data.AuthRepository
 import com.altomedia.beruang.data.Paths
 import com.altomedia.beruang.data.RealtimeRepository
 import com.altomedia.beruang.data.asBoolean
@@ -18,6 +19,9 @@ data class ProfileState(
     val uid: String = "",
     val username: String = "Pengguna",
     val photo: String = AppConstants.DEFAULT_AVATAR,
+    val email: String = "",
+    val phone: String = "",
+    val gender: String = "",
     val isAdmin: Boolean = false,
     val isAi: Boolean = false,
     val tier: String = "Star",
@@ -47,11 +51,16 @@ class ProfileViewModel : ViewModel() {
     private var followingMeSub: com.altomedia.beruang.data.NodeSubscription? = null
 
     fun load(targetUid: String, myUid: String) {
+        // Seed email from the live auth user (only meaningful for the signed-in
+        // user, but harmless for visited profiles where it stays blank).
+        val authEmail = AuthRepository.currentUser()?.email ?: ""
         if (this.myUid != myUid || _state.value.uid != targetUid) {
             cancelAll()
             this.myUid = myUid
-            _state.value = ProfileState(uid = targetUid, isSelf = targetUid == myUid)
+            _state.value = ProfileState(uid = targetUid, isSelf = targetUid == myUid, email = authEmail)
             subscribe(targetUid, myUid)
+        } else if (_state.value.email.isBlank() && authEmail.isNotBlank()) {
+            _state.value = _state.value.copy(email = authEmail)
         }
     }
 
@@ -104,6 +113,8 @@ class ProfileViewModel : ViewModel() {
         _state.value = _state.value.copy(
             username = raw?.str("username") ?: "Pengguna",
             photo = raw?.str("photo") ?: AppConstants.DEFAULT_AVATAR,
+            phone = raw?.str("phone") ?: "",
+            gender = raw?.str("gender") ?: "",
             isAdmin = raw?.str("role") == "admin",
             isAi = raw?.get("is_ai")?.asBoolean() == true,
             isSelf = uid == myUid,

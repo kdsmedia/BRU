@@ -160,6 +160,12 @@ object AuthRepository {
             }
         }
 
+    /** Update the user's auth email. Supabase will send a confirmation to the
+     *  new address; the change only takes effect after the user confirms it. */
+    suspend fun updateEmail(newEmail: String) = withContext(Dispatchers.IO) {
+        SupabaseProvider.auth.updateUser { email = newEmail }
+    }
+
     suspend fun signOut() = withContext(Dispatchers.IO) {
         runCatching { SupabaseProvider.auth.signOut() }
     }

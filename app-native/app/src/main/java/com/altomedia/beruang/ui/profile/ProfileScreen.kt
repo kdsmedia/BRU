@@ -234,6 +234,9 @@ fun ProfileScreen(
             uid = me.uid,
             currentName = state.username,
             currentPhoto = state.photo,
+            currentEmail = state.email,
+            currentPhone = state.phone,
+            currentGender = state.gender,
             onSaved = { showEdit = false; pvm.load(me.uid, me.uid) },
             onDismiss = { showEdit = false },
         )

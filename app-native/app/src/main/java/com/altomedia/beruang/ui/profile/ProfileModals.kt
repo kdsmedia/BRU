@@ -6,6 +6,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -152,12 +153,18 @@ fun EditProfileSheet(
     uid: String,
     currentName: String,
     currentPhoto: String,
+    currentEmail: String,
+    currentPhone: String,
+    currentGender: String,
     onSaved: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var name by remember { mutableStateOf(currentName) }
+    var email by remember { mutableStateOf(currentEmail) }
+    var phone by remember { mutableStateOf(currentPhone) }
+    var gender by remember { mutableStateOf(currentGender) }
     var photoUri by remember { mutableStateOf<android.net.Uri?>(null) }
     var photoUrl by remember { mutableStateOf(currentPhoto) }
     var busy by remember { mutableStateOf(false) }
@@ -168,9 +175,11 @@ fun EditProfileSheet(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Profil Lengkap", fontWeight = FontWeight.Bold) },
+        title = { Text("Edit Profil", fontWeight = FontWeight.Bold) },
         text = {
-            Column(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+            ) {
                 Box(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                     contentAlignment = Alignment.Center,
@@ -186,7 +195,7 @@ fun EditProfileSheet(
                         Icon(Icons.Filled.AccountCircle, null, modifier = Modifier.size(80.dp).clickable { picker.launch("image/*") }, tint = BrandYellow)
                     }
                 }
-                TextButton(onClick = { picker.launch("image/*") }) { Text("Ganti Foto", color = BrandYellow) }
+                TextButton(onClick = { picker.launch("image/*") }, modifier = Modifier.align(Alignment.CenterHorizontally)) { Text("Ganti Foto", color = BrandYellow) }
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
@@ -194,6 +203,30 @@ fun EditProfileSheet(
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                 )
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it.trim() },
+                    label = { Text("Email") },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    singleLine = true,
+                )
+                OutlinedTextField(
+                    value = phone,
+                    onValueChange = { phone = it.filter { c -> c.isDigit() || c == '+' } },
+                    label = { Text("Nomor HP") },
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    singleLine = true,
+                )
+                Text(
+                    "Jenis Kelamin",
+                    fontSize = 13.sp,
+                    color = TextMuted,
+                    modifier = Modifier.padding(top = 10.dp, bottom = 4.dp),
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    GenderChip("Pria", gender == "Pria") { gender = "Pria" }
+                    GenderChip("Wanita", gender == "Wanita") { gender = "Wanita" }
+                }
             }
         },
         confirmButton = {
@@ -206,10 +239,19 @@ fun EditProfileSheet(
                         val finalPhoto = if (photoUri != null) {
                             StorageRepository.uploadImage(context, photoUri!!, "avatars", maxWidth = 400, quality = 0.7f, uid = uid)
                         } else photoUrl
+                        // Persist profile fields to the user node.
                         NodesRepository.update(NodesRepository.ref(Paths.user(uid)), buildJsonObject {
                             put("username", name.trim())
                             put("photo", finalPhoto)
+                            put("phone", phone.trim())
+                            put("gender", gender)
                         })
+                        // Email change goes to Supabase Auth (triggers verification
+                        // for the new address). Ignore failures gracefully.
+                        if (email.isNotBlank() && email != currentEmail) {
+                            runCatching { com.altomedia.beruang.data.AuthRepository.updateEmail(email) }
+                                .onFailure { showToast(context, "Email akan diverifikasi") }
+                        }
                         busy = false
                         showToast(context, "Profil diperbarui")
                         onSaved()
@@ -220,6 +262,23 @@ fun EditProfileSheet(
             )
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Batal", color = TextMuted) } },
+    )
+}
+
+@Composable
+private fun GenderChip(label: String, selected: Boolean, onClick: () -> Unit) {
+    val bg = if (selected) BrandYellow else BrandYellow.copy(alpha = 0.12f)
+    val fg = if (selected) Color.White else BrandYellow
+    Text(
+        label,
+        color = fg,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier
+            .clip(androidx.compose.foundation.shape.RoundedCornerShape(20.dp))
+            .background(bg)
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp, vertical = 8.dp),
     )
 }
 
