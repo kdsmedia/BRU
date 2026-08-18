@@ -8,9 +8,15 @@ export interface AIConfig {
   enabled: boolean;
 
   // AI provider (OpenAI-compatible chat completions endpoint).
-  apiBase: string;      // e.g. https://api.openai.com/v1
+  // DEFAULT: Groq (https://api.groq.com/openai/v1) — FREE forever tier, free
+  // API key from https://console.groq.com/keys. Uses open-source models
+  // (llama-3.3-70b-versatile) at no cost, OpenAI-compatible wire format, so
+  // the engine works without any paid OpenAI billing.
+  // To use paid OpenAI instead, set AI_API_BASE=https://api.openai.com/v1
+  // and AI_MODEL=gpt-4o-mini (or similar) with your OpenAI key.
+  apiBase: string;      // e.g. https://api.groq.com/openai/v1 (free) or https://api.openai.com/v1
   apiKey: string;       // secret — MUST come from env, never the APK/frontend
-  model: string;        // e.g. gpt-4o-mini
+  model: string;        // e.g. llama-3.3-70b-versatile (Groq free) or gpt-4o-mini (OpenAI paid)
   requestTimeoutMs: number;
 
   // Activity probabilities (0-100). Chosen per eligible AI per tick.
@@ -53,9 +59,9 @@ function bool(v: string | undefined, fallback: boolean): boolean {
 export function loadConfig(): AIConfig {
   return {
     enabled:            bool(Deno.env.get("AI_ENABLED"), true),
-    apiBase:            Deno.env.get("AI_API_BASE") || "https://api.openai.com/v1",
+    apiBase:            Deno.env.get("AI_API_BASE") || "https://api.groq.com/openai/v1",
     apiKey:             Deno.env.get("AI_API_KEY") || "",
-    model:              Deno.env.get("AI_MODEL") || "gpt-4o-mini",
+    model:              Deno.env.get("AI_MODEL") || "llama-3.3-70b-versatile",
     requestTimeoutMs:   num(Deno.env.get("AI_REQUEST_TIMEOUT_MS"), 20000),
 
     postProbability:    num(Deno.env.get("AI_POST_PROBABILITY"), 20),

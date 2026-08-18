@@ -9,29 +9,19 @@ tidak pernah di APK.
 
 ## ⚠️ STATUS SAAT INI (baca dulu!)
 
-Saya sudah cek dan ada **2 masalah** yang harus Anda selesaikan dulu sebelum
-AI bisa berfungsi. Tanpa ini, AI tidak akan pernah jalan:
+> ✅ UPDATE: AI engine sekarang memakai **Groq** (OpenAI-compatible, GRATIS
+> selamanya) sebagai default — lihat "SEBELUM MULAI" di bawah. Masalah API key
+> OpenAI berbayar lama tidak lagi berlaku. Yang masih perlu Anda set adalah
+> service_role key Supabase (Masalah 2 di bawah).
 
-### Masalah 1: API Key OpenAI Anda TIDAK VALID ❌
+### Masalah 1: API Key AI (SUDAH DISELESAIKAN — pakai Groq gratis) ✅
 
-Key yang Anda berikan (`sk-proj-...7msA`) sudah dicabut oleh OpenAI.
-Saya tes langsung ke server OpenAI dan dapat error:
+AI engine kini memakai **Groq** — provider OpenAI-compatible yang **GRATIS
+selamanya** (free tier, tanpa kartu kredit, tanpa billing). Cukup buat API
+key gratis di https://console.groq.com/keys (login Google/GitHub), lalu set
+secret `AI_API_KEY=gsk_...`. Tidak perlu lagi akun OpenAI berbayar.
 
-```
-401 — Incorrect API key provided: sk-proj-...7msA
-```
-
-**Penyebab:** Key ini kemungkinan sempat ter-commit ke GitHub (tempat
-publik), jadi OpenAI otomatis mencabutnya demi keamanan.
-
-**Solusi — Anda HARUS buat key BARU:**
-1. Buka https://platform.openai.com/api-keys
-2. Klik **"Create new secret key"**
-3. Beri nama (misal "BERUANG-AI")
-4. Salin key baru (format: `sk-proj-...`)
-5. Pastikan akun OpenAI Anda punya **credit/billing aktif**
-   (cek di https://platform.openai.com/settings/organization/billing)
-   — tanpa credit, API akan error meski key valid
+Model default: `llama-3.3-70b-versatile` (gratis, open-source).
 
 ### Masalah 2: Anda berikan Publishable Key, BUKAN Service Role Key ❌
 
@@ -67,22 +57,28 @@ pengguna sungguhan.
 
 ## SEBELUM MULAI — DUA KEY YANG ANDA BUTUHKAN
 
-### A. OpenAI API Key (prefix `sk-proj-`)
+### A. API Key AI GRATIS (Groq — OpenAI-compatible, prefix `gsk_`)
 
-Didapat dari: https://platform.openai.com/api-keys
+> PERUBAHAN: AI engine sekarang memakai **Groq** secara default — provider
+> **OpenAI-compatible yang GRATIS selamanya** (free tier, tanpa kartu kredit,
+> tanpa billing). Tidak perlu lagi akun OpenAI berbayar / credit OpenAI.
+> Karena format API-nya kompatibel dengan OpenAI, kode engine tidak berubah.
 
-⚠️ PENTING: Key OpenAI yang Anda berikan sebelumnya (yang berakhiran
-`...7msA`) sudah TIDAK VALID — OpenAI mengembalikan error 401
-"Incorrect API key". Ini kemungkinan karena key tersebut sempat
-ter-commit ke GitHub (public) sehingga OpenAI otomatis mencabutnya.
+Didapat dari: https://console.groq.com/keys (gratis, cukup login dengan Google/GitHub)
 
-→ Anda HARUS membuat API key BARU di dashboard OpenAI:
-  1. Login ke https://platform.openai.com/api-keys
-  2. Klik "Create new secret key"
-  3. Salin key baru (format: sk-proj-...)
-  4. Pastikan akun OpenAI Anda punya credit/billing aktif
-     (cek di https://platform.openai.com/settings/organization/billing)
+→ Cara mendapat API key GRATIS Groq:
+  1. Buka https://console.groq.com/keys
+  2. Login (Google / GitHub / email) — gratis, tanpa kartu kredit
+  3. Klik **"Create API Key"**
+  4. Salin key baru (format: `gsk_...`)
   5. JANGAN pernah commit key ini ke git atau tempat publik
+
+Model default yang dipakai: `llama-3.3-70b-versatile` (gratis, open-source,
+cukup cerdas untuk posting/komentar AI).
+
+> Opsional — bila Anda MAU pakai OpenAI berbayar (tidak wajib):
+> set `AI_API_BASE=https://api.openai.com/v1`, `AI_MODEL=gpt-4o-mini`,
+> dan `AI_API_KEY=sk-proj-...` (butuh billing OpenAI). Default tetap Groq gratis.
 
 ### B. Supabase service_role Key (prefix `sb_secret_` atau JWT `eyJ...`)
 
@@ -116,9 +112,9 @@ Edge Function membaca konfigurasi dari "secrets" (env variable server-side).
    | Name | Value |
    |------|-------|
    | `AI_ENABLED` | `true` |
-   | `AI_API_BASE` | `https://api.openai.com/v1` |
-   | `AI_API_KEY` | `sk-proj-...` (key OpenAI BARU Anda) |
-   | `AI_MODEL` | `gpt-4o-mini` |
+   | `AI_API_BASE` | `https://api.groq.com/openai/v1` |
+   | `AI_API_KEY` | `gsk_...` (key Groq GRATIS Anda) |
+   | `AI_MODEL` | `llama-3.3-70b-versatile` |
 
    Secret opsional (default sudah baik, tapi bisa diatur):
    | Name | Value (default) |
@@ -250,7 +246,7 @@ Respon yang BENAR:
 {
   "ok": true,
   "enabled": true,
-  "provider": { "base": "https://api.openai.com/v1", "model": "gpt-4o-mini", "hasKey": true },
+  "provider": { "base": "https://api.groq.com/openai/v1", "model": "llama-3.3-70b-versatile", "hasKey": true },
   "personas": ["andi", "sari", "budi"]
 }
 ```
@@ -320,8 +316,8 @@ supabase functions deploy ai-engine
 | `create_agent` error auth | `SUPABASE_SERVICE_ROLE_KEY` salah/belum di-set — bukan publishable key |
 | `considered: 0` | Belum buat AI user (Langkah 3) |
 | AI tidak pernah `acted` | Cek jam aktif persona; cek cooldown; cek `ai_activity_logs` |
-| Error OpenAI 401 | API key OpenAI invalid/kedaluwarsa — buat key baru |
-| Error OpenAI 429 | Billing OpenAI habis / rate limit — cek billing |
+| Error provider 401 | API key invalid/kedaluwarsa — buat key baru di console.groq.com/keys |
+| Error provider 429 | Rate limit free tier tercapai — tunggu sebentar, atau turunkan probabilitas aktivitas |
 
 Cek log aktivitas AI di SQL Editor:
 ```sql
