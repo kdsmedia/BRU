@@ -53,12 +53,26 @@ object AdminRepository {
      */
     suspend fun adjustBalance(uid: String, delta: Long, reason: String): Long? {
         if (uid.isEmpty() || delta == 0L) return null
+        // Try the optimistic CAS transaction first (works when the balance row
+        // already exists). The cas_update RPC cannot INSERT a new row, so a
+        // brand-new wallet (no balance node yet) fails here and we fall back
+        // to a direct read-then-set below.
         val res = NodesRepository.runTransaction(NodesRepository.ref(Paths.walletBalance(uid))) { cur ->
             val next = (cur?.asLong() ?: 0L) + delta
             if (next < 0) return@runTransaction JsonPrimitive(0L)
             JsonPrimitive(next)
         }
-        if (!res.committed) return null
+        val newBal = if (res.committed) {
+            (res.value?.asLong() ?: 0L)
+        } else {
+            // Fallback for wallets whose balance row doesn't exist yet: read
+            // (defaults to 0), apply delta, and set directly. Non-atomic but
+            // reliable for the admin single-writer case.
+            val cur = NodesRepository.readValue(Paths.walletBalance(uid))?.asLong() ?: 0L
+            val next = (cur + delta).coerceAtLeast(0L)
+            NodesRepository.set(NodesRepository.ref(Paths.walletBalance(uid)), JsonPrimitive(next))
+            next
+        }
         NodesRepository.push(
             NodesRepository.ref(Paths.walletHistory(uid)),
             buildJsonObject {
@@ -68,6 +82,6 @@ object AdminRepository {
                 put("timestamp", System.currentTimeMillis())
             },
         )
-        return (res.value?.asLong() ?: 0L)
+        return newBal
     }
 }
