@@ -166,52 +166,56 @@ fun BonusScreen(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
+            // Invite-10-friends milestone — rendered as a normal grid cell so it
+            // sits aligned (2-per-row) with the other bonus cards, yet keeps its
+            // Undang/Klaim button.
+            item {
+                InviteGridCard(
+                    invitedCount = state.invitedCount,
+                    target = AppConstants.INVITE_TARGET,
+                    reward = AppConstants.INVITE_REWARD,
+                    claimed = state.inviteRewardClaimed,
+                    onShare = {
+                        scope.launch {
+                            val code = WalletRepository.readAcctId(meUid)
+                            if (code.isNullOrBlank()) {
+                                showToast(context, "Kode undangan belum tersedia")
+                                return@launch
+                            }
+                            val shareText = "Yuk gabung BERUANG! Pakai kode undangan saya: $code\n" +
+                                "Unduh di Play Store."
+                            val send = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_SUBJECT, "Undangan BERUANG")
+                                putExtra(Intent.EXTRA_TEXT, shareText)
+                            }
+                            context.startActivity(Intent.createChooser(send, "Bagikan kode undangan"))
+                        }
+                    },
+                    onClaim = {
+                        vm.claimInvite(meUid) { ok, pts ->
+                            if (ok) {
+                                showToast(context, "+$pts poin — bonus undang teman diklaim!")
+                            } else {
+                                showToast(context, "Belum bisa klaim — ajak ${AppConstants.INVITE_TARGET} teman dulu")
+                            }
+                        }
+                    },
+                )
+            }
             items(cards) { c -> BonusCard(c) }
         }
-
-        // Invite-10-friends milestone (one-time 5000 poin) — full-width card.
-        InviteFriendsCard(
-            invitedCount = state.invitedCount,
-            target = AppConstants.INVITE_TARGET,
-            reward = AppConstants.INVITE_REWARD,
-            claimed = state.inviteRewardClaimed,
-            onShare = {
-                scope.launch {
-                    val code = WalletRepository.readAcctId(meUid)
-                    if (code.isNullOrBlank()) {
-                        showToast(context, "Kode undangan belum tersedia")
-                        return@launch
-                    }
-                    val shareText = "Yuk gabung BERUANG! Pakai kode undangan saya: $code\n" +
-                        "Unduh di Play Store."
-                    val send = Intent(Intent.ACTION_SEND).apply {
-                        type = "text/plain"
-                        putExtra(Intent.EXTRA_SUBJECT, "Undangan BERUANG")
-                        putExtra(Intent.EXTRA_TEXT, shareText)
-                    }
-                    context.startActivity(Intent.createChooser(send, "Bagikan kode undangan"))
-                }
-            },
-            onClaim = {
-                vm.claimInvite(meUid) { ok, pts ->
-                    if (ok) {
-                        showToast(context, "+$pts poin — bonus undang teman diklaim!")
-                    } else {
-                        showToast(context, "Belum bisa klaim — ajak ${AppConstants.INVITE_TARGET} teman dulu")
-                    }
-                }
-            },
-        )
     }
 }
 
 /**
- * One-time milestone: invite [target] friends → [reward] poin. Shows live
- * progress (invited/target), a Bagikan button to share the referral code,
- * and a Klaim button once the target is met (disabled after claimed).
+ * One-time milestone rendered as a compact grid cell (so it aligns 2-per-row
+ * with the other bonus cards). Shows live progress (invited/target) and a
+ * single context-aware button: "Undang" (share referral code) until the
+ * target is met, then "Klaim" (claims the reward), then "Selesai".
  */
 @Composable
-private fun InviteFriendsCard(
+private fun InviteGridCard(
     invitedCount: Int,
     target: Int,
     reward: Long,
@@ -224,25 +228,24 @@ private fun InviteFriendsCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(12.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(14.dp))
             .background(BgCard)
-            .padding(14.dp),
+            .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Box(
-                modifier = Modifier.size(36.dp).clip(CircleShape).background(BrandYellow.copy(alpha = 0.15f)),
+                modifier = Modifier.size(34.dp).clip(CircleShape).background(BrandYellow.copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(Icons.Filled.GroupAdd, contentDescription = null, tint = BrandYellow, modifier = Modifier.size(20.dp))
             }
-            Text("Undang Teman", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = TextMain)
             if (claimed) {
                 Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = BrandRed, modifier = Modifier.size(18.dp))
             }
         }
-        Text("Ajak $target teman bergabung → dapat $reward poin (sekali saja).", fontSize = 11.sp, color = TextMuted)
+        Text("Undang Teman", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = TextMain)
+        Text("$target teman • $reward poin", fontSize = 11.sp, color = TextMuted)
         Box(modifier = Modifier.fillMaxWidth().height(6.dp).clip(CircleShape).background(Border)) {
             Box(
                 modifier = Modifier
@@ -253,31 +256,33 @@ private fun InviteFriendsCard(
             )
         }
         Text("$invitedCount/$target teman", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = if (claimed || invitedCount >= target) BrandRed else TextMain)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+        // Single context-aware button so the card stays compact in a 2-col grid.
+        if (claimed) {
             OutlinedButton(
                 onClick = onShare,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
             ) {
                 Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(16.dp), tint = BrandYellow)
-                Text(" Bagikan", color = BrandYellow, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                Text(" Undang", color = BrandYellow, fontWeight = FontWeight.Bold, fontSize = 12.sp)
             }
+        } else if (canClaim) {
             Button(
                 onClick = onClaim,
-                enabled = canClaim,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = BrandYellow,
-                    disabledContainerColor = BrandYellow.copy(alpha = 0.35f),
-                ),
+                colors = ButtonDefaults.buttonColors(containerColor = BrandYellow),
             ) {
-                Text(
-                    if (claimed) "Selesai" else "Klaim $reward",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 12.sp,
-                )
+                Text("Klaim $reward", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+            }
+        } else {
+            OutlinedButton(
+                onClick = onShare,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+            ) {
+                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(16.dp), tint = BrandYellow)
+                Text(" Undang", color = BrandYellow, fontWeight = FontWeight.Bold, fontSize = 12.sp)
             }
         }
     }
