@@ -66,6 +66,7 @@ fun PostCard(
 ) {
     var showComments by remember { mutableStateOf(false) }
     var commentText by remember { mutableStateOf("") }
+    var previewImage by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier
@@ -128,7 +129,7 @@ fun PostCard(
                     .pointerInput(post.id) {
                         detectTapGestures(
                             onDoubleTap = { onLike() },
-                            onTap = { /* no-op: single tap does nothing on the image, matching original */ },
+                            onTap = { previewImage = post.imageUrl },
                         )
                     },
             )
@@ -230,6 +231,11 @@ fun PostCard(
                 }
             }
         }
+    }
+
+    // Full-screen image preview overlay.
+    previewImage?.let { url ->
+        ImagePreview(url = url, onDismiss = { previewImage = null })
     }
 }
 
