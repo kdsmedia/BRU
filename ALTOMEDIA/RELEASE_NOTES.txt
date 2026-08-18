@@ -29,6 +29,22 @@ Yang baru & diperbaiki di v2.0.0:
   menyukai, persis seperti versi sebelumnya.
 - Baris WhatsApp di Pengaturan: tautan langsung ke channel WhatsApp
   resmi BERUANG kini tersedia di menu Pengaturan.
+- POSISI NAV BOTTOM RESPONSIF: navigation bar bawah kini memakai
+  inset sistem (navigationBarsPadding) sehingga tidak terpotong/
+  tersembunyi di semua ukuran ponsel.
+- IKLAN BANNER SEBAGAI BLOK POSTINGAN: banner AdMob kini tampil sebagai
+  kartu menyerupai postingan — di bawah stories, setiap 5 postingan di
+  beranda, setiap 5 aktivitas di halaman aktivitas, dan tepat di atas
+  grid postingan profil.
+- SCANNER QR PORTRAIT: layar scan QR kini terkunci portrait agar tidak
+  perlu memiringkan ponsel.
+- AKTIVITAS: hapus aktivitas, tandai sudah dibaca (titik hijau hilang &
+  notifikasi terbaca dibersihkan), indikator titik hijau untuk yang
+  belum dibaca.
+- ADMIN ATUR SALDO: admin dapat menambah/mengurangi saldo poin pengguna
+  secara atomik (dengan alasan + riwayat transaksi).
+- POPUP RATING PLAY STORE: dialog ajakan memberi rating muncul maksimal
+  sekali per hari, membuka langsung ke halaman Play Store.
 - BACKEND: migrasi ke Supabase Kotlin SDK 3.0 (realtime, autentikasi,
   penyimpanan, dan query dengan API DSL terbaru). Realtime kini
   menggunakan StateFlow untuk pembaruan langsung yang lebih andal.
