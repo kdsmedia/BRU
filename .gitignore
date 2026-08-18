@@ -26,3 +26,11 @@ android/capacitor-cordova-android-plugins/
 .lic.log
 .outputs.log
 .sdk.log
+
+# Build outputs
+ALTOMEDIA/release/
+ALTOMEDIA/store-graphics/generated/
+
+# Signing secrets - never commit keystores or their credentials
+ALTOMEDIA/keystore.properties
+ALTOMEDIA/*.jks

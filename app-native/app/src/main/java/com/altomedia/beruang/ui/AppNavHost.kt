@@ -2,6 +2,10 @@ package com.altomedia.beruang.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -15,14 +19,21 @@ object Routes {
 }
 
 /**
- * Root navigation. Decides between the auth screen and the main app based on
- * the live auth state.
+ * Root navigation. Shows the 20-second data-loading splash once per launch,
+ * then decides between the auth screen and the main app based on the live
+ * auth state.
  */
 @Composable
 fun AppNavHost() {
     val navController = rememberNavController()
     val authVm: AuthViewModel = viewModel()
     val user = authVm.currentUser.collectAsState().value
+
+    var splashDone by remember { mutableStateOf(false) }
+    if (!splashDone) {
+        SplashLoadingScreen(onComplete = { splashDone = true })
+        return
+    }
 
     val start = if (user != null) Routes.MAIN else Routes.AUTH
 
