@@ -20,10 +20,10 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Today
@@ -143,7 +143,7 @@ fun BonusScreen(
             BonusCardData(
                 title = "Komentar",
                 subtitle = "${AppConstants.Bonus.COMMENT_DAILY_TARGET}x/hari • ${AppConstants.Bonus.POINTS_COMMENTS} poin",
-                icon = Icons.Filled.Comment,
+                icon = Icons.AutoMirrored.Filled.Comment,
                 progress = state.comments.toFloat() / AppConstants.Bonus.COMMENT_DAILY_TARGET,
                 label = "${state.comments}/${AppConstants.Bonus.COMMENT_DAILY_TARGET}",
                 done = state.comments >= AppConstants.Bonus.COMMENT_DAILY_TARGET,

@@ -17,8 +17,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -215,7 +215,7 @@ private fun HomeHeader(onOpenMessages: () -> Unit, onOpenNotif: () -> Unit) {
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onOpenMessages) {
-                Icon(Icons.Filled.Chat, contentDescription = "Pesan", tint = TextMain)
+                Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = "Pesan", tint = TextMain)
             }
             IconButton(onClick = onOpenNotif) {
                 Icon(Icons.Filled.Notifications, contentDescription = "Aktivitas", tint = TextMain)

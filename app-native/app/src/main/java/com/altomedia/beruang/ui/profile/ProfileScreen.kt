@@ -19,8 +19,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.activity.compose.BackHandler
-import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Settings
@@ -211,7 +211,7 @@ fun ProfileScreen(
                                             }
                                         },
                                     )
-                                    ActionPill("Pesan", color = TextMain, icon = Icons.Filled.Chat, onClick = { onMessage(target) })
+                                    ActionPill("Pesan", color = TextMain, icon = Icons.AutoMirrored.Filled.Chat, onClick = { onMessage(target) })
                                 }
                             }
                         }

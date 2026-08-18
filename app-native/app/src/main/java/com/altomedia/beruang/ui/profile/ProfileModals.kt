@@ -17,11 +17,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Warning
@@ -184,7 +184,7 @@ fun EditProfileSheet(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                     contentAlignment = Alignment.Center,
                 ) {
-                    val model = photoUri ?: photoUrl
+                    val model = photoUri ?: photoUrl.takeIf { it.isNotBlank() }
                     if (model != null) {
                         coil.compose.AsyncImage(
                             model = model,
@@ -312,7 +312,7 @@ fun SettingsSheet(
                 SettingsRow(Icons.Filled.Warning, "Sangkalan", "Sangkalan") { info = "Sangkalan" to DISCLAIMER_TEXT }
                 SettingsRow(Icons.Filled.Info, "Syarat & Ketentuan", "Syarat & ketentuan") { info = "Syarat & Ketentuan" to TERMS_TEXT }
                 val context = androidx.compose.ui.platform.LocalContext.current
-                SettingsRow(Icons.Filled.Chat, "WhatsApp", "Gabung channel WhatsApp") {
+                SettingsRow(Icons.AutoMirrored.Filled.Chat, "WhatsApp", "Gabung channel WhatsApp") {
                     val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://whatsapp.com/channel/0029Vb8X1feA89MnppCqMy40")).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
                     runCatching { context.startActivity(intent) }
                 }
@@ -320,7 +320,7 @@ fun SettingsSheet(
         },
         confirmButton = {
             TextButton(onClick = onLogout) {
-                Icon(Icons.Filled.Logout, null, tint = ErrorRed, modifier = Modifier.size(16.dp))
+                Icon(Icons.AutoMirrored.Filled.Logout, null, tint = ErrorRed, modifier = Modifier.size(16.dp))
                 Text(" Keluar", color = ErrorRed, fontWeight = FontWeight.Bold)
             }
         },
