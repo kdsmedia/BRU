@@ -11,7 +11,8 @@
 
     <!-- Splash screen theme (shown until MainActivity content is drawn). -->
     <style name="Theme.BERUANG.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/ic_launcher_background</item>
+        <item name="windowSplashScreenBackground">@color/white</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
         <item name="postSplashScreenTheme">@style/Theme.BERUANG</item>
     </style>
 </resources>

@@ -1,8 +1,5 @@
 package com.altomedia.beruang.ui
 
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -26,7 +23,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -39,38 +35,30 @@ import kotlinx.coroutines.delay
 
 /** Total duration of the loading animation, in milliseconds. */
 private const val SPLASH_DURATION_MS = 20_000L
-/** How often the progress target advances, in milliseconds. */
-private const val STEP_MS = 40L
+/** How often the progress advances, in milliseconds. */
+private const val STEP_MS = 200L
 
 /**
  * Full-screen data-loading splash. Shows the app icon plus a progress bar that
- * rises naturally (ease-out) from 0% to exactly 100% over 20 seconds while the
- * app "loads data", then invokes [onComplete]. The progress is driven by a
- * target that advances in small increments and is smoothed by an
- * [animateFloatAsState] with an ease-out curve, so the bar decelerates as it
- * approaches 100% — mimicking the feel of real data loading.
+ * rises naturally from 0% to exactly 100% over 20 seconds while the app
+ * "loads data", then invokes [onComplete]. Progress advances in small steps
+ * every [STEP_MS] with an ease-out feel (decelerating as it nears 100%).
  */
 @Composable
 fun SplashLoadingScreen(onComplete: () -> Unit) {
-    var target by remember { mutableFloatStateOf(0f) }
+    var progress by remember { mutableFloatStateOf(0f) }
 
-    // Drive the progress target from 0→1 across the full duration.
     LaunchedEffect(Unit) {
         val steps = (SPLASH_DURATION_MS / STEP_MS).toInt()
-        repeat(steps + 1) { i ->
-            target = i.toFloat() / steps
+        repeat(steps) { i ->
+            // Ease-out curve so the bar decelerates approaching 100%.
+            val t = (i + 1).toFloat() / steps
+            progress = 1f - (1f - t) * (1f - t)
             delay(STEP_MS)
         }
-        target = 1f
+        progress = 1f
         onComplete()
     }
-
-    // Smooth the discrete target with an ease-out tween for a natural feel.
-    val progress by animateFloatAsState(
-        targetValue = target,
-        animationSpec = tween(durationMillis = STEP_MS.toInt(), easing = LinearOutSlowInEasing),
-        label = "splashProgress",
-    )
 
     Box(
         modifier = Modifier
@@ -102,7 +90,6 @@ fun SplashLoadingScreen(onComplete: () -> Unit) {
                 modifier = Modifier.padding(top = 4.dp, bottom = 28.dp),
             )
 
-            // Progress track + animated fill.
             LinearProgressIndicator(
                 progress = { progress.coerceIn(0f, 1f) },
                 modifier = Modifier
