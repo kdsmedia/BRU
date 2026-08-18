@@ -35,4 +35,12 @@ class AuthViewModel : ViewModel() {
     fun setUser(user: AuthUser?) {
         _currentUser.value = user
     }
+
+    /** Sign out of Supabase and clear the exposed user. Called on logout. */
+    fun logout() {
+        viewModelScope.launch {
+            AuthRepository.signOut()
+            _currentUser.value = null
+        }
+    }
 }

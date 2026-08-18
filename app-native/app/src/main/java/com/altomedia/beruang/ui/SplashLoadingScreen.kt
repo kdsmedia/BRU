@@ -34,13 +34,13 @@ import com.altomedia.beruang.ui.theme.TextMuted
 import kotlinx.coroutines.delay
 
 /** Total duration of the loading animation, in milliseconds. */
-private const val SPLASH_DURATION_MS = 20_000L
+private const val SPLASH_DURATION_MS = 10_000L
 /** How often the progress advances, in milliseconds. */
 private const val STEP_MS = 200L
 
 /**
  * Full-screen data-loading splash. Shows the app icon plus a progress bar that
- * rises naturally from 0% to exactly 100% over 20 seconds while the app
+ * rises naturally from 0% to exactly 100% over 10 seconds while the app
  * "loads data", then invokes [onComplete]. Progress advances in small steps
  * every [STEP_MS] with an ease-out feel (decelerating as it nears 100%).
  */

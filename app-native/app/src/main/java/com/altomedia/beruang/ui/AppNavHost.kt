@@ -52,6 +52,7 @@ fun AppNavHost() {
             MainScaffold(
                 me = me,
                 onLogout = {
+                    authVm.logout()
                     navController.navigate(Routes.AUTH) {
                         popUpTo(Routes.MAIN) { inclusive = true }
                     }
