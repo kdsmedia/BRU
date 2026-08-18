@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.activity.compose.BackHandler
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
@@ -64,6 +65,9 @@ fun ChatScreen(
 ) {
     val messages by vm.messages.collectAsState()
     val scope = rememberCoroutineScope()
+
+    // System back returns to the chat list.
+    BackHandler(enabled = true) { onBack() }
     val chatId = remember(targetUid) { ChatRepository.chatId(me.uid, targetUid) }
     var input by remember { mutableStateOf("") }
     var pendingDelete by remember { mutableStateOf<ChatMessage?>(null) }

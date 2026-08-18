@@ -16,7 +16,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.activity.compose.BackHandler
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
@@ -47,11 +48,16 @@ fun NotifScreen(uid: String, onClose: (() -> Unit)? = null, vm: NotifViewModel =
     val items by vm.items.collectAsState()
     LaunchedEffect(uid) { vm.start(uid) }
 
+    // System back closes the notifications overlay.
+    if (onClose != null) {
+        BackHandler(enabled = true) { onClose() }
+    }
+
     Column(modifier = Modifier.fillMaxSize().background(BgBody)) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 4.dp, end = 16.dp, top = 12.dp, bottom = 4.dp)) {
             if (onClose != null) {
                 IconButton(onClick = onClose) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Kembali", tint = TextMain)
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = TextMain)
                 }
             }
             Text(

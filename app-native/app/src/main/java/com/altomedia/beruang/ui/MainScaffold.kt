@@ -210,6 +210,7 @@ fun MainScaffold(
                 AdminScreen(
                     myUid = me.uid,
                     onVisitProfile = { profileTarget = it; showAdmin = false },
+                    onClose = { showAdmin = false },
                 )
             }
 

@@ -17,7 +17,8 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.activity.compose.BackHandler
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.QrCodeScanner
@@ -91,6 +92,19 @@ fun ProfileScreen(
     var showScanner by remember { mutableStateOf(false) }
     var showUpgrade by remember { mutableStateOf(false) }
 
+    // System back: close any open modal first, otherwise go back.
+    BackHandler(enabled = true) {
+        when {
+            showEdit -> showEdit = false
+            showSettings -> showSettings = false
+            showQr -> showQr = false
+            showHistory -> showHistory = false
+            showScanner -> showScanner = false
+            showUpgrade -> showUpgrade = false
+            else -> onBack()
+        }
+    }
+
     LaunchedEffect(target, me.uid) { pvm.load(target, me.uid) }
     LaunchedEffect(me.uid) { wvm.start(me.uid) }
 
@@ -105,7 +119,7 @@ fun ProfileScreen(
         ) {
             if (!isSelf) {
                 Icon(
-                    Icons.Filled.ArrowBack,
+                    Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Kembali",
                     modifier = Modifier.clickable { onBack() }.size(24.dp),
                     tint = TextMain,

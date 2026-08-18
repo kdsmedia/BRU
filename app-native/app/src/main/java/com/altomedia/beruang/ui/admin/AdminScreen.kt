@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Delete
@@ -28,6 +29,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -60,16 +62,22 @@ import com.altomedia.beruang.ui.theme.ErrorRed
 import com.altomedia.beruang.ui.theme.TextMain
 import com.altomedia.beruang.ui.theme.TextMuted
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.activity.compose.BackHandler
 import kotlinx.coroutines.launch
 
 /** Admin panel — port of the web `renderAdminUserList` + admin actions. */
 @Composable
-fun AdminScreen(myUid: String, onVisitProfile: (String) -> Unit) {
+fun AdminScreen(myUid: String, onVisitProfile: (String) -> Unit, onClose: () -> Unit = {}) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val scope = rememberCoroutineScope()
     var users by remember { mutableStateOf<List<AdminUser>>(emptyList()) }
     var blocked by remember { mutableStateOf<Map<String, Boolean>>(emptyMap()) }
     var pending by remember { mutableStateOf<AdminAction?>(null) }
+
+    // System back: close any open dialog first, otherwise close the admin panel.
+    BackHandler(enabled = true) {
+        if (pending != null) pending = null else onClose()
+    }
 
     LaunchedEffect(myUid) {
         val raw = NodesRepository.readValue(Paths.users())?.asObject()
@@ -87,13 +95,20 @@ fun AdminScreen(myUid: String, onVisitProfile: (String) -> Unit) {
     }
 
     Column(modifier = Modifier.fillMaxSize().background(BgBody)) {
-        Text(
-            "Kelola Pengguna",
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp,
-            color = TextMain,
-            modifier = Modifier.padding(16.dp),
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconButton(onClick = onClose) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = TextMain)
+            }
+            Text(
+                "Kelola Pengguna",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = TextMain,
+            )
+        }
         LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = androidx.compose.foundation.layout.PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             items(users, key = { it.uid }) { u ->
                 val isMe = u.uid == myUid
