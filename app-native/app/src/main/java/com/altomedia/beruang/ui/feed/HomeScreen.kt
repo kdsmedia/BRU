@@ -18,8 +18,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -61,6 +64,8 @@ fun HomeScreen(
     isAdmin: Boolean,
     onAddStory: () -> Unit,
     onVisitProfile: (String) -> Unit,
+    onOpenMessages: () -> Unit,
+    onOpenNotif: () -> Unit,
     vm: FeedViewModel = viewModel(),
 ) {
     val context = LocalContext.current
@@ -89,97 +94,132 @@ fun HomeScreen(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 16.dp),
         ) {
-        item { StoriesRow(stories = stories, onAdd = onAddStory) }
-        item {
-            Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
-                com.altomedia.beruang.ads.BannerAdBlock()
-            }
-        }
-        if (posts.isEmpty()) {
+            item { HomeHeader(onOpenMessages = onOpenMessages, onOpenNotif = onOpenNotif) }
+            item { StoriesRow(stories = stories, onAdd = onAddStory) }
             item {
-                Box(
-                    modifier = Modifier.fillMaxWidth().padding(50.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    if (refreshing) {
-                        CircularProgressIndicator(color = BrandYellow, modifier = Modifier.size(28.dp))
-                    } else {
-                        Text("Belum ada postingan.", color = TextMuted, fontSize = 14.sp)
-                    }
+                Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
+                    com.altomedia.beruang.ads.BannerAdBlock()
                 }
             }
-        } else {
-            itemsIndexed(posts, key = { _, post -> post.id }) { index, post ->
-                PostCard(
-                    post = post,
-                    myUid = me.uid,
-                    isFollowing = followingMap[post.authorUid] == true,
-                    isAdmin = isAdmin,
-                    onLike = {
-                        scope.launch {
-                            PostRepository.toggleLike(me, post.id, post.authorUid)
-                            vm.refresh()
+            if (posts.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(50.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (refreshing) {
+                            CircularProgressIndicator(color = BrandYellow, modifier = Modifier.size(28.dp))
+                        } else {
+                            Text("Belum ada postingan.", color = TextMuted, fontSize = 14.sp)
                         }
-                    },
-                    onComment = { text ->
-                        scope.launch {
-                            // Enforce tier daily comment limit (web: checkLimit('comments')).
-                            val usage = com.altomedia.beruang.data.WalletRepository.loadUsage(me.uid)
-                            val tierName = com.altomedia.beruang.data.NodesRepository
-                                .readValue(com.altomedia.beruang.data.Paths.wallet(me.uid))?.asObject()
-                                ?.str("tier") ?: "Star"
-                            val c = com.altomedia.beruang.data.WalletRepository.checkLimit(tierName, usage, "comments")
-                            if (!c.ok) {
-                                com.altomedia.beruang.ui.components.showToast(context, "Batas komentar harian tercapai (${c.limit}x untuk $tierName).")
-                                quota.request("comments") { granted ->
-                                    if (granted) scope.launch {
-                                        PostRepository.postComment(me, post.id, post.authorUid, text)
-                                        showToast(context, "+${com.altomedia.beruang.data.AppConstants.POINTS_COMMENT} poin (berkomentar)")
-                                        vm.refresh()
-                                    }
-                                }
-                                return@launch
+                    }
+                }
+            } else {
+                itemsIndexed(posts, key = { _, post -> post.id }) { index, post ->
+                    PostCard(
+                        post = post,
+                        myUid = me.uid,
+                        isFollowing = followingMap[post.authorUid] == true,
+                        isAdmin = isAdmin,
+                        onLike = {
+                            scope.launch {
+                                PostRepository.toggleLike(me, post.id, post.authorUid)
+                                vm.refresh()
                             }
-                            PostRepository.postComment(me, post.id, post.authorUid, text)
-                            com.altomedia.beruang.data.WalletRepository.recordUsage(me.uid, usage, "comments")
-                            com.altomedia.beruang.data.WalletRepository.awardPoints(me.uid, com.altomedia.beruang.data.AppConstants.POINTS_COMMENT, "comment")
-                            showToast(context, "+${com.altomedia.beruang.data.AppConstants.POINTS_COMMENT} poin (berkomentar)")
-                            vm.refresh()
+                        },
+                        onComment = { text ->
+                            scope.launch {
+                                // Enforce tier daily comment limit (web: checkLimit('comments')).
+                                val usage = com.altomedia.beruang.data.WalletRepository.loadUsage(me.uid)
+                                val tierName = com.altomedia.beruang.data.NodesRepository
+                                    .readValue(com.altomedia.beruang.data.Paths.wallet(me.uid))?.asObject()
+                                    ?.str("tier") ?: "Star"
+                                val c = com.altomedia.beruang.data.WalletRepository.checkLimit(tierName, usage, "comments")
+                                if (!c.ok) {
+                                    com.altomedia.beruang.ui.components.showToast(context, "Batas komentar harian tercapai (${c.limit}x untuk $tierName).")
+                                    quota.request("comments") { granted ->
+                                        if (granted) scope.launch {
+                                            PostRepository.postComment(me, post.id, post.authorUid, text)
+                                            showToast(context, "+${com.altomedia.beruang.data.AppConstants.POINTS_COMMENT} poin (berkomentar)")
+                                            vm.refresh()
+                                        }
+                                    }
+                                    return@launch
+                                }
+                                PostRepository.postComment(me, post.id, post.authorUid, text)
+                                com.altomedia.beruang.data.WalletRepository.recordUsage(me.uid, usage, "comments")
+                                com.altomedia.beruang.data.WalletRepository.awardPoints(me.uid, com.altomedia.beruang.data.AppConstants.POINTS_COMMENT, "comment")
+                                showToast(context, "+${com.altomedia.beruang.data.AppConstants.POINTS_COMMENT} poin (berkomentar)")
+                                vm.refresh()
+                            }
+                        },
+                        onToggleFollow = {
+                            scope.launch {
+                                val now = PostRepository.toggleFollow(me, post.authorUid, post.authorName)
+                                followingMap[post.authorUid] = now
+                                if (now) {
+                                    showToast(context, "+${com.altomedia.beruang.data.AppConstants.POINTS_FOLLOW} poin (menambah teman)")
+                                }
+                            }
+                        },
+                        onVisitProfile = { onVisitProfile(post.authorUid) },
+                        onDelete = {
+                            scope.launch {
+                                PostRepository.deletePost(post.id)
+                                showToast(context, "Postingan dihapus")
+                                vm.refresh()
+                            }
+                        },
+                        onTogglePin = {
+                            scope.launch {
+                                PostRepository.adminTogglePin(post.id, post.pinned)
+                                vm.refresh()
+                            }
+                        },
+                    )
+                    // Inline banner ad every 5 posts (web: ad block between posts).
+                    if ((index + 1) % 5 == 0 && index + 1 < posts.size) {
+                        Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
+                            com.altomedia.beruang.ads.BannerAdBlock()
                         }
-                    },
-                    onToggleFollow = {
-                        scope.launch {
-                            val now = PostRepository.toggleFollow(me, post.authorUid, post.authorName)
-                            followingMap[post.authorUid] = now
-                            if (now) showToast(context, "+${com.altomedia.beruang.data.AppConstants.POINTS_FOLLOW} poin (menambah teman)")
-                        }
-                    },
-                    onVisitProfile = { onVisitProfile(post.authorUid) },
-                    onDelete = {
-                        scope.launch {
-                            PostRepository.deletePost(post.id)
-                            showToast(context, "Postingan dihapus")
-                            vm.refresh()
-                        }
-                    },
-                    onTogglePin = {
-                        scope.launch {
-                            PostRepository.adminTogglePin(post.id, post.pinned)
-                            vm.refresh()
-                        }
-                    },
-                )
-                // Inline banner ad every 5 posts (web: ad block between posts).
-                if ((index + 1) % 5 == 0 && index + 1 < posts.size) {
-                    Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
-                        com.altomedia.beruang.ads.BannerAdBlock()
                     }
                 }
             }
-        }
         }
     }
     quota.Render(me.uid)
+}
+
+/**
+ * Home top bar: app wordmark on the left, quick-access message + notification
+ * icons on the right. Tapping the icons opens the Pesan / Aktivitas screens
+ * as overlays (since those tabs are now Bonus & Game).
+ */
+@Composable
+private fun HomeHeader(onOpenMessages: () -> Unit, onOpenNotif: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
+    ) {
+        Text(
+            "BERUANG",
+            fontWeight = FontWeight.Bold,
+            fontSize = 20.sp,
+            color = BrandYellow,
+        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onOpenMessages) {
+                Icon(Icons.Filled.Chat, contentDescription = "Pesan", tint = TextMain)
+            }
+            IconButton(onClick = onOpenNotif) {
+                Icon(Icons.Filled.Notifications, contentDescription = "Aktivitas", tint = TextMain)
+            }
+        }
+    }
 }
 
 /** Resolve the hosting Activity from the current Compose context (for AdMob). */

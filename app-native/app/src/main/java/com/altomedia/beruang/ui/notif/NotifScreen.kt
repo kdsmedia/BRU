@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
@@ -38,20 +39,28 @@ import com.altomedia.beruang.ui.theme.BrandYellow
 import com.altomedia.beruang.ui.theme.TextMain
 import com.altomedia.beruang.ui.theme.TextMuted
 
-/** Notifications — port of the web `#view-notif` / `listenNotifications`. */
+/** Notifications — port of the web `#view-notif` / `listenNotifications`. When
+ *  [onClose] is supplied the screen renders as a full-screen overlay with a
+ *  back button (used by the Home header icon). */
 @Composable
-fun NotifScreen(uid: String, vm: NotifViewModel = viewModel()) {
+fun NotifScreen(uid: String, onClose: (() -> Unit)? = null, vm: NotifViewModel = viewModel()) {
     val items by vm.items.collectAsState()
     LaunchedEffect(uid) { vm.start(uid) }
 
     Column(modifier = Modifier.fillMaxSize().background(BgBody)) {
-        Text(
-            "Aktivitas",
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp,
-            color = TextMain,
-            modifier = Modifier.padding(16.dp),
-        )
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 4.dp, end = 16.dp, top = 12.dp, bottom = 4.dp)) {
+            if (onClose != null) {
+                IconButton(onClick = onClose) {
+                    Icon(Icons.Filled.ArrowBack, contentDescription = "Kembali", tint = TextMain)
+                }
+            }
+            Text(
+                "Aktivitas",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = TextMain,
+            )
+        }
         if (items.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text("Belum ada aktivitas.", color = TextMuted)

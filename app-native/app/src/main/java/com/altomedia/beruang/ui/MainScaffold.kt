@@ -14,10 +14,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -47,9 +47,11 @@ import com.altomedia.beruang.data.str
 import com.altomedia.beruang.ui.admin.AdminScreen
 import com.altomedia.beruang.ui.auth.AuthUser
 import com.altomedia.beruang.ui.auth.AuthViewModel
+import com.altomedia.beruang.ui.bonus.BonusScreen
 import com.altomedia.beruang.ui.chat.ChatListScreen
 import com.altomedia.beruang.ui.chat.ChatScreen
 import com.altomedia.beruang.ui.feed.HomeScreen
+import com.altomedia.beruang.ui.game.GameScreen
 import com.altomedia.beruang.ui.notif.NotifScreen
 import com.altomedia.beruang.ui.profile.ProfileScreen
 import com.altomedia.beruang.ui.upload.UploadScreen
@@ -58,12 +60,13 @@ import com.altomedia.beruang.ui.theme.BrandRed
 import com.altomedia.beruang.ui.theme.BrandYellow
 import com.altomedia.beruang.ui.theme.TextMuted
 
-/** Bottom nav tabs — mirrors the web `.nav-dock` (home/chat/upload/notif/profile). */
+/** Bottom nav tabs — home/bonus/upload/game/profile (bonus & game replaced the
+ *  old chat & notif tabs; those are now reached via header icons on Home). */
 enum class Tab(val route: String, val label: String, val icon: ImageVector, val center: Boolean = false) {
     Home("home", "Beranda", Icons.Filled.Home),
-    Chat("chat", "Pesan", Icons.Filled.Chat),
+    Bonus("bonus", "Tugas", Icons.Filled.CardGiftcard),
     Upload("upload", "Unggah", Icons.Filled.Add, center = true),
-    Notif("notif", "Aktivitas", Icons.Filled.Notifications),
+    Game("game", "Game", Icons.Filled.SportsEsports),
     Profile("profile", "Profil", Icons.Filled.Person),
 }
 
@@ -86,6 +89,9 @@ fun MainScaffold(
     var profileTarget by remember { mutableStateOf<String?>(null) }
     // Admin panel overlay (admin only).
     var showAdmin by remember { mutableStateOf(false) }
+    // Quick-access overlays opened from the Home header icons.
+    var showMessages by remember { mutableStateOf(false) }
+    var showNotif by remember { mutableStateOf(false) }
 
     val context = androidx.compose.ui.platform.LocalContext.current
     val scope = androidx.compose.runtime.rememberCoroutineScope()
@@ -146,17 +152,15 @@ fun MainScaffold(
                     isAdmin = isAdmin,
                     onAddStory = { storyPicker.launch("image/*") },
                     onVisitProfile = { profileTarget = it },
+                    onOpenMessages = { showMessages = true },
+                    onOpenNotif = { showNotif = true },
                 )
-                Tab.Chat -> ChatListScreen(
-                    myUid = me.uid,
-                    onOpenChat = { uid, name -> chatTarget = uid to name },
-                    onVisitProfile = { profileTarget = it },
-                )
+                Tab.Bonus -> BonusScreen(meUid = me.uid)
                 Tab.Upload -> UploadScreen(
                     me = me,
                     onPosted = { current = Tab.Home },
                 )
-                Tab.Notif -> NotifScreen(uid = me.uid)
+                Tab.Game -> GameScreen()
                 Tab.Profile -> ProfileScreen(
                     me = me,
                     targetUid = null,
@@ -206,6 +210,24 @@ fun MainScaffold(
                 AdminScreen(
                     myUid = me.uid,
                     onVisitProfile = { profileTarget = it; showAdmin = false },
+                )
+            }
+
+            // Quick-access Messages overlay (opened from Home header icon).
+            if (showMessages) {
+                ChatListScreen(
+                    myUid = me.uid,
+                    onOpenChat = { uid, name -> chatTarget = uid to name },
+                    onVisitProfile = { profileTarget = it },
+                    onClose = { showMessages = false },
+                )
+            }
+
+            // Quick-access Notifications overlay (opened from Home header icon).
+            if (showNotif) {
+                NotifScreen(
+                    uid = me.uid,
+                    onClose = { showNotif = false },
                 )
             }
 

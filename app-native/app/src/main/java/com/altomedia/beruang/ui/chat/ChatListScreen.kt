@@ -14,8 +14,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -33,23 +35,31 @@ import com.altomedia.beruang.ui.theme.BgBody
 import com.altomedia.beruang.ui.theme.TextMain
 import com.altomedia.beruang.ui.theme.TextMuted
 
-/** Chat list — port of the web `#view-chat` / `renderChatList`. */
+/** Chat list — port of the web `#view-chat` / `renderChatList`. When [onClose]
+ *  is supplied the screen renders as a full-screen overlay with a back button. */
 @Composable
 fun ChatListScreen(
     myUid: String,
     onOpenChat: (String, String) -> Unit,
     onVisitProfile: (String) -> Unit,
+    onClose: (() -> Unit)? = null,
     vm: ChatListViewModel = viewModel(),
 ) {
     val users by vm.users.collectAsState()
     Column(modifier = Modifier.fillMaxSize().background(BgBody)) {
-        Text(
-            "Pesan",
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp,
-            color = TextMain,
-            modifier = Modifier.padding(16.dp),
-        )
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(start = 4.dp, end = 16.dp, top = 12.dp, bottom = 4.dp)) {
+            if (onClose != null) {
+                IconButton(onClick = onClose) {
+                    Icon(Icons.Filled.ArrowBack, contentDescription = "Kembali", tint = TextMain)
+                }
+            }
+            Text(
+                "Pesan",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = TextMain,
+            )
+        }
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(12.dp),

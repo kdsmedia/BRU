@@ -38,6 +38,7 @@ object PostRepository {
             repo.set(repo.ref("${Paths.followers(targetUid)}/$me.uid"), JsonPrimitive(true))
             sendNotif(targetUid, me.displayName ?: "Seseorang", "mulai mengikuti Anda")
             WalletRepository.awardPoints(me.uid, AppConstants.POINTS_FOLLOW, "follow $targetUid")
+            BonusRepository.recordFriend(me.uid)
         }
         return !following // new state
     }
@@ -80,6 +81,7 @@ object PostRepository {
             sendNotif(ownerUid, me.displayName ?: "Seseorang", "berkomentar: $text")
         }
         WalletRepository.awardPoints(me.uid, AppConstants.POINTS_COMMENT, "comment $pid")
+        BonusRepository.recordComment(me.uid)
     }
 
     // ---- create post --------------------------------------------------

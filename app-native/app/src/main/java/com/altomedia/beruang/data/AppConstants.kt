@@ -9,9 +9,22 @@ object AppConstants {
 
     // Points awarded per activity (web: const POINTS).
     const val POINTS_COMMENT = 50L
-    const val POINTS_POST = 20L
-    const val POINTS_FOLLOW = 10L
+    const val POINTS_POST = 50L
+    const val POINTS_FOLLOW = 50L
     const val POINTS_LIKE = 2L
+
+    // Bonus-task rewards (Tugas Bonus screen).
+    object Bonus {
+        const val POINTS_CHECKIN = 10L
+        const val POINTS_AD_VALID = 20L       // per valid ad watch (no skip)
+        const val POINTS_COMMENTS = 50L       // 50x comments/day target
+        const val POINTS_POSTS = 50L          // 20x posts/day target
+        const val POINTS_FRIENDS = 50L        // 10x add-friend target
+        const val AD_DAILY_LIMIT = 20         // 20 ads/day
+        const val COMMENT_DAILY_TARGET = 50  // 50 comments/day
+        const val POST_DAILY_TARGET = 20      // 20 posts/day
+        const val FRIEND_DAILY_TARGET = 10    // 10 add-friend/day
+    }
 
     // Referral bonus (both referrer and new user).
     const val REFERRAL_BONUS_REFERRER = 500L

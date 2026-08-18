@@ -151,6 +151,7 @@ fun UploadScreen(
                     PostRepository.createPost(me, caption.trim(), imageUrl)
                     WalletRepository.recordUsage(me.uid, usage, "posts")
                     WalletRepository.awardPoints(me.uid, AppConstants.POINTS_POST, "post")
+                    com.altomedia.beruang.data.BonusRepository.recordPost(me.uid)
                     showToast(context, "+${AppConstants.POINTS_POST} poin (posting)")
                     busy = false
                     imageUri = null
