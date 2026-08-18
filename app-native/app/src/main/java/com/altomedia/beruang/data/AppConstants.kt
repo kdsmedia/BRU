@@ -72,8 +72,8 @@ object AppConstants {
         const val TEST_BANNER_ID = "ca-app-pub-3940256099942544/6300978111"
         const val TEST_REWARDED_ID = "ca-app-pub-3940256099942544/5224354917"
         const val TEST_INTERSTITIAL_ID = "ca-app-pub-3940256099942544/1033173712"
-        // Minimum gap between two interstitial impressions (ms). 15 minutes.
-        const val INTERSTITIAL_COOLDOWN_MS = 15L * 60 * 1000
+        // Minimum gap between two interstitial impressions (ms). 30 minutes.
+        const val INTERSTITIAL_COOLDOWN_MS = 30L * 60 * 1000
     }
 }
 

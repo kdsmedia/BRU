@@ -54,6 +54,24 @@ object AdMobManager {
     private var interstitialLoading = false
     @Volatile private var lastInterstitialTs: Long = 0L
 
+    /** SharedPreferences-backed last-impression timestamp so the 30-minute
+     *  cooldown survives app restarts (an in-memory field resets to 0 on every
+     *  cold start, which made the ad show again almost immediately). */
+    private fun prefs() =
+        BeruangApp.applicationContext()
+            .getSharedPreferences("beruang_ads", android.content.Context.MODE_PRIVATE)
+
+    private fun loadLastInterstitialTs(): Long {
+        val ts = prefs().getLong("last_interstitial_ts", 0L)
+        lastInterstitialTs = ts
+        return ts
+    }
+
+    private fun saveLastInterstitialTs(ts: Long) {
+        lastInterstitialTs = ts
+        prefs().edit().putLong("last_interstitial_ts", ts).apply()
+    }
+
     /** Preload a full-screen interstitial (idempotent). Mirrors `prepareInterstitial`. */
     fun prepareInterstitial() {
         if (interstitialAd != null || interstitialLoading) return
@@ -90,7 +108,7 @@ object AdMobManager {
             return false
         }
         val now = System.currentTimeMillis()
-        if (now - lastInterstitialTs < AppConstants.AdMob.INTERSTITIAL_COOLDOWN_MS) return false
+        if (now - loadLastInterstitialTs() < AppConstants.AdMob.INTERSTITIAL_COOLDOWN_MS) return false
         if (activity.isFinishing || activity.isDestroyed) return false
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdDismissedFullScreenContent() {
@@ -105,7 +123,7 @@ object AdMobManager {
         }
         return try {
             ad.show(activity)
-            lastInterstitialTs = System.currentTimeMillis()
+            saveLastInterstitialTs(System.currentTimeMillis())
             interstitialAd = null // consumed; dismissed callback will reload
             true
         } catch (e: Exception) {
