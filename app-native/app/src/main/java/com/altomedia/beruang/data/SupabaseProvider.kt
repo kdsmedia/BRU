@@ -1,12 +1,15 @@
 package com.altomedia.beruang.data
 
-import io.github.jan_supabase.SupabaseClient
-import io.github.jan_supabase.createSupabaseClient
-import io.github.jan_supabase.auth.Auth
-import io.github.jan_supabase.auth.auth
-import io.github.jan_supabase.postgrest.Postgrest
-import io.github.jan_supabase.realtime.Realtime
-import io.github.jan_supabase.storage.Storage
+import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.auth.Auth
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.postgrest.Postgrest
+import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.realtime.Realtime
+import io.github.jan.supabase.realtime.realtime
+import io.github.jan.supabase.storage.Storage
+import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -35,15 +38,13 @@ object SupabaseProvider {
     }
 
     val client: SupabaseClient get() = _client
-    val auth: Auth get() = _client.auth
+    val auth get() = _client.auth
     val postgrest get() = _client.postgrest
     val realtime get() = _client.realtime
     val storage get() = _client.storage
 
-    /** Refresh the stored session (if any). Safe to call before reading state. */
+    /** Refresh the current session (if any). Safe to call before reading state. */
     suspend fun refreshSession() = withContext(Dispatchers.IO) {
-        runCatching { auth.refreshCurrentSession() }.onFailure {
-            runCatching { auth.importSession() }
-        }
+        runCatching { auth.refreshCurrentSession() }
     }
 }

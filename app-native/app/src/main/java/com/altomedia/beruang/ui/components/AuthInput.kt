@@ -37,8 +37,6 @@ fun AuthInput(
         colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
             focusedBorderColor = BrandYellow,
             unfocusedBorderColor = Border,
-            focusedBorderWidth = 2.dp,
-            unfocusedBorderWidth = 2.dp,
             focusedContainerColor = androidx.compose.ui.graphics.Color.White,
             unfocusedContainerColor = androidx.compose.ui.graphics.Color.White,
         ),

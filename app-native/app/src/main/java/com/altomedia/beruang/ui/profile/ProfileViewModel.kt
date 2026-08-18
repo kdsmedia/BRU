@@ -58,17 +58,17 @@ class ProfileViewModel : ViewModel() {
     private fun subscribe(targetUid: String, myUid: String) {
         userSub = RealtimeRepository.watch(Paths.user(targetUid), viewModelScope).also { sub ->
             viewModelScope.launch {
-                sub.flow.collect { rebuildUser(targetUid, myUid, it?.asObject()) }
+                sub.stateFlow.collect { rebuildUser(targetUid, myUid, it?.asObject()) }
             }
         }
         postsSub = RealtimeRepository.watch(Paths.posts(), viewModelScope).also { sub ->
             viewModelScope.launch {
-                sub.flow.collect { rebuildPosts(targetUid, it?.asObject()) }
+                sub.stateFlow.collect { rebuildPosts(targetUid, it?.asObject()) }
             }
         }
         followersSub = RealtimeRepository.watch(Paths.followers(targetUid), viewModelScope).also { sub ->
             viewModelScope.launch {
-                sub.flow.collect { v ->
+                sub.stateFlow.collect { v ->
                     val c = v?.asObject()?.size ?: 0
                     _state.value = _state.value.copy(followersCount = c)
                 }
@@ -76,7 +76,7 @@ class ProfileViewModel : ViewModel() {
         }
         followingSub = RealtimeRepository.watch(Paths.following(targetUid), viewModelScope).also { sub ->
             viewModelScope.launch {
-                sub.flow.collect { v ->
+                sub.stateFlow.collect { v ->
                     val c = v?.asObject()?.size ?: 0
                     _state.value = _state.value.copy(followingCount = c)
                 }
@@ -84,13 +84,15 @@ class ProfileViewModel : ViewModel() {
         }
         walletSub = RealtimeRepository.watch(Paths.wallet(targetUid), viewModelScope).also { sub ->
             viewModelScope.launch {
-                val w = it?.asObject()
-                _state.value = _state.value.copy(tier = w?.str("tier") ?: "Star")
+                sub.stateFlow.collect { v ->
+                    val w = v?.asObject()
+                    _state.value = _state.value.copy(tier = w?.str("tier") ?: "Star")
+                }
             }
         }
         followingMeSub = RealtimeRepository.watch(Paths.following(myUid), viewModelScope).also { sub ->
             viewModelScope.launch {
-                sub.flow.collect { v ->
+                sub.stateFlow.collect { v ->
                     val following = v?.asObject()?.get(targetUid)?.asBoolean() == true
                     _state.value = _state.value.copy(isFollowing = following)
                 }

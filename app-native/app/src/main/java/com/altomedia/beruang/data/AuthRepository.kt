@@ -1,9 +1,9 @@
 package com.altomedia.beruang.data
 
 import com.altomedia.beruang.ui.auth.AuthUser
-import io.github.jan_supabase.auth.auth
-import io.github.jan_supabase.auth.providers.builtin.Email
-import io.github.jan_supabase.auth.user.UserInfo
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.providers.builtin.Email
+import io.github.jan.supabase.auth.user.UserInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonPrimitive

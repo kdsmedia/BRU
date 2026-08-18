@@ -12,3 +12,4 @@ captures/
 *.ap_
 *.dex
 keystore.properties
+.kotlin/

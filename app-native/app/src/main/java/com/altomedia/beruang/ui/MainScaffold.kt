@@ -25,7 +25,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -86,6 +88,7 @@ fun MainScaffold(
 
     val context = androidx.compose.ui.platform.LocalContext.current
     val scope = androidx.compose.runtime.rememberCoroutineScope()
+    val activity = com.altomedia.beruang.ui.feed.rememberActivity()
 
     // Story upload picker — port of web `uploadStory` (image → stories, 300px q0.5).
     val storyPicker = androidx.activity.compose.rememberLauncherForActivityResult(
@@ -128,7 +131,6 @@ fun MainScaffold(
                     // only if an ad is preloaded & ready, and at most once per 15
                     // minutes. Mirrors web `nav()` → `ADMOB.maybeShowInterstitial`.
                     if (next != current) {
-                        val activity = com.altomedia.beruang.ui.feed.rememberActivity()
                         AdMobManager.maybeShowInterstitial(activity)
                     }
                     current = next

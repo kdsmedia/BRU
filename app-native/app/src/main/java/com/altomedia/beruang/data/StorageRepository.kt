@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.content.Context
-import io.github.jan_supabase.storage.storage
+import io.github.jan.supabase.storage.storage
 import io.ktor.http.ContentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -44,7 +44,10 @@ object StorageRepository {
             val path = "$prefix/${uid}_${System.currentTimeMillis()}.$ext"
             runCatching {
                 SupabaseProvider.storage.from(SupabaseProvider.STORAGE_BUCKET)
-                    .upload(path, bytes, ContentType.Image.JPEG)
+                    .upload(path, bytes) {
+                        upsert = false
+                        contentType = ContentType.Image.JPEG
+                    }
                 publicUrl(path)
             }.getOrElse { "" }
         }

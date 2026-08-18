@@ -13,7 +13,7 @@ object ChatRepository {
 
     /** Build the bidirectional private chat id. */
     fun chatId(a: String, b: String): String =
-        Paths.privateChat(a, b)
+        Paths.chatId(a, b)
 
     suspend fun send(me: AuthUser, chatId: String, text: String) {
         if (text.isBlank()) return

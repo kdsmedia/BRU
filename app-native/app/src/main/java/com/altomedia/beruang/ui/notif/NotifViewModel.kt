@@ -32,7 +32,7 @@ class NotifViewModel : ViewModel() {
         sub?.cancel()
         sub = RealtimeRepository.watch(Paths.notifications(uid), viewModelScope).also { s ->
             viewModelScope.launch {
-                s.flow.collect { raw ->
+                s.stateFlow.collect { raw ->
                     val o = raw?.asObject()
                     val list = o?.entries?.map { (k, v) ->
                         val n = v.asObject()

@@ -42,7 +42,7 @@ object WalletRepository {
         if (existing != null && existing.str("acctId") != null) {
             // Backfill tier for legacy wallets.
             if (existing.str("tier") == null) {
-                repo.update(repo.ref(Paths.walletTier(uid)), JsonPrimitive("Star"))
+                repo.set(repo.ref(Paths.walletTier(uid)), JsonPrimitive("Star"))
             }
             return
         }

@@ -1,17 +1,20 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
     namespace = "com.altomedia.beruang"
-    compileSdk = 34
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.altomedia.beruang"
         minSdk = 23
-        targetSdk = 34
+        targetSdk = 37
         versionCode = 4
         versionName = "2.0"
 
@@ -25,7 +28,7 @@ android {
             // For local builds the file may be absent; release signing is then a no-op.
             val ksFile = rootProject.file("../ALTOMEDIA/keystore.properties")
             if (ksFile.exists()) {
-                val props = java.util.Properties().apply { ksFile.inputStream().use { load(it) } }
+                val props = Properties().apply { ksFile.inputStream().use { load(it) } }
                 storeFile = file(props.getProperty("storeFile"))
                 storePassword = props.getProperty("storePassword")
                 keyAlias = props.getProperty("keyAlias")
@@ -52,7 +55,6 @@ android {
         compose = true
         buildConfig = true
     }
-    composeOptions { kotlinCompilerExtensionVersion = "1.5.14" }
     packaging {
         resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" }
     }
@@ -80,15 +82,34 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.6.0")
 
     // Supabase Kotlin client + Ktor engine
-    implementation("io.github.jan-tennert.supabase:postgrest-kt:2.5.4")
-    implementation("io.github.jan-tennert.supabase:realtime-kt:2.5.4")
-    implementation("io.github.jan-tennert.supabase:auth-kt:2.5.4")
-    implementation("io.github.jan-tennert.supabase:storage-kt:2.5.4")
-    implementation("io.ktor:ktor-client-android:2.3.12")
+    implementation("io.github.jan-tennert.supabase:postgrest-kt:3.0.0")
+    implementation("io.github.jan-tennert.supabase:realtime-kt:3.0.0")
+    implementation("io.github.jan-tennert.supabase:auth-kt:3.0.0")
+    implementation("io.github.jan-tennert.supabase:storage-kt:3.0.0")
+    implementation("io.ktor:ktor-client-android:3.0.0")
 
     // Kotlinx serialization + coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+
+    // Pin transitive Kotlin/Ktor libs to versions compatible with Kotlin 2.0.21
+    constraints {
+        implementation("io.ktor:ktor-client-core:3.0.0")
+        implementation("io.ktor:ktor-http:3.0.0")
+        implementation("io.ktor:ktor-utils:3.0.0")
+        implementation("io.ktor:ktor-io:3.0.0")
+        implementation("io.ktor:ktor-serialization:3.0.0")
+        implementation("io.ktor:ktor-serialization-kotlinx-json:3.0.0")
+        implementation("io.ktor:ktor-client-content-negotiation:3.0.0")
+        implementation("io.ktor:ktor-client-websockets:3.0.0")
+        implementation("io.ktor:ktor-client-logging:3.0.0")
+        implementation("io.ktor:ktor-events:3.0.0")
+        implementation("org.jetbrains.kotlinx:kotlinx-io-core-jvm:0.5.4")
+        implementation("org.jetbrains.kotlinx:kotlinx-io-bytestring-jvm:0.5.4")
+        implementation("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.7.3")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.1")
+        implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
+    }
 
     // ZXing — QR code generation + scanning
     implementation("com.google.zxing:core:3.5.3")

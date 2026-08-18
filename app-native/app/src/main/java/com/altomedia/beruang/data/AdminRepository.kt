@@ -40,6 +40,6 @@ object AdminRepository {
 
     suspend fun loadBlocked(): Map<String, Boolean> {
         val o = NodesRepository.readValue("blocked")?.asObject() ?: return emptyMap()
-        return o.entries.associate { (uid, v) -> uid to (v.asBoolean()) }
+        return o.entries.associate { (uid, v) -> uid to (v.asBoolean() == true) }
     }
 }

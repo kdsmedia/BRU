@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.altomedia.beruang.data.NodesRepository
 import com.altomedia.beruang.data.Paths
+import com.altomedia.beruang.data.PostRepository
 import com.altomedia.beruang.data.RealtimeRepository
 import com.altomedia.beruang.data.asObject
 import com.altomedia.beruang.data.long
@@ -44,12 +45,12 @@ class FeedViewModel : ViewModel() {
         storiesSub?.cancel()
         postsSub = RealtimeRepository.watch(Paths.posts(), viewModelScope).also { sub ->
             viewModelScope.launch {
-                sub.flow.collect { rebuildPosts(it) }
+                sub.stateFlow.collect { rebuildPosts(it) }
             }
         }
         storiesSub = RealtimeRepository.watch(Paths.stories(), viewModelScope).also { sub ->
             viewModelScope.launch {
-                sub.flow.collect { rebuildStories(it) }
+                sub.stateFlow.collect { rebuildStories(it) }
             }
         }
     }
@@ -77,7 +78,7 @@ class FeedViewModel : ViewModel() {
         val authorUids = obj.values.mapNotNull { it.asObject().str("uid") }.distinct()
         val missing = authorUids.filter { it !in usersCache }
         if (missing.isNotEmpty()) {
-            NodesRepository.loadUsers(missing).forEach { (uid, u) ->
+            PostRepository.loadUsers(missing).forEach { (uid, u) ->
                 usersCache[uid] = parseUser(uid, u)
             }
         }

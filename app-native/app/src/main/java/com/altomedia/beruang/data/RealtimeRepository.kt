@@ -1,8 +1,11 @@
 package com.altomedia.beruang.data
 
-import io.github.jan_supabase.realtime.RealtimeChannel
-import io.github.jan_supabase.realtime.eventPostgresChangeFlow
-import io.github.jan_supabase.realtime.realtime
+import io.github.jan.supabase.postgrest.query.filter.FilterOperator
+import io.github.jan.supabase.realtime.PostgresAction
+import io.github.jan.supabase.realtime.RealtimeChannel
+import io.github.jan.supabase.realtime.channel
+import io.github.jan.supabase.realtime.postgresChangeFlow
+import io.github.jan.supabase.realtime.realtime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -49,29 +52,43 @@ object RealtimeRepository {
 
         val collectors = mutableListOf<Job>()
         // Descendants: INSERT/UPDATE/DELETE on path LIKE 'p/%'.
-        for (evt in listOf("INSERT", "UPDATE", "DELETE")) {
-            collectors += scope.launch {
-                runCatching {
-                    channel.eventPostgresChangeFlow(evt) {
-                        schema = "public"; table = "nodes"; filter = "path=like.${path}/%"
-                    }.collect { schedule() }
-                }
+        collectors += scope.launch {
+            runCatching {
+                channel.postgresChangeFlow<PostgresAction.Insert>("INSERT") {
+                    table = "nodes"; filter("path", FilterOperator.LIKE, "${path}/%")
+                }.collect { schedule() }
+            }
+        }
+        collectors += scope.launch {
+            runCatching {
+                channel.postgresChangeFlow<PostgresAction.Update>("UPDATE") {
+                    table = "nodes"; filter("path", FilterOperator.LIKE, "${path}/%")
+                }.collect { schedule() }
+            }
+        }
+        collectors += scope.launch {
+            runCatching {
+                channel.postgresChangeFlow<PostgresAction.Delete>("DELETE") {
+                    table = "nodes"; filter("path", FilterOperator.LIKE, "${path}/%")
+                }.collect { schedule() }
             }
         }
         // Exact leaf: UPDATE on path = 'p'.
         collectors += scope.launch {
             runCatching {
-                channel.eventPostgresChangeFlow("UPDATE") {
-                    schema = "public"; table = "nodes"; filter = "path=eq.${path}"
+                channel.postgresChangeFlow<PostgresAction.Update>("UPDATE") {
+                    table = "nodes"; filter("path", FilterOperator.EQ, path)
                 }.collect { schedule() }
             }
         }
 
-        runCatching { channel.connect() }
+        runCatching {
+            scope.launch { channel.subscribe() }
+        }
 
         return NodeSubscription(
             path = path,
-            flow = flow.asStateFlow(),
+            flow = flow,
             scope = scope,
             channel = channel,
             jobs = listOf(initJob) + collectors,
@@ -82,12 +99,15 @@ object RealtimeRepository {
 /** Holds a realtime subscription. Cancel to tear down the channel + coroutines. */
 class NodeSubscription(
     val path: String,
-    val flow: StateFlow<JsonElement?>,
+    private val flow: MutableStateFlow<JsonElement?>,
     private val scope: CoroutineScope,
     private val channel: RealtimeChannel?,
     private val jobs: List<Job>,
 ) {
     val value: JsonElement? get() = flow.value
+
+    /** Observable view of the current value. */
+    val stateFlow: StateFlow<JsonElement?> = flow.asStateFlow()
 
     /** Force an immediate re-read (used after manual writes / pull-to-refresh). */
     fun refreshNow() {
@@ -97,7 +117,9 @@ class NodeSubscription(
     fun cancel() {
         jobs.forEach { it.cancel() }
         runCatching {
-            channel?.let { SupabaseProvider.realtime.removeChannel(it) }
+            channel?.let { ch ->
+                scope.launch { SupabaseProvider.realtime.removeChannel(ch) }
+            }
         }
     }
 }

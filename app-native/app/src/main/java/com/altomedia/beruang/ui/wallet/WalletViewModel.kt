@@ -47,10 +47,10 @@ class WalletViewModel : ViewModel() {
     fun start(uid: String) {
         sub?.cancel(); pinSub?.cancel()
         sub = RealtimeRepository.watch(Paths.wallet(uid), viewModelScope).also { s ->
-            viewModelScope.launch { s.flow.collect { rebuild(it?.asObject()) } }
+            viewModelScope.launch { s.stateFlow.collect { rebuild(it?.asObject()) } }
         }
         pinSub = RealtimeRepository.watch(Paths.walletPin(uid), viewModelScope).also { s ->
-            viewModelScope.launch { s.flow.collect { v -> _state.value = _state.value.copy(pinSet = !v.asString().isNullOrBlank()) } }
+            viewModelScope.launch { s.stateFlow.collect { v -> _state.value = _state.value.copy(pinSet = !v.asString().isNullOrBlank()) } }
         }
     }
 

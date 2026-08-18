@@ -4,11 +4,12 @@ import android.widget.Toast
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import com.altomedia.beruang.ui.theme.BrandRed
 import com.altomedia.beruang.ui.theme.BrandYellow
 
@@ -19,7 +20,7 @@ fun GradientLogo(modifier: Modifier = Modifier, size: Int = 32) {
         text = "BERUANG",
         fontSize = size.sp,
         fontWeight = FontWeight.Bold,
-        brush = Brush.horizontalGradient(listOf(BrandYellow, BrandRed)),
+        style = TextStyle(brush = Brush.horizontalGradient(listOf(BrandYellow, BrandRed))),
         modifier = modifier,
     )
 }

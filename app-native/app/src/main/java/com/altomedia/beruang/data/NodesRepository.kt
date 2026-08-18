@@ -1,11 +1,13 @@
 package com.altomedia.beruang.data
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import io.github.jan.supabase.postgrest.query.Columns
 
 /**
  * One row of the `nodes` table.
@@ -49,8 +51,13 @@ object NodesRepository {
     /** Reconstruct the nested value at [path] (null if absent). */
     suspend fun readValue(path: String): JsonElement? {
         // path.eq.<path> OR path.like.<path>/%  (do NOT escape %; it is a wildcard)
-        val rows = pg.from("nodes").select(columns = "path,value") {
-            or = "path.eq.$path,path.like.${path}/%"
+        val rows = pg.from("nodes").select(Columns.list("path", "value")) {
+            filter {
+                or {
+                    eq("path", path)
+                    like("path", "$path/%")
+                }
+            }
         }.decodeList<NodeRow>()
         return buildTree(rows, path)
     }
@@ -61,7 +68,12 @@ object NodesRepository {
     /** set(): delete existing node + descendants, then write flattened leaves. */
     suspend fun set(r: NodeRef, value: JsonElement?) {
         pg.from("nodes").delete {
-            or = "path.eq.${r.path},path.like.${r.path}/%"
+            filter {
+                or {
+                    eq("path", r.path)
+                    like("path", "$${r.path}/%")
+                }
+            }
         }
         if (value == null) return
         val leaves = LinkedHashMap<String, JsonElement>()
@@ -86,7 +98,12 @@ object NodesRepository {
 
     suspend fun remove(r: NodeRef) {
         pg.from("nodes").delete {
-            or = "path.eq.${r.path},path.like.${r.path}/%"
+            filter {
+                or {
+                    eq("path", r.path)
+                    like("path", "$${r.path}/%")
+                }
+            }
         }
     }
 
@@ -102,8 +119,10 @@ object NodesRepository {
         val table = pg.from("nodes")
         repeat(8) {
             val row = runCatching {
-                table.select(columns = "value,ts") { eq("path", r.path); limit(1) }
-                    .decodeSingle<NodeRowSafe>().takeIf { it.path != null }
+                table.select(Columns.list("value", "ts")) {
+                    filter { eq("path", r.path) }
+                    limit(1)
+                }.decodeSingle<NodeRowSafe>().takeIf { it.path != null }
             }.getOrNull()
             val cur = row?.value
             val curTs = row?.ts ?: 0L
@@ -134,7 +153,7 @@ object NodesRepository {
         val rows = leaves.map { (p, v) ->
             NodeRow(path = p, value = v, ts = now)
         }
-        pg.from("nodes").upsert(rows, onConflict = "path")
+        pg.from("nodes").upsert(rows) { onConflict = "path" }
     }
 
     // Flatten a JSON value into {path: leafValue} entries (objects recurse).
@@ -193,7 +212,7 @@ object NodesRepository {
     // Sortable push-id (time-ordered), like the web app's _genId().
     private fun genId(): String {
         val t = System.currentTimeMillis().toString(36).padStart(9, '0')
-        val r = (Math.random().toString(36).substring(2, 8))
+        val r = java.util.Random().nextLong().toString(36).trimStart('-').padStart(6, '0').take(6)
         return "$t-$r"
     }
 

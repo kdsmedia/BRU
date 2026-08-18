@@ -14,7 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Ban
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Person
@@ -115,7 +115,7 @@ fun AdminScreen(myUid: String, onVisitProfile: (String) -> Unit) {
                             if (isBlocked) {
                                 IconBtn(Icons.Filled.LockOpen, "Buka blokir") { pending = AdminAction.Unblock(u) }
                             } else {
-                                IconBtn(Icons.Filled.Ban, "Blokir") { pending = AdminAction.Block(u) }
+                                IconBtn(Icons.Filled.Block, "Blokir") { pending = AdminAction.Block(u) }
                             }
                             IconBtn(Icons.Filled.Delete, "Hapus akun", danger = true) { pending = AdminAction.Delete(u) }
                         }

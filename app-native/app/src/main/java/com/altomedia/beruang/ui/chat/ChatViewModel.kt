@@ -35,7 +35,7 @@ class ChatViewModel : ViewModel() {
         sub?.cancel()
         sub = RealtimeRepository.watch("private_chats/$chatId", viewModelScope).also { s ->
             viewModelScope.launch {
-                s.flow.collect { rebuild(it?.asObject()) }
+                s.stateFlow.collect { rebuild(it?.asObject()) }
             }
         }
     }
