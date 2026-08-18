@@ -183,6 +183,11 @@ fun ProfileScreen(
             )
         }
 
+        // Banner ad just above the post grid (web: ad block above profile posts).
+        Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp)) {
+            com.altomedia.beruang.ads.BannerAdBlock()
+        }
+
         // Post grid
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),

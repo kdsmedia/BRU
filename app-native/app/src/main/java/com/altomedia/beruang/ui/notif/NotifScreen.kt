@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
@@ -53,7 +54,7 @@ fun NotifScreen(uid: String, vm: NotifViewModel = viewModel()) {
             }
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = androidx.compose.foundation.layout.PaddingValues(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(items, key = { it.key }) { n ->
+                itemsIndexed(items, key = { _, n -> n.key }) { index, n ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -66,6 +67,12 @@ fun NotifScreen(uid: String, vm: NotifViewModel = viewModel()) {
                             contentAlignment = Alignment.Center,
                         ) { Icon(Icons.Filled.Bolt, null, tint = BrandYellow, modifier = Modifier.size(18.dp)) }
                         Text(n.text, fontSize = 14.sp, color = Color(0xFF333333), modifier = Modifier.padding(start = 12.dp))
+                    }
+                    // Inline banner ad every 5 activities.
+                    if ((index + 1) % 5 == 0 && index + 1 < items.size) {
+                        Box(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
+                            com.altomedia.beruang.ads.BannerAdBlock()
+                        }
                     }
                 }
             }

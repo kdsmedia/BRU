@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -89,7 +90,11 @@ fun HomeScreen(
             contentPadding = PaddingValues(bottom = 16.dp),
         ) {
         item { StoriesRow(stories = stories, onAdd = onAddStory) }
-        item { com.altomedia.beruang.ads.BannerAd() }
+        item {
+            Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
+                com.altomedia.beruang.ads.BannerAdBlock()
+            }
+        }
         if (posts.isEmpty()) {
             item {
                 Box(
@@ -104,7 +109,7 @@ fun HomeScreen(
                 }
             }
         } else {
-            items(posts, key = { it.id }) { post ->
+            itemsIndexed(posts, key = { _, post -> post.id }) { index, post ->
                 PostCard(
                     post = post,
                     myUid = me.uid,
@@ -164,6 +169,12 @@ fun HomeScreen(
                         }
                     },
                 )
+                // Inline banner ad every 5 posts (web: ad block between posts).
+                if ((index + 1) % 5 == 0 && index + 1 < posts.size) {
+                    Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
+                        com.altomedia.beruang.ads.BannerAdBlock()
+                    }
+                }
             }
         }
         }

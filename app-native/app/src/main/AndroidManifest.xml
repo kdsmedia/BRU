@@ -34,6 +34,15 @@
             </intent-filter>
         </activity>
 
+        <!-- ZXing CaptureActivity: force PORTRAIT so the QR scanner matches the
+             rest of the app. The library merges sensorLandscape by default; we
+             override it here. setOrientationLocked(false) in ScanOptions still
+             lets the view rotate the preview within portrait if needed. -->
+        <activity
+            android:name="com.journeyapps.barcodescanner.CaptureActivity"
+            android:screenOrientation="portrait"
+            tools:replace="android:screenOrientation" />
+
         <!-- AdMob App ID (required by Google Mobile Ads SDK). -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
