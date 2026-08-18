@@ -1,0 +1,73 @@
+CATATAN RILIS — BERUANG v2.1 (versionCode 5)
+Tanggal rilis: 18 Agustus 2026
+ID Paket: com.altomedia.beruang
+minSdk: 23 (Android 6.0) | targetSdk: 37 (Android 16)
+
+------------------------------------------------------------
+RINGKASAN
+------------------------------------------------------------
+Versi 2.1 membawa peningkatan performa navigasi, ikon peluncur
+baru, layar pembukaan yang natural, serta perbaikan dan penyesuaian
+di seluruh aplikasi. Build ini sesuai persyaratan Google Play Console
+(minSdk 23, targetSdk 37, AAB bertanda tangan).
+
+------------------------------------------------------------
+FITUR BARU & PENINGKATAN
+------------------------------------------------------------
+1. Ikon peluncur & splash baru
+   - Ikon aplikasi kini menggunakan ALTOMEDIA/appicon.png di seluruh
+     kerapatan layar (mdpi–xxxhdpi), termasuk adaptive icon (Android 8+).
+   - Layar pembukaan (splash) menampilkan ikon aplikasi dengan progress
+     "Memuat data" yang naik secara natural menuju 100% selama 20 detik
+     sebelum masuk ke layar utama/login.
+
+2. Navigasi yang lebih responsif
+   - Tab bawah (Beranda, Bonus, Unggah, Game, Profil) kini tetap aktif
+     di memori (keep-alive). Berpindah tab menjadi instan, posisi
+     gulir dan iklan tetap terjaga, tidak perlu memuat ulang layar.
+
+3. Posisi iklan banner (AdMob)
+   - Di bawah baris cerita (story) pada laman utama.
+   - Setiap 5 post pada feed utama.
+   - Setiap 5 aktivitas pada halaman aktivitas/notifikasi.
+   - Di atas post pada halaman profil.
+
+4. Pemindaian QR gaya popup
+   - Pemindai QR kini tampil sebagai popup portrait (mode e-wallet)
+     untuk pengalaman yang konsisten di seluruh aplikasi.
+
+5. Manajemen aktivitas/notifikasi
+   - Tandai dibaca, hapus, dan indikator titik hijau untuk notifikasi
+     yang belum dibaca sudah aktif.
+
+6. Administrasi saldo
+   - Layar admin mendukung dialog tambah/kurangi saldo pengguna.
+
+------------------------------------------------------------
+PERBAIKAN
+------------------------------------------------------------
+- Memperbaiki kesalahan kompilasi (import detectTapGestures, paket
+  rememberCoroutineScope, import warna, dan arity regionMatches) yang
+  muncul setelah lingkungan build baru tersedia.
+- Penyesuaian resolusi path keystore sehingga build AAB/APK release
+  bertanda tangan berhasil.
+
+------------------------------------------------------------
+SPESIFIKASI BUILD
+------------------------------------------------------------
+- applicationId: com.altomedia.beruang
+- versionCode: 5
+- versionName: 2.1
+- compileSdk: 37
+- targetSdk: 37
+- minSdk: 23
+- Format rilis: Android App Bundle (.aab) bertanda tangan
+- Format pengujian: APK debug
+
+------------------------------------------------------------
+CATATAN UNTUK PLAY CONSOLE
+------------------------------------------------------------
+- Upload file: BERUANG-v2.1-release.aab
+- Jalur rilis produksi setelah peninjauan internal selesai.
+- Pastikan Data Safety dan izin (kamera, penyimpanan) terisi sesuai
+  kebijakan privasi yang disertakan (kebijakan-privasi.txt).

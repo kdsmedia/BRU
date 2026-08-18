@@ -1,0 +1,156 @@
+SYARAT & KETENTUAN LAYANAN BERUANG
+====================================
+Aplikasi: BERUANG
+ID Paket: com.altomedia.beruang
+Versi: 2.1 (versionCode 5)
+Pemilik & Pengembang: ALTOMEDIA
+Terakhir diperbarui: 18 Agustus 2026
+Kontak: altomedia.legal@gmail.com
+
+------------------------------------------------------------
+1. PENERIMAAN SYARAT
+------------------------------------------------------------
+Selamat datang di BERUANG. Syarat dan Ketentuan Layanan ("Ketentuan")
+ini mengatur akses dan penggunaan aplikasi seluler BERUANG ("Aplikasi")
+yang disediakan oleh ALTOMEDIA ("kami"). Dengan membuat akun atau
+menggunakan Aplikasi, Anda menyetujui untuk terikat oleh Ketentuan ini
+dan Kebijakan Privasi terkait. Jika Anda tidak menyetujui, Anda tidak
+diperkenankan menggunakan Aplikasi.
+
+Anda menyatakan bahwa Anda berusia minimal 13 tahun atau telah mendapat
+izin dari orang tua/wali yang sah apabila di bawah usia tersebut, dan
+berwenang secara hukum untuk menyetujui Ketentuan ini.
+
+------------------------------------------------------------
+2. DEFINISI
+------------------------------------------------------------
+   - "Aplikasi" berarti aplikasi seluler BERUANG.
+   - "Pengguna" atau "Anda" berarti individu yang mengakses/menggunakan
+     Aplikasi.
+   - "Konten" berarti setiap data, teks, gambar, foto, video, komentar,
+     pesan, atau materi lain yang diunggah atau dibuat di Aplikasi.
+   - "Layanan" berarti seluruh fitur yang disediakan Aplikasi, termasuk
+     feed sosial, chat, dompet digital, bonus, dan mini-game.
+   - "Saldo" berarti nilai digital yang tercatat dalam dompet Anda di
+     Aplikasi, yang dapat diperoleh dari top-up, bonus, atau transfer.
+
+------------------------------------------------------------
+3. AKUN DAN KEAMANAN
+------------------------------------------------------------
+   1. Anda bertanggung jawab menjaga kerahasiaan kredensial akun Anda
+      dan atas seluruh aktivitas yang terjadi melalui akun Anda.
+   2. Beritahu kami segera bila terjadi penggunaan tanpa izin atau
+      pelanggaran keamanan.
+   3. Anda tidak boleh membuat akun atas nama orang lain tanpa izin,
+      atau menggunakan identitas palsu/menyesatkan.
+   4. Kami berhak menangguhkan atau menghapus akun yang melanggar
+      Ketentuan ini.
+
+------------------------------------------------------------
+4. PENGGUNAAN LAYANAN
+------------------------------------------------------------
+Anda setuju untuk menggunakan Aplikasi hanya untuk tujuan yang sah dan
+sesuai hukum. Anda dilarang:
+   a. Mengunggah konten yang melanggar hukum, asusila, kebencian,
+      diskriminatif, harassing, atau melanggar hak kekayaan intelektual
+      pihak lain.
+   b. Melakukan tindakan penipuan, manipulasi transaksi, atau upaya
+      mencurangi sistem saldo/bonus/dompet.
+   c. Menggunakan bot/script/otomasi untuk memanipulasi interaksi atau
+      menyalahgunakan iklan.
+   d. Menyebarkan spam, malware, atau konten berbahaya.
+   e. Mengakses sistem/data pihak lain tanpa otorisasi.
+   f. Merekayasa balik, men-decompile, atau mendistribusikan ulang
+      Aplikasi.
+
+------------------------------------------------------------
+5. KONTEN PENGGUNA
+------------------------------------------------------------
+   1. Anda tetap memiliki hak atas Konten yang Anda buat. Dengan
+      mengunggah, Anda memberi ALTOMEDIA lisensi non-eksklusif, bebas
+      royalti, dan global untuk menampilkan, menyimpan, memproses, dan
+      mendistribusikan Konten di dalam Aplikasi.
+   2. Anda bertanggung jawab penuh atas keakuratan dan keabsahan
+      Konten yang diunggah.
+   3. Kami dapat menghapus Konten yang melanggar Ketentuan ini tanpa
+      pemberitahuan sebelumnya.
+
+------------------------------------------------------------
+6. DOMPET DIGITAL DAN TRANSAKSI
+------------------------------------------------------------
+   1. Fitur dompet adalah pencatatan saldo digital internal; saldo
+      TIDAK merupakan mata uang yang diterbitkan oleh bank atau
+      otoritas moneter.
+   2. Saldo dapat diperoleh melalui top-up, klaim bonus, atau transfer
+      antarpengguna; serta dapat ditarik/ditransfer sesuai mekanisme
+      yang disediakan.
+   3. Anda wajib memberikan data tujuan penarikan yang benar; kesalahan
+      data tujuan menjadi tanggung jawab Anda.
+   4. Dilarang melakukan top-up/penarikan fiktif, manipulasi saldo, atau
+      tindakan yang berpotensi merugikan pihak lain.
+   5. Kami dapat menahan, memeriksa, atau membatalkan transaksi yang
+      mencurigakan.
+   6. Keterlambatan/kelainan proses dari pihak bank/e-wallet/mitra
+      bukan menjadi tanggung jawab langsung ALTOMEDIA di luar kendali
+      yang wajar.
+
+------------------------------------------------------------
+7. IKLAN
+------------------------------------------------------------
+Aplikasi menampilkan iklan dari mitra periklanan (Google AdMob). Anda
+setuju bahwa ALTOMEDIA tidak bertanggung jawab atas isi iklan maupun
+transaksi yang Anda lakukan dengan pengiklan.
+
+------------------------------------------------------------
+8. HAK KEKAYAAN INTELEKTUAL
+------------------------------------------------------------
+Seluruh merek, logo, desain, perangkat lunak, dan materi Aplikasi
+merupakan milik ALTOMEDIA atau pihak yang memberi lisensi, dan dilindungi
+oleh peraturan hak cipta dan kekayaan intelektual yang berlaku.
+
+------------------------------------------------------------
+9. PEMBATALAN DAN PENGGUNAAN
+------------------------------------------------------------
+Kami dapat menghentikan atau membatasi akses Anda kapan saja bila
+terjadi pelanggaran Ketentuan, atau karena alasan teknis/operasional.
+Penghentian dapat dilakukan tanpa pemberitahuan sebelumnya.
+
+------------------------------------------------------------
+10. DISCLAIMER
+------------------------------------------------------------
+Layanan disediakan "sebagaimana adanya" tanpa jaminan apa pun. Kami
+tidak menjamin bahwa Aplikasi akan bebas dari gangguan, error, atau
+virus. Sejauh diizinkan hukum, kami tidak bertanggung jawab atas
+kerugian tidak langsung yang timbul dari penggunaan Aplikasi.
+
+------------------------------------------------------------
+11. BATASAN TANGGUNG JAWAB
+------------------------------------------------------------
+Sejauh diizinkan hukum, tanggung jawab ALTOMEDIA atas klaim apa pun
+yang timbul dari penggunaan Aplikasi terbatas pada jumlah yang telah
+Anda bayarkan kepada ALTOMEDIA (jika ada) selama 6 (enam) bulan terakhir.
+Kami tidak bertanggung jawab atas kerugian tidak terduga atau kerugian
+tidak langsung yang melampaui batas ini.
+
+------------------------------------------------------------
+12. HUKUM YANG BERLAKU
+------------------------------------------------------------
+Ketentuan ini diatur oleh hukum Republik Indonesia. Setiap perselisihan
+yang timbul akan diupayakan diselesaikan secara musyawarah; apabila tidak
+tercapai, akan diselesaikan melalui mekanisme hukum di wilayah DKI Jakarta.
+
+------------------------------------------------------------
+13. PERUBAHAN KETENTUAN
+------------------------------------------------------------
+Kami dapat mengubah Ketentuan ini sewaktu-waktu. Perubahan akan
+diumumkan melalui Aplikasi atau kanal resmi kami, dan tanggal "Terakhir
+diperbarui" akan diperbarui. Penggunaan Aplikasi secara berkelanjutan
+setelah perubahan dianggap sebagai persetujuan Anda.
+
+------------------------------------------------------------
+14. KONTAK
+------------------------------------------------------------
+Untuk pertanyaan mengenai Ketentuan ini:
+   Nama: ALTOMEDIA
+   Surel: altomedia.legal@gmail.com
+   Aplikasi: BERUANG (com.altomedia.beruang)

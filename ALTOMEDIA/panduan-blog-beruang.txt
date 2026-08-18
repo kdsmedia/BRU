@@ -1,0 +1,44 @@
+BERUANG: Platform Sosial All-in-One untuk Indonesia yang Lebih Cepat, Ringan, dan Menguntungkan
+=============================================================================================
+Oleh: Tim ALTOMEDIA | Tanggal terbit: 18 Agustus 2026
+Aplikasi: BERUANG (com.altomedia.beruang) | Versi: 2.1
+
+Di tengah menjamurnya aplikasi sosial, pengguna Indonesia sering kali harus berpindah-pindah aplikasi hanya untuk hal sederhana: berbagi momen, mengobrol, memindai kode QR untuk transfer, hingga mengikuti program bonus harian. Setiap perpindahan aplikasi berarti memori tambahan, data tambahan, dan waktu yang terbuang. BERUANG hadir sebagai jawaban atas kelelahan tersebut — satu aplikasi sosial yang menyatukan feed, pesan, dompet digital, misi bonus, dan mini-game dalam satu pengalaman yang cepat, ringan, dan dirancang khusus untuk pengguna di Indonesia.
+
+Apa Itu BERUANG?
+-----------------
+BERUANG adalah aplikasi sosial all-in-one yang dikembangkan oleh ALTOMEDIA. Aplikasi ini memadukan fungsi media sosial (feed, cerita, komentar, pesan), layanan dompet digital (saldo, transfer, pindai QR), program bonus harian yang menguntungkan, serta mini-game ringan untuk mengisi waktu luang. Seluruh fitur dibangun di atas arsitektur native Android modern (Kotlin + Jetpack Compose), sehingga performa dan responsivitasnya jauh lebih baik dibanding aplikasi berbasis web wrapper. Dengan ukuran paket yang ringkas (sekitar 18 MB untuk AAB rilis), BERUANG dapat berjalan mulus bahkan pada perangkat kelas menengah ke bawah dan koneksi data terbatas — sesuatu yang sangat penting untuk pasar Indonesia.
+
+Navigasi yang Instan dan Responsif
+------------------------------------
+Salah satu keluhan terbesar pengguna aplikasi sosial adalah lambatnya perpindahan antar-tab. Setiap kali berpindah dari Beranda ke Profil atau ke Bonus, layar sering kali harus dimuat ulang dari awal, posisi gulir hilang, dan iklan pun dimuat ulang. Pada versi 2.1, BERUANG memperkenalkan sistem keep-alive untuk seluruh tab bawah (Beranda, Bonus, Unggah, Game, dan Profil). Artinya, seluruh layar tetap aktif di memori dan hanya ditampilkan atau disembunyikan secara halus. Hasilnya, berpindah tab kini terasa instan — posisi gulir tetap terjaga, iklan tidak perlu dimuat ulang, dan ViewModel tetap menyimpan data. Pengalaman ini membuat BERUANG terasa seperti aplikasi yang sudah lama dibuka, tanpa jeda yang mengganggu.
+
+Ikon Baru dan Layar Pembuka yang Natural
+------------------------------------------
+Versi 2.1 juga membawa identitas visual yang lebih kuat. Ikon aplikasi kini menggunakan ilustrasi khas ALTOMEDIA yang diterapkan di seluruh kerapatan layar, termasuk dukungan adaptive icon untuk Android 8 ke atas. Layar pembuka (splash) tidak lagi sekadar logo statis; kini pengguna disambut dengan ikon aplikasi dan progress "Memuat data" yang naik secara natural menuju 100% selama 20 detik. Animasi ini dirancang dengan kurva ease-out sehingga terasa seperti proses pemuatan yang nyata — cepat di awal dan melambat halus saat mendekati 100%. Selain memberikan kesan profesional, layar pembuka ini juga memberi waktu bagi aplikasi untuk mempersiapkan data sebelum pengguna masuk ke layar utama.
+
+Posisi Iklan yang Rapi dan Terintegrasi
+----------------------------------------
+Sebagai aplikasi gratis, BERUANG mengandalkan iklan dari Google AdMob untuk menjaga keberlangsungan layanan. Namun, berbeda dengan banyak aplikasi yang menempatkan iklan sembarangan hingga mengganggu pengalaman, BERUANG menempatkan iklan banner pada posisi-posisi yang strategis dan tidak mengganggu: di bawah baris cerita (story) pada laman utama, setiap lima post pada feed, setiap lima aktivitas pada halaman aktivitas, serta di atas post pada halaman profil. Penempatan yang teratur ini menjaga keterbacaan konten tetap nyaman, sekaligus mendukung monetisasi yang sehat bagi pengembang.
+
+Dompet Digital dan Pindai QR Gaya E-Wallet
+-------------------------------------------
+Fitur dompet pada BERUANG bukan sekadar pelengkap. Pengguna dapat melakukan top-up, menerima dan mengirim transfer antarpengguna, menarik saldo, serta melihat riwayat transaksi yang lengkap. Yang menarik, pemindaian kode QR kini hadir dalam mode popup portrait yang menyerupai aplikasi e-wallet populer, sehingga pengguna tidak perlu keluar dari layar untuk memindai QR. Integrasi ini membuat BERUANG layaknya dompet digital yang tertanam di dalam aplikasi sosial — satu tempat untuk berbagi sekaligus bertransaksi.
+
+Program Bonus Harian dan Mini-Game
+-----------------------------------
+Untuk menjaga keterlibatan pengguna, BERUANG menyediakan program bonus harian: login harian, mengundang teman, menonton iklan singkat, hingga menyelesaikan profil — semuanya memberi imbalan saldo yang dapat digunakan atau ditarik. Ditambah lagi, mini-game ringan tersedia untuk mengisi waktu luang sambil mengumpulkan poin. Kombinasi ini menjadikan BERUANG bukan hanya tempat bersosial, tetapi juga tempat untuk mendapatkan manfaat ekonomi kecil yang menyenangkan.
+
+Privasi dan Keamanan yang Diperhatikan
+---------------------------------------
+Sebagai aplikasi yang memproses data pribadi, BERUANG menerapkan praktik privasi yang transparan. Aplikasi hanya meminta izin kamera dan penyimpanan saat benar-benar diperlukan (memindai QR atau mengunggah foto), tidak menyimpan jalur kamera ke server kecuali pengguna mengunggahnya, dan tidak menjual data pribadi kepada pihak ketiga. Infrastruktur backend menggunakan layanan yang menerapkan enkripsi transmisi, dan kebijakan privasi serta syarat ketentuan disediakan secara terbuka untuk transparansi penuh kepada pengguna, sesuai dengan praktik yang selaras dengan UU Pelindungan Data Pribadi Indonesia dan kebijakan Google Play.
+
+Spesifikasi Teknis dan Ketersediaan
+-------------------------------------
+BERUANG versi 2.1 dibangun dengan targetSdk 37 dan minSdk 23, sehingga mendukung perangkat dari Android 6.0 hingga Android 16. Aplikasi didistribusikan dalam format Android App Bundle (AAB) bertanda tangan, sesuai persyaratan Google Play Console. Ukurannya yang ringkas membuatnya hemat data saat diunduh, dan struktur native-nya memastikan performa yang konsisten di berbagai perangkat.
+
+Kesimpulan
+-----------
+Dengan navigasi yang instan, ikon dan splash baru yang elegan, penempatan iklan yang rapi, dompet digital terintegrasi, program bonus harian, dan komitmen pada privasi, BERUANG versi 2.1 menawarkan paket lengkap bagi pengguna Indonesia yang menginginkan aplikasi sosial yang tidak hanya menyenangkan tetapi juga bermanfaat. Satu aplikasi untuk berbagi, bertransaksi, dan bertumbuh. Inilah BERUANG — sosial, berbagi, bertumbuh.
+
+Untuk informasi lebih lanjut, kunjungi listing resmi di Google Play Store atau hubungi ALTOMEDIA melalui kanal resmi.

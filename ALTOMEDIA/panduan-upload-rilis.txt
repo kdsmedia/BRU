@@ -1,0 +1,120 @@
+PANDUAN UPLOAD RILIS & STORE LISTING — BERUANG v2.1
+====================================================
+Play Console (Google Play Store)
+ID Paket: com.altomedia.beruang
+Versi: 2.1 (versionCode 5)
+Tanggal: 18 Agustus 2026
+
+------------------------------------------------------------
+A. PERSIAPAN SEBELUM UPLOAD
+------------------------------------------------------------
+1. Login ke Google Play Console: https://play.google.com/console
+2. Pastikan akun developer telah terverifikasi (identitas & biaya
+   pendaftaran sekali $25).
+3. Pastikan aplikasi sudah dibuat di Console dengan ID paket
+   com.altomedia.beruang (sama dengan applicationId di build).
+4. Pastikan signing key sudah terdaftar. Aplikasi ditandatangani
+   dengan upload-keystore.jks (alias: beruang-upload). Bila ini build
+   pertama dengan kunci baru, daftarkan kunci upload via "App
+   signing" → "Use a new app signing key" atau "Use Google-generated
+   key". Cat: jika versi sebelumnya sudah diunggah dengan kunci lama
+   yang berbeda, hubungi Play Console Support untuk reset kunci upload
+   atau gunakan kunci lama yang sama.
+
+------------------------------------------------------------
+B. BERKAS YANG DIUNGGAH
+------------------------------------------------------------
+- Bundle rilis (WAJIB): ALTOMEDIA/release/BERUANG-v2.1-release.aab
+  (AAB bertanda tangan, 18 MB, minSdk 23, targetSdk 37)
+- APK pengujian (opsional): ALTOMEDIA/release/BERUANG-v2.1-release.apk
+- APK debug (pengujian internal): ALTOMEDIA/release/BERUANG-v2.1-debug.apk
+
+------------------------------------------------------------
+C. STORE LISTING (DETAIL APLIKASI)
+------------------------------------------------------------
+Nama aplikasi: BERUANG
+Nama singkat: BERUANG
+Deskripsi singkat (maks 80 karakter):
+  Platform sosial Indonesia — berbagi momen, dompet digital, bonus, & game.
+
+Deskripsi lengkap (lihat panduan-blog-beruang.txt untuk referensi):
+  BERUANG adalah aplikasi sosial all-in-one untuk berbagi momen, terhubung
+  dengan teman, mengelola dompet digital, mengumpulkan bonus harian, dan
+  bermain mini-game. Dengan navigasi yang cepat, iklan terintegrasi rapi,
+  dan pemindaian QR gaya e-wallet, BERUANG menghadirkan pengalaman sosial
+  yang ringan, aman, dan menyenangkan untuk pengguna di Indonesia.
+
+Kategori utama: Sosial
+Kategori sekunder: (opsional) Hiburan
+Konten target: Semua usia (dengan filter konten dewasa dilarang)
+Aplikasi berbayar/gratis: Gratis (dengan iklan)
+Memuat iklan: YA (Google AdMob)
+
+------------------------------------------------------------
+D. GRAFIK & IKON
+------------------------------------------------------------
+- Ikon aplikasi 512x512: ALTOMEDIA/store-graphics/icon-512.png
+- Feature graphic 1024x500: ALTOMEDIA/store-graphics/generated/feature-graphic-1024x500.png
+- Phone screenshots (1080x1920), unggah minimal 2 (disarankan 5):
+  ALTOMEDIA/store-graphics/screenshots/
+    01-splash-loading.png
+    02-home-feed.png
+    03-bonus-missions.png
+    04-wallet.png
+    05-profile.png
+
+------------------------------------------------------------
+E. IZIN (PERMISSIONS) — DATA SAFETY
+------------------------------------------------------------
+Aplikasi meminta izin berikut; isi bagian Data Safety sesuai data:
+- android.permission.CAMERA — untuk memindai QR (dompet) dan
+  mengambil foto unggahan. Data: foto/jalur kamera TIDAK disimpan
+  kecuali Anda mengunggahnya.
+- android.permission.READ/WRITE_EXTERNAL_STORAGE (atau media
+  terbatas per targetSdk 37) — memilih berkas foto/video untuk
+  diunggah.
+- INTERNET, ACCESS_NETWORK_STATE — sinkronisasi data & iklan.
+
+Jenis data yang dikumpulkan (isi Data Safety):
+- Info pribadi (nama, email) — akun.
+- Foto dan video — saat Anda mengunggah.
+- Aktivitas aplikasi (interaksi, log) — analitik & keamanan.
+- Pengenal perangkat/ID iklan — personalisasi iklan (AdMob).
+- Informasi pembayaran (tujuan penarikan dompet) — fitur dompet.
+
+------------------------------------------------------------
+F. KEBIJAKAN PRIVASI & KETENTUAN
+------------------------------------------------------------
+- URL kebijakan privasi WAJIB dicantumkan saat rilis publik.
+- Teks kebijakan privasi: ALTOMEDIA/kebijakan-privasi.txt
+  (host di URL publik, mis. https://situs-resmi-anda/privacy)
+- Teks syarat & ketentuan: ALTOMEDIA/syarat-ketentuan.txt
+  (host di URL publik, mis. https://situs-resmi-anda/terms)
+
+------------------------------------------------------------
+G. RATING (CONTENT RATING)
+------------------------------------------------------------
+- Isi kuesioner IARC Content Rating di Console.
+- Tidak ada kekerasan/akses dewasa; hasil diharapkan Everyone.
+- targetSdk 37 & minSdk 23 didukung.
+
+------------------------------------------------------------
+H. LANGKAH UPLOAD
+------------------------------------------------------------
+1. Console → Aplikasi → Produksi (atau Pengujian Internal lebih dulu).
+2. Klik "Buat rilis baru".
+3. Upload BERUANG-v2.1-release.aab.
+4. Isi "Catatan rilis" (lihat catatan-rilis-v2.1.txt).
+5. Tinjau rilis → Mulai peluncuran ke Produksi (atau ke jalur
+   pengujian terlebih dahulu).
+6. Tunggu proses peninjauan Google Play (biasanya 1–3 hari).
+
+------------------------------------------------------------
+I. TANDA TANGAN (SIGNING) — CATATAN PENTING
+------------------------------------------------------------
+- Keystore: ALTOMEDIA/upload-keystore.jks (RAHASIA — JANGAN dibagikan
+  atau diunggah ke repo publik; file ini sudah diabaikan oleh .gitignore).
+- File properti: ALTOMEDIA/keystore.properties (RAHASIA — juga diabaikan).
+- Simpan keduanya di tempat aman. Jika hilang, Aplikasi tidak bisa
+  diupdate di Play Store dengan kunci yang sama; hubungi Play Console
+  Support untuk reset kunci upload.

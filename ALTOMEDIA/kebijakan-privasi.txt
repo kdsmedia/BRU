@@ -1,0 +1,219 @@
+KEBIJAKAN PRIVASI BERUANG
+=========================
+Aplikasi: BERUANG
+ID Paket: com.altomedia.beruang
+Versi: 2.1 (versionCode 5)
+Pemilik & Pengembang: ALTOMEDIA
+Terakhir diperbarui: 18 Agustus 2026
+Kontak privasi: altomedia.privacy@gmail.com
+
+------------------------------------------------------------
+1. PENDAHULUAN
+------------------------------------------------------------
+Kebijakan Privasi ("Kebijakan") ini menjelaskan bagaimana ALTOMEDIA
+("kami", "pengembang", atau "Pengendali Data") mengumpulkan,
+menggunakan, menyimpan, membagikan, dan melindungi informasi pribadi
+Anda saat Anda menggunakan aplikasi seluler BERUANG ("BERUANG" atau
+"Aplikasi"). Aplikasi BERUANG adalah platform sosial yang memungkinkan
+pengguna membuat akun, membagikan konten (post, foto, cerita/story),
+berkomentar, mengirim pesan, menambah teman, mengikuti pengguna lain,
+mengakses layanan dompet digital (saldo, transaksi, pindai QR),
+mengikuti program bonus/misi, serta memainkan mini-game.
+
+Dengan mengunduh, memasang, mendaftar, atau menggunakan BERUANG, Anda
+menyatakan bahwa Anda telah membaca, memahami, dan menyetujui
+pengumpulan serta pengolahan data sebagaimana diuraikan dalam Kebijakan
+ini. Jika Anda tidak setuju, mohon untuk tidak menggunakan Aplikasi.
+Kebijakan ini disusun mengacu pada praktik yang selaras dengan
+Peraturan Pemerintah Republik Indonesia Nomor 71 Tahun 2019 tentang
+Penyelenggaraan Sistem dan Transaksi Elektronik (PP 71/2019), Undang-
+Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi (UU PDP),
+serta pedoman Google Play Developer Program Policies mengenai
+Permissions, Data Safety, dan User Data.
+
+------------------------------------------------------------
+2. INFORMASI YANG KAMI KUMPULKAN
+------------------------------------------------------------
+A. Informasi yang Anda berikan langsung
+   - Akun & identitas: nama tampilan, nama pengguna (username),
+     alamat surel (email), kata sandi (disimpan dalam bentuk hash
+     melalui layanan otentikasi pihak ketiga), foto profil, dan bio.
+   - Konten yang Anda buat: unggahan (post), foto, caption, cerita
+     (story), komentar, balasan komentar, pesan chat, serta aktivitas
+     lain yang Anda rekam di dalam Aplikasi.
+   - Informasi dompet: nama lengkap pemilik rekening/identitas
+     penarikan, nomor tujuan penarikan (e-wallet/bank), riwayat
+     transaksi saldo (top-up, transfer, penarikan, klaim bonus).
+
+B. Informasi yang dikumpulkan secara otomatis
+   - Data perangkat: model perangkat, sistem operasi dan versinya,
+     resolusi layar, bahasa perangkat, zona waktu, dan pengenal
+     perangkat (device identifier) yang dihasilkan secara acak.
+   - Data aktivitas & log: waktu dan frekuensi penggunaan fitur,
+     interaksi (klik, gulir), log error/crash, serta alamat IP
+     (dapat mengindikasikan perkiraan lokasi geografis).
+   - Data sensor/kamera: Aplikasi meminta izin kamera HANYA untuk
+     memindai kode QR pada fitur dompet dan mengambil foto untuk
+     diunggah sebagai konten. Foto/jalur kamera tidak disimpan ke
+     server kecuali Anda secara aktif mengunggahnya.
+   - Data penyimpanan: Aplikasi meminta izin penyimpanan (storage)
+     semata-mata untuk memilih dan mengunggah berkas foto/video yang
+     Anda pilih ke dalam konten, serta menyimpan berkas unduhan.
+   - Data iklan: Aplikasi menampilkan iklan dari Google AdMob. AdMob
+     dapat mengumpulkan pengenal perangkat dan data guna menayangkan
+     iklan yang relevan, termasuk ID iklan (Advertising ID). Lihat
+     bagian "Layanan Pihak Ketiga".
+
+C. Informasi dari sumber lain
+   - Jika Anda mendaftar atau masuk menggunakan layanan pihak ketiga
+     (mis. Google), kami menerima nama dan alamat surel yang
+     diizinkan untuk dibagikan oleh layanan tersebut sebatas yang
+     Anda persetujui.
+
+------------------------------------------------------------
+3. CARA KAMI MENGGUNAKAN INFORMASI
+------------------------------------------------------------
+Kami menggunakan informasi pribadi Anda untuk tujuan sah berikut:
+   a. Menyediakan, menjalankan, dan memelihara fungsi Aplikasi
+      (registrasi, otentikasi, penyimpanan konten, sinkronisasi data
+      realtime).
+   b. Memproses transaksi dompet (pengecekan saldo, transfer,
+      penarikan, dan klaim bonus) serta menampilkan riwayatnya.
+   c. Menampilkan konten dan interaksi sosial (feed, komentar, chat,
+      cerita, profil, aktivitas).
+   d. Menayangkan iklan dari mitra periklanan (AdMob) pada posisi
+      tertentu (di bawah cerita, setiap 5 post, setiap 5 aktivitas,
+      dan di atas post pada halaman profil).
+   e. Menganalisis penggunaan untuk meningkatkan performa, kestabilan,
+      dan pengembangan fitur baru.
+   f. Mencegah penyalahgunaan, penipuan, spam, dan aktivitas yang
+      melanggar ketentuan layanan.
+   g. Menghubungi Anda terkait pembaruan, pemberitahuan penting,
+      dan informasi keamanan akun.
+   h. Memenuhi kewajiban hukum dan regulasi yang berlaku.
+
+Kami TIDAK menjual data pribadi Anda kepada pihak ketiga.
+
+------------------------------------------------------------
+4. DASAR HUKUM PEMROSESAN
+------------------------------------------------------------
+Sesuai UU PDP, kami memproses data pribadi Anda berdasarkan:
+   - Persetujuan Anda saat membuat akun dan menerima izin perangkat
+     (kamera, penyimpanan).
+   - Pelaksanaan kontrak (penyediaan layanan yang Anda minta).
+   - Kepentingan sah kami (keamanan, pencegahan penipuan,
+     pengembangan produk).
+   - Kepentingan umum dan/atau kewajiban hukum yang berlaku.
+
+------------------------------------------------------------
+5. LAYANAN PIHAK KETIGA
+------------------------------------------------------------
+A. Supabase (infrastruktur backend)
+   Data pengguna, konten, dan transaksi disimpan pada layanan Supabase
+   (supabase.co) yang berperan sebagai pemroses data. Supabase menerapkan
+   enkripsi transmisi (TLS/HTTPS) dan penyimpanan. Detail kebijakan
+   Supabase tersedia di https://supabase.com/privacy.
+
+B. Google AdMob (periklanan)
+   Aplikasi menggunakan Google Mobile Ads SDK untuk menampilkan iklan.
+   AdMob dapat mengumpulkan data perangkat (termasuk Advertising ID)
+   guna personalisasi iklan. Anda dapat mengatur ulang ID iklan atau
+   menonaktifkan personalisasi iklan melalui pengaturan perangkat
+   Android (Google → Ads → Reset advertising ID / Opt out of Ads
+   Personalization).
+
+C. Google Play Services & layanan lain
+   Aplikasi dapat memanfaatkan komponen Google Play Services untuk
+   keperluan fitur tertentu yang diatur oleh kebijakan Google.
+
+------------------------------------------------------------
+6. PEMBAGIAN INFORMASI
+------------------------------------------------------------
+Kami TIDAK menjual data pribadi. Kami dapat membagikan data dalam
+kondisi terbatas berikut:
+   1. Pemroses data: layanan backend (Supabase) dan penyedia infrastruktur
+      yang membantu operasional Aplikasi.
+   2. Penyedia iklan (AdMob) sebagaimana diuraikan di atas.
+   3. Apabila diwajibkan oleh hukum, perintah pengadilan, atau permintaan
+      resmi dari otoritas yang berwenang.
+   4. Untuk melindungi hak, properti, keamanan pengguna, atau publik dari
+      tindakan yang melanggar hukum.
+   5. Dalam hal terjadi merger, akuisisi, atau transaksi bisnis, data
+      dapat dialihkan sebagai aset dengan tetap menjaga kerahasiaan.
+
+------------------------------------------------------------
+7. PENYIMPANAN DAN KEAMANAN DATA
+------------------------------------------------------------
+   - Penyimpanan: data disimpan selama akun Anda aktif atau selama
+     diperlukan untuk memenuhi tujuan pengumpulan dan kewajiban hukum.
+   - Keamanan: kami menerapkan langkah teknis dan organisasi seperti
+     transmisi terenkripsi (TLS), pembatasan akses berbasis peran, serta
+     pemisahan kredensial. Meski demikian, tidak ada sistem yang sepenuhnya
+     aman; kami berkomitmen meninjau dan memperbaiki praktik keamanan.
+   - Retensi pasca-penghapusan: data tertentu dapat disimpan dalam log
+     cadangan (backup) atau catatan administratif sesuai kebutuhan hukum
+     sebelum akhirnya dihapus permanen.
+
+------------------------------------------------------------
+8. HAK-HAK ANDA SEBAGAI PENGENDALI DATA PRIBADI
+------------------------------------------------------------
+Sesuai UU PDP, Anda memiliki hak untuk:
+   1. Mendapatkan akses terhadap data pribadi Anda.
+   2. Memperbaiki/memperbarui data yang tidak akurat.
+   3. Menghapus data pribadi (right to erasure), kecuali yang
+      diwajibkan oleh hukum.
+   4. Menarik persetujuan pemrosesan data.
+   5. Menolak pemrosesan tertentu (mis. personalisasi iklan).
+   6. Membawa data (portabilitas data) dalam format yang dapat dibaca
+      mesin, sejauh teknis memungkinkan.
+Untuk menggunakan hak ini, hubungi kami di altomedia.privacy@gmail.com
+dengan melampirkan informasi akun (username/email). Kami akan menanggapi
+permohonan dalam waktu paling lama 14 (empat belas) hari kerja.
+
+------------------------------------------------------------
+9. HAK ATAS KONTEN & PENGHAPUSAN AKUN
+------------------------------------------------------------
+Konten yang Anda unggah tetap menjadi milik Anda. Dengan mengunggah,
+Anda memberi kami lisensi terbatas untuk menampilkan dan mendistribusikan
+konten tersebut di dalam Aplikasi. Anda dapat menghapus konten kapan saja
+melalui fitur hapus yang tersedia di Aplikasi. Untuk penghapusan akun
+sepenuhnya, hubungi altomedia.privacy@gmail.com; penghapusan akun akan
+menghapus profil dan data terkait sesuai kebijakan retensi.
+
+------------------------------------------------------------
+10. PERUBAHAN KEBIJAKAN PRIVASI
+------------------------------------------------------------
+Kami dapat memperbarui Kebijakan ini dari waktu ke waktu. Perubahan akan
+diumumkan melalui Aplikasi atau halaman resmi kami, dan tanggal "Terakhir
+diperbarui" akan diperbarui. Penggunaan Aplikasi secara berkelanjutan
+setelah perubahan berlaku dianggap sebagai persetujuan terhadap Kebijakan
+yang diperbarui.
+
+------------------------------------------------------------
+11. PRIVASI ANAK
+------------------------------------------------------------
+Aplikasi BERUANG tidak ditujukan untuk anak di bawah usia 13 tahun (atau
+usia minimum yang berlaku di yurisdiksi Anda). Kami tidak dengan sengaja
+mengumpulkan data pribadi anak-anak. Jika Anda yakin bahwa seorang anak
+telah memberikan data pribadi kepada kami, hubungi kami agar data tersebut
+dapat dihapus.
+
+------------------------------------------------------------
+12. PRAKTIK DATA WILAYAH (INDONESIA)
+------------------------------------------------------------
+Data utama diproses dan disimpan pada layanan cloud yang dapat berlokasi
+di luar Indonesia, namun kami memproses data Anda sesuai ketentuan UU PDP
+dan regulasi yang berlaku di Indonesia.
+
+------------------------------------------------------------
+13. KONTAK
+------------------------------------------------------------
+Jika ada pertanyaan, keluhan, atau permohonan terkait privasi, silakan
+hubungi:
+   Nama: ALTOMEDIA
+   Surel: altomedia.privacy@gmail.com
+   Aplikasi: BERUANG (com.altomedia.beruang)
+
+Dokumen ini disediakan "sebagaimana adanya" untuk kepatuhan terhadap
+kewajiban transparansi data Play Console. Versi resmi akan diterbitkan
+pada tautan privasi yang dicantumkan di listing Play Store.
