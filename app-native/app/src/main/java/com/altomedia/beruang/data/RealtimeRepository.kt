@@ -52,23 +52,24 @@ object RealtimeRepository {
 
         val collectors = mutableListOf<Job>()
         // Descendants: INSERT/UPDATE/DELETE on path LIKE 'p/%'.
+        // In Supabase 3.0 the type param T selects the event; schema defaults to "public".
         collectors += scope.launch {
             runCatching {
-                channel.postgresChangeFlow<PostgresAction.Insert>("INSERT") {
+                channel.postgresChangeFlow<PostgresAction.Insert>("public") {
                     table = "nodes"; filter("path", FilterOperator.LIKE, "${path}/%")
                 }.collect { schedule() }
             }
         }
         collectors += scope.launch {
             runCatching {
-                channel.postgresChangeFlow<PostgresAction.Update>("UPDATE") {
+                channel.postgresChangeFlow<PostgresAction.Update>("public") {
                     table = "nodes"; filter("path", FilterOperator.LIKE, "${path}/%")
                 }.collect { schedule() }
             }
         }
         collectors += scope.launch {
             runCatching {
-                channel.postgresChangeFlow<PostgresAction.Delete>("DELETE") {
+                channel.postgresChangeFlow<PostgresAction.Delete>("public") {
                     table = "nodes"; filter("path", FilterOperator.LIKE, "${path}/%")
                 }.collect { schedule() }
             }
@@ -76,7 +77,7 @@ object RealtimeRepository {
         // Exact leaf: UPDATE on path = 'p'.
         collectors += scope.launch {
             runCatching {
-                channel.postgresChangeFlow<PostgresAction.Update>("UPDATE") {
+                channel.postgresChangeFlow<PostgresAction.Update>("public") {
                     table = "nodes"; filter("path", FilterOperator.EQ, path)
                 }.collect { schedule() }
             }
