@@ -228,6 +228,7 @@ fun AdminScreen(myUid: String, onVisitProfile: (String) -> Unit) {
                             is AdminAction.Block -> { AdminRepository.blockUser(u.uid); showToast(context, "Pengguna diblokir") }
                             is AdminAction.Unblock -> { AdminRepository.unblockUser(u.uid); showToast(context, "Blokir dibuka") }
                             is AdminAction.Delete -> { AdminRepository.deleteUserData(u.uid); showToast(context, "Akun dihapus") }
+                            is AdminAction.AdjustBalance -> Unit // handled in its own dialog
                         }
                         blocked = AdminRepository.loadBlocked()
                         if (action is AdminAction.Delete) {

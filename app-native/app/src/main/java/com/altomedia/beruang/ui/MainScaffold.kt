@@ -208,6 +208,9 @@ fun MainScaffold(
                     onVisitProfile = { profileTarget = it; showAdmin = false },
                 )
             }
+
+            // Play Store rating prompt — appears once per day (device-local day).
+            com.altomedia.beruang.ui.components.RateAppDialog()
         }
     }
 }
