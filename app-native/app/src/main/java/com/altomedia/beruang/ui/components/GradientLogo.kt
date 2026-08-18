@@ -33,5 +33,12 @@ fun rememberToast(): (String) -> Unit {
 }
 
 fun showToast(context: android.content.Context, msg: String) {
-    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+    // Toast must be created/shown on the main thread — bonus/ad callbacks run
+    // on Dispatchers.IO, so post to the main looper to avoid a crash.
+    val main = android.os.Looper.getMainLooper()
+    if (android.os.Looper.myLooper() === main) {
+        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+    } else {
+        android.os.Handler(main).post { Toast.makeText(context, msg, Toast.LENGTH_SHORT).show() }
+    }
 }
