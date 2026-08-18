@@ -2,6 +2,8 @@ package com.altomedia.beruang.ui.bonus
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,20 +13,25 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.CardGiftcard
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Today
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.altomedia.beruang.ads.AdMobManager
 import com.altomedia.beruang.data.AppConstants
+import com.altomedia.beruang.data.WalletRepository
 import com.altomedia.beruang.ui.components.showToast
 import com.altomedia.beruang.ui.feed.rememberActivity
 import com.altomedia.beruang.ui.theme.BgBody
@@ -159,6 +167,118 @@ fun BonusScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             items(cards) { c -> BonusCard(c) }
+        }
+
+        // Invite-10-friends milestone (one-time 5000 poin) — full-width card.
+        InviteFriendsCard(
+            invitedCount = state.invitedCount,
+            target = AppConstants.INVITE_TARGET,
+            reward = AppConstants.INVITE_REWARD,
+            claimed = state.inviteRewardClaimed,
+            onShare = {
+                scope.launch {
+                    val code = WalletRepository.readAcctId(meUid)
+                    if (code.isNullOrBlank()) {
+                        showToast(context, "Kode undangan belum tersedia")
+                        return@launch
+                    }
+                    val shareText = "Yuk gabung BERUANG! Pakai kode undangan saya: $code\n" +
+                        "Unduh di Play Store."
+                    val send = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_SUBJECT, "Undangan BERUANG")
+                        putExtra(Intent.EXTRA_TEXT, shareText)
+                    }
+                    context.startActivity(Intent.createChooser(send, "Bagikan kode undangan"))
+                }
+            },
+            onClaim = {
+                vm.claimInvite(meUid) { ok, pts ->
+                    if (ok) {
+                        showToast(context, "+$pts poin — bonus undang teman diklaim!")
+                    } else {
+                        showToast(context, "Belum bisa klaim — ajak ${AppConstants.INVITE_TARGET} teman dulu")
+                    }
+                }
+            },
+        )
+    }
+}
+
+/**
+ * One-time milestone: invite [target] friends → [reward] poin. Shows live
+ * progress (invited/target), a Bagikan button to share the referral code,
+ * and a Klaim button once the target is met (disabled after claimed).
+ */
+@Composable
+private fun InviteFriendsCard(
+    invitedCount: Int,
+    target: Int,
+    reward: Long,
+    claimed: Boolean,
+    onShare: () -> Unit,
+    onClaim: () -> Unit,
+) {
+    val progress = (invitedCount.toFloat() / target).coerceIn(0f, 1f)
+    val canClaim = invitedCount >= target && !claimed
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(BgCard)
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Box(
+                modifier = Modifier.size(36.dp).clip(CircleShape).background(BrandYellow.copy(alpha = 0.15f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(Icons.Filled.GroupAdd, contentDescription = null, tint = BrandYellow, modifier = Modifier.size(20.dp))
+            }
+            Text("Undang Teman", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = TextMain)
+            if (claimed) {
+                Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = BrandRed, modifier = Modifier.size(18.dp))
+            }
+        }
+        Text("Ajak $target teman bergabung → dapat $reward poin (sekali saja).", fontSize = 11.sp, color = TextMuted)
+        Box(modifier = Modifier.fillMaxWidth().height(6.dp).clip(CircleShape).background(Border)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(progress)
+                    .height(6.dp)
+                    .clip(CircleShape)
+                    .background(if (claimed) BrandRed else BrandYellow),
+            )
+        }
+        Text("$invitedCount/$target teman", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = if (claimed || invitedCount >= target) BrandRed else TextMain)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(
+                onClick = onShare,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(10.dp),
+            ) {
+                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(16.dp), tint = BrandYellow)
+                Text(" Bagikan", color = BrandYellow, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+            }
+            Button(
+                onClick = onClaim,
+                enabled = canClaim,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = BrandYellow,
+                    disabledContainerColor = BrandYellow.copy(alpha = 0.35f),
+                ),
+            ) {
+                Text(
+                    if (claimed) "Selesai" else "Klaim $reward",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp,
+                )
+            }
         }
     }
 }

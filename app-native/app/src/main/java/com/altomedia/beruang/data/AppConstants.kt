@@ -30,6 +30,10 @@ object AppConstants {
     const val REFERRAL_BONUS_REFERRER = 500L
     const val REFERRAL_BONUS_NEW_USER = 500L
 
+    // Invite-10-friends milestone reward (one-time, after 10 successful invites).
+    const val INVITE_TARGET = 10
+    const val INVITE_REWARD = 5000L
+
     // Admin config (web: const ADMIN).
     object Admin {
         val PHONES = listOf("085813899649")

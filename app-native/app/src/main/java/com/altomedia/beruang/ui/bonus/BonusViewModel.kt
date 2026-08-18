@@ -23,6 +23,8 @@ class BonusViewModel : ViewModel() {
         val comments: Int = 0,
         val posts: Int = 0,
         val friends: Int = 0,
+        val invitedCount: Int = 0,
+        val inviteRewardClaimed: Boolean = false,
     )
 
     private val _state = MutableStateFlow(State())
@@ -31,6 +33,8 @@ class BonusViewModel : ViewModel() {
     fun start(uid: String) {
         viewModelScope.launch(Dispatchers.IO) {
             val s = BonusRepository.load(uid)
+            val invited = BonusRepository.loadInviteCount(uid)
+            val claimed = BonusRepository.isInviteRewardClaimed(uid)
             _state.value = State(
                 loading = false,
                 checkin = s.checkin,
@@ -38,6 +42,8 @@ class BonusViewModel : ViewModel() {
                 comments = s.comments,
                 posts = s.posts,
                 friends = s.friends,
+                invitedCount = invited,
+                inviteRewardClaimed = claimed,
             )
         }
     }
@@ -65,6 +71,15 @@ class BonusViewModel : ViewModel() {
             } else {
                 onResult(false, 0)
             }
+        }
+    }
+
+    /** Claim the one-time invite-10 milestone reward (5000 pts). */
+    fun claimInvite(uid: String, onResult: (Boolean, Long) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val ok = BonusRepository.claimInviteReward(uid)
+            refresh(uid)
+            onResult(ok, if (ok) AppConstants.INVITE_REWARD else 0L)
         }
     }
 }

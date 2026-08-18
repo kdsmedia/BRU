@@ -95,4 +95,27 @@ object BonusRepository {
         if (s.friends >= AppConstants.Bonus.FRIEND_DAILY_TARGET) return
         save(uid, s.copy(friends = s.friends + 1))
     }
+
+    /**
+     * Count how many users joined using this user's referral code
+     * (entries under `users/{uid}/referrals`).
+     */
+    suspend fun loadInviteCount(uid: String): Int =
+        repo.readValue("users/$uid/referrals")?.asObject()?.entries?.size ?: 0
+
+    /** Whether the one-time invite-10 milestone reward was already claimed. */
+    suspend fun isInviteRewardClaimed(uid: String): Boolean =
+        repo.readValue("users/$uid/inviteRewardClaimed")?.asBoolean() == true
+
+    /**
+     * Claim the invite-10-friends milestone (one-time [AppConstants.INVITE_REWARD]).
+     * Awards 5000 pts when ≥10 friends joined and the reward wasn't claimed.
+     */
+    suspend fun claimInviteReward(uid: String): Boolean {
+        if (isInviteRewardClaimed(uid)) return false
+        if (loadInviteCount(uid) < AppConstants.INVITE_TARGET) return false
+        repo.set(repo.ref("users/$uid/inviteRewardClaimed"), JsonPrimitive(true))
+        WalletRepository.awardPoints(uid, AppConstants.INVITE_REWARD, "bonus undang ${AppConstants.INVITE_TARGET} teman")
+        return true
+    }
 }

@@ -145,6 +145,10 @@ object WalletRepository {
     suspend fun readBalance(uid: String): Long =
         repo.readValue(Paths.walletBalance(uid))?.asLong() ?: 0L
 
+    /** Read this user's own referral/account id (null if not yet assigned). */
+    suspend fun readAcctId(uid: String): String? =
+        repo.readValue(Paths.accountIndex(uid))?.asString()
+
     /**
      * Look up a recipient by acctId — port of the web `findUserByAcctId`.
      * Scans `account_index` for the matching acctId, then reads the user.
