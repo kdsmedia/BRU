@@ -162,21 +162,22 @@ private fun RecipientRow(name: String, acctId: String) {
     }
 }
 
-/** Tier upgrade sheet — port of `openUpgradeModal` (list of tiers + buy/switch). */
+/** Tier upgrade sheet — port of `openUpgradeModal`. Tier is one-way (naik
+ *  kelas saja): tiers below the current one are shown as passed and cannot
+ *  be re-selected, so a downgrade is impossible. */
 @Composable
 fun TierSheet(
     currentTier: String,
     balance: Long,
     onBuy: (String) -> Unit,
-    onSwitch: (String) -> Unit,
 ) {
     val curIdx = AppConstants.tierIndex(currentTier)
     Column(modifier = Modifier.fillMaxWidth().padding(20.dp)) {
         Text("Naik Kelas Akun", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = TextMain)
-        Text("Buka batas lebih besar dengan naik tier.", fontSize = 13.sp, color = TextMuted, modifier = Modifier.padding(top = 4.dp))
+        Text("Buka batas lebih besar dengan naik tier. Kelas tidak bisa diturunkan.", fontSize = 13.sp, color = TextMuted, modifier = Modifier.padding(top = 4.dp))
         AppConstants.TIERS.forEachIndexed { i, t ->
             val isCurrent = t.name == currentTier
-            val isOwned = i <= curIdx
+            val isPassed = i < curIdx
             val canBuy = i > curIdx && balance >= t.price
             Row(
                 modifier = Modifier
@@ -207,7 +208,7 @@ fun TierSheet(
                 }
                 when {
                     isCurrent -> Text("Aktif", color = Color(0xFF16A34A), fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    isOwned -> Text("Gunakan", color = com.altomedia.beruang.ui.theme.BrandYellow, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { onSwitch(t.name) })
+                    isPassed -> Text("Terlampaui", color = TextMuted, fontSize = 12.sp)
                     canBuy -> Text("Naik Kelas", color = com.altomedia.beruang.ui.theme.BrandYellow, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { onBuy(t.name) })
                     else -> Text("Poin kurang", color = TextMuted, fontSize = 12.sp)
                 }

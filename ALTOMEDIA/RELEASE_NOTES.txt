@@ -1,6 +1,6 @@
 RELEASE NOTES — BERUANG
 ==================================================
-Versi: 2.4.2 (versionCode 10)
+Versi: 2.4.3 (versionCode 11)
 Tanggal rilis: 20 Agustus 2026
 Package: com.altomedia.beruang
 Developer: ALTOMEDIA
@@ -8,41 +8,24 @@ Developer: ALTOMEDIA
 ------------------------------------------------------------
 BAHASA INDONESIA
 ------------------------------------------------------------
-BERUANG v2.4.2 — Perbaikan Login, ID Akun, Pesan & Pertemanan
+BERUANG v2.4.3 — Splashscreen Berlogo & Naik Kelas Anti-Turun
 
-Pembaruan v2.4.2 memperbaiki 6 bug yang dilaporkan pengguna seputar
-pendaftaran, login, pesan, dan tombol Ikuti.
+Pembaruan v2.4.3 memperbaiki 2 keluhan pengguna seputar tampilan saat
+aplikasi dibuka dan fitur Naik Kelas (tier).
 
-Yang diperbaiki di v2.4.2:
-- LAYAR PUTIH SETELAH LOGIN (fix kritis): layar login sebelumnya memakai
-  AuthViewModel miliknya sendiri, sehingga status login tidak pernah
-  sampai ke navigasi utama dan pengguna terjebak di layar putih. Kini
-  satu AuthViewModel dipakai bersama, dan grafik navigasi menunggu sesi
-  tersimpan pulih (authReady) sebelum memilih halaman awal.
-- ID AKUN USER BARU (fix data): penulisan wallet/user saat pendaftaran
-  kini tahan-gagal (tidak membatalkan pendaftaran), dan setiap login
-  menjalankan pemulihan otomatis (self-heal) yang memastikan wallet +
-  ID akun 6 digit + node pengguna selalu ada. User baru otomatis
-  mendapat ID akun dan tampil di kartu dompet/QR.
-- PESAN DARI DAFTAR PESAN (fix overlay): jendela chat yang dibuka dari
-  ikon Pesan di Beranda sebelumnya tampil DI BELAKANG daftar pesan,
-  sehingga seolah tidak bisa dibuka dan pesan hanya bisa dari profil.
-  Kini daftar tertutup saat chat dibuka, dan tombol kembali dari chat
-  kembali ke daftar pesan.
-- FORCE CLOSE SAAT KLIK IKUTI (fix crash): kegagalan efek samping follow
-  (notifikasi/poin/bonus) sebelumnya mematikan coroutine di thread utama
-  dan menutup aplikasi. Kini efek samping dibungkus aman + tombol Ikuti
-  di profil & feed menampilkan pesan kesalahan alih-alih crash.
-- SALING MENGIKUTI = "TEMAN": jika dua pengguna saling mengikuti, tombol
-  kini menampilkan "Teman" (bukan "Mengikuti") di profil dan di feed.
-- EDIT PROFIL EMAIL OPSIONAL: email tidak lagi wajib. Alamat sintetis
-  @beruang.phone disembunyikan dari formulir, email hanya diubah bila
-  pengguna mengisi alamat baru yang valid, dan kegagalan ubah email
-  tidak membatalkan penyimpanan profil lainnya.
-- PENGHAPUSAN DATA BENAR (fix pola LIKE): penghapusan node beserta
-  turunannya di NodesRepository sebelumnya memakai pola "$path/%" yang
-  salah, sehingga hapus pesan/hapus postingan/kosongkan chat tidak
-  menghapus data turunan. Kini polanya benar ("path/%").
+Yang diperbaiki di v2.4.3:
+- LOGO ANDROID DEFAULT SAAT APLIKASI DIBUKA (fix splashscreen): tema
+  splash bawaan Android memakai ikon aplikasi generik ketika ikon splash
+  tidak diatur secara eksplisit, sehingga pengguna melihat "logo Android
+  default" sesaat sebelum aplikasi tampil. Kini ikon splash secara
+  eksplisit memakai logo BERUANG: aplikasi langsung menampilkan
+  splashscreen berlogo BERUANG lalu berlanjut mulus ke layar memuat.
+- NAIK KELAS TIDAK BISA DOWNGRADE: sebelumnya pengguna bisa berpindah ke
+  tier yang lebih rendah lewat tombol "Gunakan" di lembar Naik Kelas.
+  Kini tier bersifat satu arah (hanya bisa naik): tier yang sudah
+  terlampaui ditampilkan sebagai "Terlampaui" dan tidak bisa dipilih,
+  dan repository menolak setiap upaya penurunan kelas ("Kelas akun tidak
+  bisa diturunkan").
 
 Catatan teknis:
 - Android minSdk 23 (Android 6.0+) sampai targetSdk/compileSdk 37.
@@ -56,41 +39,25 @@ Catatan:
 - Dukungan: altomediaindonesia@gmail.com.
 
 ------------------------------------------------------------
-ENGLISH — v2.4.2
+ENGLISH — v2.4.3
 ------------------------------------------------------------
-BERUANG v2.4.2 — Login, Account ID, Messaging & Friendship Fixes
+BERUANG v2.4.3 — Branded Splash Screen & One-Way Tier Upgrades
 
-The v2.4.2 update fixes 6 user-reported bugs around registration,
-login, messaging, and the Follow button.
+The v2.4.3 update fixes 2 user-reported issues around the app launch
+experience and the Tier Upgrade (Naik Kelas) feature.
 
-Fixed in v2.4.2:
-- WHITE SCREEN AFTER LOGIN (critical fix): the login screen used its own
-  AuthViewModel instance, so the auth state never reached the root
-  navigation and users were stuck on a white screen. A single shared
-  AuthViewModel is now used, and the nav graph waits for the persisted
-  session restore (authReady) before picking a start destination.
-- ACCOUNT ID FOR NEW USERS (data fix): register-time wallet/user writes
-  are now failure-tolerant, and every login runs a self-heal that
-  guarantees the wallet + 6-digit account id + user node exist. New
-  users automatically get an account id shown on the wallet card/QR.
-- MESSAGES FROM THE MESSAGE LIST (overlay fix): a chat opened from the
-  Home Messages icon previously rendered BEHIND the chat list, so it
-  looked impossible to open and messages only worked from the profile.
-  The list now closes when a chat opens, and backing out of a chat
-  returns to the list.
-- FORCE CLOSE ON FOLLOW (crash fix): failing follow side effects
-  (notification/points/bonus) previously killed the coroutine on the
-  main thread and closed the app. Side effects are now safely wrapped
-  and the Follow buttons show an error toast instead of crashing.
-- MUTUAL FOLLOW = "TEMAN": when two users follow each other, the button
-  now shows "Teman" (instead of "Mengikuti") on the profile and feed.
-- OPTIONAL PROFILE EMAIL: email is no longer required. The synthetic
-  @beruang.phone address is hidden from the form, email is only changed
-  when a new valid address is entered, and an email failure no longer
-  discards the other saved profile fields.
-- CORRECT NODE DELETION (LIKE pattern fix): node deletion previously
-  used the wrong "$path/%" pattern, so deleting a message/post or
-  clearing a chat left child rows behind. The pattern is now correct.
+Fixed in v2.4.3:
+- DEFAULT ANDROID LOGO ON APP LAUNCH (splash fix): the stock Android
+  splash theme falls back to a generic app icon when the splash icon is
+  not set explicitly, so users briefly saw the "default Android logo".
+  The splash icon now explicitly uses the BERUANG logo: the app opens
+  straight into a BERUANG-branded splash and hands off smoothly to the
+  loading screen.
+- NO TIER DOWNGRADE: users could previously switch back to a lower tier
+  via the "Gunakan" button in the Tier Upgrade sheet. Tiers are now
+  one-way (upgrade only): passed tiers are shown as "Terlampaui" and
+  cannot be selected, and the repository rejects any downgrade attempt
+  ("Kelas akun tidak bisa diturunkan").
 
 Technical notes:
 - Android minSdk 23 (Android 6.0+) up to targetSdk/compileSdk 37.
@@ -106,6 +73,10 @@ Notes:
 ==================================================
 RIWAYAT VERSI SEBELUMNYA (arsip)
 ==================================================
+- v2.4.2 (versionCode 10): Fix blank putih setelah login, ID akun user
+  baru (self-heal saat login), pesan tertutup overlay daftar, force close
+  saat klik Ikuti, label "Teman" untuk saling mengikuti, email edit profil
+  opsional, dan pola penghapusan node turunan.
 - v2.4.1 (versionCode 9): Fix kritis transaksi CAS poin (proyeksi kolom
   path), poin komentar ganda, subscribe realtime leaf INSERT/DELETE, dan
   akun diblokir masih bisa mendaftar.

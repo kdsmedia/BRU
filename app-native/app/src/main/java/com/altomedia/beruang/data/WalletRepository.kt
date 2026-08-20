@@ -236,10 +236,16 @@ object WalletRepository {
     }
 
     /**
-     * Switch the active tier to an already-owned [tierName] — port of the web
-     * `switchTier`. Only allows switching to a tier at or below the current one.
+     * Switch the active tier to [tierName]. Tier is strictly monotonic: an
+     * account can only ever go UP, never down. Any attempt to switch to a
+     * lower tier than the current one is rejected with an error message.
      */
-    suspend fun switchTier(uid: String, tierName: String) {
+    suspend fun switchTier(uid: String, tierName: String): String? {
+        val current = repo.readValue(Paths.walletTier(uid))?.asString() ?: "Star"
+        if (AppConstants.tierIndex(tierName) < AppConstants.tierIndex(current)) {
+            return "Kelas akun tidak bisa diturunkan"
+        }
         repo.update(repo.ref(Paths.wallet(uid)), buildJsonObject { put("tier", tierName) })
+        return null
     }
 }

@@ -323,15 +323,6 @@ fun ProfileScreen(
                             if (err == null) { showUpgrade = false; wvm.start(me.uid) }
                         }
                     },
-                    onSwitch = { target ->
-                        scope.launch {
-                            com.altomedia.beruang.data.WalletRepository
-                                .switchTier(me.uid, target)
-                            showToast(context, "Tier aktif: $target")
-                            showUpgrade = false
-                            wvm.start(me.uid)
-                        }
-                    },
                 )
             },
         )

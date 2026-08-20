@@ -10,11 +10,16 @@
     </style>
 
     <!-- Splash screen theme (shown until MainActivity content is drawn).
-         No windowSplashScreenAnimatedIcon is set on purpose: an empty white
-         splash avoids the generic launcher glyph/"K" flash before the Compose
-         SplashLoadingScreen takes over. -->
+         windowSplashScreenAnimatedIcon MUST be set explicitly: the parent
+         Theme.SplashScreen defaults it to @android:drawable/sym_def_app_icon
+         (the generic Android default icon), which users see as the "default
+         Android logo" flash. Pointing it at the BERUANG logo makes the app
+         open straight into a branded splash that hands off to the Compose
+         SplashLoadingScreen showing the same logo. -->
     <style name="Theme.BERUANG.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/white</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/white</item>
         <item name="postSplashScreenTheme">@style/Theme.BERUANG</item>
     </style>
 </resources>

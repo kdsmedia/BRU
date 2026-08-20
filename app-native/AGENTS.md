@@ -23,7 +23,7 @@ Migration of the BERUANG social app from Capacitor + HTML wrapper to **native An
     `storeFile=ALTOMEDIA/ALTOMEDIA.jks`, alias `kdsmedia`; the `.jks` is tracked
   - Outputs: `app/build/outputs/apk/release/app-release.apk` and
     `app/build/outputs/bundle/release/app-release.aab`
-  - Current: versionCode 10, versionName "2.4.2"
+  - Current: versionCode 11, versionName "2.4.3"
 
 ## Dependencies
 - Supabase Kotlin SDK **3.0.0** (`postgrest-kt-android-debug`, `auth-kt`, `realtime-kt`, `storage-kt`) — has breaking API changes (see below)
@@ -47,6 +47,11 @@ Migration of the BERUANG social app from Capacitor + HTML wrapper to **native An
 ## Status (current)
 - ✅ `:app:assembleDebug` — BUILD SUCCESSFUL
 - ✅ `:app:assembleRelease` + `:app:bundleRelease` signed with ALTOMEDIA.jks — BUILD SUCCESSFUL
+- ✅ 2 bugs fixed in v2.4.3 (vc11): default-Android-logo splash flash (parent
+  Theme.SplashScreen defaults windowSplashScreenAnimatedIcon to sym_def_app_icon —
+  MUST set it explicitly to @mipmap/ic_launcher_foreground), tier downgrade removed
+  (TierSheet lower tiers are "Terlampaui"/non-clickable; switchTier rejects any
+  index below current — tiers are one-way up only)
 - ✅ 6 bugs fixed in v2.4.2 (vc10): white screen after login (LoginScreen had its own
   AuthViewModel — share ONE instance from AppNavHost + `authReady` gate before NavHost),
   new-user account id (resilient register writes + self-heal in bootstrapAdminAndCheckBlock),
