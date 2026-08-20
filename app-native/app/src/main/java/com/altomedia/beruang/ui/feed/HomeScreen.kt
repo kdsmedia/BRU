@@ -76,14 +76,21 @@ fun HomeScreen(
     val stories by vm.stories.collectAsState()
     val refreshing by vm.refreshing.collectAsState()
     val followingMap = remember { mutableStateMapOf<String, Boolean>() }
+    val followsMeMap = remember { mutableStateMapOf<String, Boolean>() }
     val activity = rememberActivity()
     val quota = com.altomedia.beruang.ads.rememberRewardedQuotaPrompt(activity)
 
     LaunchedEffect(me.uid) { vm.start(me) }
-    // Resolve follow state for all visible authors.
+    // Resolve follow state for all visible authors (both directions, so a
+    // mutual follow can be shown as "Teman").
     LaunchedEffect(posts) {
-        posts.map { it.authorUid }.distinct().filter { it != me.uid && it !in followingMap }.forEach { uid ->
-            scope.launch { followingMap[uid] = PostRepository.isFollowing(me.uid, uid) }
+        posts.map { it.authorUid }.distinct().filter { it != me.uid }.forEach { uid ->
+            if (uid !in followingMap) {
+                scope.launch { followingMap[uid] = PostRepository.isFollowing(me.uid, uid) }
+            }
+            if (uid !in followsMeMap) {
+                scope.launch { followsMeMap[uid] = PostRepository.isFollowing(uid, me.uid) }
+            }
         }
     }
 
@@ -122,6 +129,7 @@ fun HomeScreen(
                         post = post,
                         myUid = me.uid,
                         isFollowing = followingMap[post.authorUid] == true,
+                        isFriend = followingMap[post.authorUid] == true && followsMeMap[post.authorUid] == true,
                         isAdmin = isAdmin,
                         onLike = {
                             scope.launch {
@@ -156,7 +164,12 @@ fun HomeScreen(
                         },
                         onToggleFollow = {
                             scope.launch {
-                                val now = PostRepository.toggleFollow(me, post.authorUid, post.authorName)
+                                val now = runCatching {
+                                    PostRepository.toggleFollow(me, post.authorUid, post.authorName)
+                                }.onFailure {
+                                    android.util.Log.e("HomeScreen", "toggleFollow failed", it)
+                                    showToast(context, "Gagal memproses. Periksa koneksi lalu coba lagi.")
+                                }.getOrNull() ?: return@launch
                                 followingMap[post.authorUid] = now
                                 if (now) {
                                     showToast(context, "+${com.altomedia.beruang.data.AppConstants.POINTS_FOLLOW} poin (menambah teman)")

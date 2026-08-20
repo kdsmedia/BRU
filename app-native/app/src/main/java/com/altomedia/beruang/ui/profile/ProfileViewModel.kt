@@ -29,6 +29,7 @@ data class ProfileState(
     val followersCount: Int = 0,
     val followingCount: Int = 0,
     val isFollowing: Boolean = false,
+    val followsMe: Boolean = false,
     val isSelf: Boolean = false,
     val gridImages: List<String> = emptyList(),
 )
@@ -92,8 +93,11 @@ class ProfileViewModel : ViewModel() {
         followersSub = RealtimeRepository.watch(Paths.followers(targetUid), viewModelScope).also { sub ->
             viewModelScope.launch {
                 sub.stateFlow.collect { v ->
-                    val c = v?.asObject()?.size ?: 0
-                    _state.value = _state.value.copy(followersCount = c)
+                    val obj = v?.asObject()
+                    _state.value = _state.value.copy(
+                        followersCount = obj?.size ?: 0,
+                        followsMe = obj?.get(myUid)?.asBoolean() == true,
+                    )
                 }
             }
         }

@@ -51,47 +51,57 @@ object AuthRepository {
         wrapUser(res)
     }
 
+    /** Outcome of [register]: either the signed-in user or an error message. */
+    data class RegisterResult(val user: AuthUser? = null, val error: String? = null)
+
     /**
      * Full registration flow — direct port of the web `handleRegister`:
      *   signUp → updateProfile(name, default avatar) → ensureWalletExists →
      *   write users/{uid} node → apply referral (optional).
-     * Returns null on success, an error message otherwise.
+     * Post-signup data writes are best-effort: anything missed here is healed
+     * by [bootstrapAdminAndCheckBlock] on the next login.
      */
     suspend fun register(
         name: String,
         phoneRaw: String,
         password: String,
         referral: String?,
-    ): String? = withContext(Dispatchers.IO) {
-        if (name.isBlank()) return@withContext "Nama lengkap wajib diisi"
+    ): RegisterResult = withContext(Dispatchers.IO) {
+        if (name.isBlank()) return@withContext RegisterResult(error = "Nama lengkap wajib diisi")
         val digits = phoneRaw.filter { it.isDigit() }
-        if (digits.length < 8) return@withContext "Nomor HP tidak valid"
-        if (password.length < 6) return@withContext "Sandi minimal 6 karakter"
+        if (digits.length < 8) return@withContext RegisterResult(error = "Nomor HP tidak valid")
+        if (password.length < 6) return@withContext RegisterResult(error = "Sandi minimal 6 karakter")
         val email = phoneToSyntheticEmail(phoneRaw)
         val user = try {
             signUp(email, password)
         } catch (e: Throwable) {
             val msg = e.message.orEmpty()
-            return@withContext if (Regex("already registered|already been registered|exists", RegexOption.IGNORE_CASE).containsMatchIn(msg))
-                "Nomor HP sudah terdaftar. Silakan Masuk." else msg
-        } ?: return@withContext "Pendaftaran gagal"
-        // Establish a session (requires email confirmation OFF in Supabase).
-        runCatching { signIn(email, password) }
-        updateProfile(displayName = name, photoUrl = AppConstants.DEFAULT_AVATAR)
-        WalletRepository.ensureWalletExists(user.uid, name)
-        NodesRepository.update(
-            NodesRepository.ref(Paths.user(user.uid)),
-            buildJsonObject {
-                put("username", name)
-                put("photo", AppConstants.DEFAULT_AVATAR)
-                put("phone", digits)
-                put("uid", user.uid)
-            },
-        )
+            return@withContext RegisterResult(
+                error = if (Regex("already registered|already been registered|exists", RegexOption.IGNORE_CASE).containsMatchIn(msg))
+                    "Nomor HP sudah terdaftar. Silakan Masuk." else msg,
+            )
+        } ?: return@withContext RegisterResult(error = "Pendaftaran gagal")
+        // signUp does not always leave a live session behind — sign in
+        // explicitly so currentUser() works immediately afterwards.
+        if (currentUser() == null) runCatching { signIn(email, password) }
+        runCatching { updateProfile(displayName = name, photoUrl = AppConstants.DEFAULT_AVATAR) }
+        runCatching { WalletRepository.ensureWalletExists(user.uid, name) }
+            .onFailure { android.util.Log.e("AuthRepository", "ensureWalletExists failed for ${user.uid}", it) }
+        runCatching {
+            NodesRepository.update(
+                NodesRepository.ref(Paths.user(user.uid)),
+                buildJsonObject {
+                    put("username", name)
+                    put("photo", AppConstants.DEFAULT_AVATAR)
+                    put("phone", digits)
+                    put("uid", user.uid)
+                },
+            )
+        }.onFailure { android.util.Log.e("AuthRepository", "user node write failed for ${user.uid}", it) }
         if (!referral.isNullOrBlank()) {
             runCatching { applyReferral(user.uid, referral.trim()) }
         }
-        null
+        RegisterResult(user = currentUser() ?: user)
     }
 
     /** Look up a uid by 6-digit account id (referral code == account id). */
@@ -122,10 +132,29 @@ object AuthRepository {
             signOut()
             return@withContext false
         }
-        val uData = NodesRepository.readValue(Paths.user(user.uid))?.asObject()
+        var uData = NodesRepository.readValue(Paths.user(user.uid))?.asObject()
         var phone = uData?.str("phone")?.filter { it.isDigit() }
         if (phone.isNullOrBlank() && user.email != null) {
             phone = Regex("^(\\d+)@").find(user.email)?.groupValues?.get(1)
+        }
+        // Self-heal: guarantee the wallet (6-digit account id) and the user
+        // node exist, even if the register-time writes failed or the account
+        // predates them. Without this a new user never gets an account id.
+        runCatching { WalletRepository.ensureWalletExists(user.uid, user.displayName ?: "Pengguna") }
+            .onFailure { android.util.Log.e("AuthRepository", "wallet heal failed for ${user.uid}", it) }
+        if (uData == null || uData.str("username") == null) {
+            runCatching {
+                NodesRepository.update(
+                    NodesRepository.ref(Paths.user(user.uid)),
+                    buildJsonObject {
+                        put("username", user.displayName ?: "Pengguna")
+                        put("photo", user.photoUrl ?: AppConstants.DEFAULT_AVATAR)
+                        if (!phone.isNullOrBlank()) put("phone", phone)
+                        put("uid", user.uid)
+                    },
+                )
+            }.onFailure { android.util.Log.e("AuthRepository", "user heal failed for ${user.uid}", it) }
+            uData = NodesRepository.readValue(Paths.user(user.uid))?.asObject()
         }
         val isAdmin = phone != null && AppConstants.Admin.PHONES.contains(phone)
         if (isAdmin) {

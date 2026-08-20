@@ -23,7 +23,7 @@ Migration of the BERUANG social app from Capacitor + HTML wrapper to **native An
     `storeFile=ALTOMEDIA/ALTOMEDIA.jks`, alias `kdsmedia`; the `.jks` is tracked
   - Outputs: `app/build/outputs/apk/release/app-release.apk` and
     `app/build/outputs/bundle/release/app-release.aab`
-  - Current: versionCode 9, versionName "2.4.1"
+  - Current: versionCode 10, versionName "2.4.2"
 
 ## Dependencies
 - Supabase Kotlin SDK **3.0.0** (`postgrest-kt-android-debug`, `auth-kt`, `realtime-kt`, `storage-kt`) — has breaking API changes (see below)
@@ -47,9 +47,23 @@ Migration of the BERUANG social app from Capacitor + HTML wrapper to **native An
 ## Status (current)
 - ✅ `:app:assembleDebug` — BUILD SUCCESSFUL
 - ✅ `:app:assembleRelease` + `:app:bundleRelease` signed with ALTOMEDIA.jks — BUILD SUCCESSFUL
+- ✅ 6 bugs fixed in v2.4.2 (vc10): white screen after login (LoginScreen had its own
+  AuthViewModel — share ONE instance from AppNavHost + `authReady` gate before NavHost),
+  new-user account id (resilient register writes + self-heal in bootstrapAdminAndCheckBlock),
+  chat opened behind the message-list overlay (MainScaffold now closes list / restores on back),
+  force close on follow (side effects runCatching-wrapped), mutual follow shows "Teman",
+  edit-profile email optional (synthetic @beruang.phone hidden), NodesRepository set()/remove()
+  descendant delete LIKE pattern fixed ("$path/%" → "path/%") — deleteMessage/clearChat/deletePost work now
 - ✅ 4 real bugs fixed in v2.4.1 (vc9): CAS txn path projection (wallet silent failures),
   duplicate comment points, realtime leaf Insert/Delete subscription, blocked-account on register
-- 🔄 Runtime/feature parity review in progress
+
+## Pitfalls learned
+- `viewModel()` inside a `composable {}` destination resolves to the CURRENT
+  NavBackStackEntry — always pass shared ViewModels down from AppNavHost.
+- Exceptions from a `rememberCoroutineScope().launch {}` click handler crash the app
+  (Main dispatcher) — wrap repository calls in runCatching + toast.
+- Overlay ordering in MainScaffold: later composables render on top; opening a chat
+  from the message list must also hide the list (chatFromList flag).
 
 ## Git
 - Remote: `github.com/kdsmedia/BRU.git` (branch `main`)

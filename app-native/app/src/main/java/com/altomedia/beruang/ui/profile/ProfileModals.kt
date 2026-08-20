@@ -162,7 +162,11 @@ fun EditProfileSheet(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var name by remember { mutableStateOf(currentName) }
-    var email by remember { mutableStateOf(currentEmail) }
+    // Email is optional (accounts are phone-based; the synthetic
+    // @beruang.phone address is hidden and never required).
+    var email by remember {
+        mutableStateOf(if (currentEmail.endsWith("@beruang.phone")) "" else currentEmail)
+    }
     var phone by remember { mutableStateOf(currentPhone) }
     var gender by remember { mutableStateOf(currentGender) }
     var photoUri by remember { mutableStateOf<android.net.Uri?>(null) }
@@ -206,7 +210,8 @@ fun EditProfileSheet(
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it.trim() },
-                    label = { Text("Email") },
+                    label = { Text("Email (opsional)") },
+                    placeholder = { Text("Tidak wajib — hanya jika ingin menautkan email") },
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     singleLine = true,
                 )
@@ -246,11 +251,22 @@ fun EditProfileSheet(
                             put("phone", phone.trim())
                             put("gender", gender)
                         })
-                        // Email change goes to Supabase Auth (triggers verification
-                        // for the new address). Ignore failures gracefully.
-                        if (email.isNotBlank() && email != currentEmail) {
-                            runCatching { com.altomedia.beruang.data.AuthRepository.updateEmail(email) }
-                                .onFailure { showToast(context, "Email akan diverifikasi") }
+                        // Email is optional: only touch Supabase Auth when the
+                        // user actually typed a new, valid address. A failure
+                        // here must not undo the profile save above.
+                        val newEmail = email.trim()
+                        if (newEmail.isNotBlank() && newEmail != currentEmail) {
+                            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(newEmail).matches()) {
+                                busy = false
+                                showToast(context, "Format email tidak valid — profil lain tetap tersimpan")
+                                onSaved()
+                                return@launch
+                            }
+                            runCatching { com.altomedia.beruang.data.AuthRepository.updateEmail(newEmail) }
+                                .onFailure {
+                                    android.util.Log.e("EditProfile", "updateEmail failed", it)
+                                    showToast(context, "Email gagal diubah — profil lain tetap tersimpan")
+                                }
                         }
                         busy = false
                         showToast(context, "Profil diperbarui")

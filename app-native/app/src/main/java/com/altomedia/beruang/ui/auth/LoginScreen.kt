@@ -29,7 +29,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.altomedia.beruang.data.AuthRepository
 import com.altomedia.beruang.ui.components.AuthInput
 import com.altomedia.beruang.ui.components.GradientLogo
@@ -39,11 +38,13 @@ import com.altomedia.beruang.ui.theme.TextMain
 import com.altomedia.beruang.ui.theme.TextMuted
 import kotlinx.coroutines.launch
 
-/** Auth screen — direct port of the web `#auth-view` (login + register tabs). */
+/** Auth screen — direct port of the web `#auth-view` (login + register tabs).
+ *  [authVm] MUST be the nav host's instance — a screen-scoped default would
+ *  create a second ViewModel and the root graph would never see the login. */
 @Composable
 fun LoginScreen(
     onAuthed: () -> Unit,
-    authVm: AuthViewModel = viewModel(),
+    authVm: AuthViewModel,
 ) {
     val scope = rememberCoroutineScope()
     var tab by remember { mutableStateOf("login") }
@@ -176,12 +177,12 @@ fun LoginScreen(
                         onClick = {
                             loading = true; error = ""
                             scope.launch {
-                                val err = AuthRepository.register(regName, regPhone, regPass, regReferral.takeIf { it.isNotBlank() })
+                                val res = AuthRepository.register(regName, regPhone, regPass, regReferral.takeIf { it.isNotBlank() })
                                 loading = false
-                                if (err != null) {
-                                    error = err
+                                if (res.error != null) {
+                                    error = res.error
                                 } else {
-                                    val u = AuthRepository.currentUser()
+                                    val u = res.user
                                     if (u != null) {
                                         val allowed = AuthRepository.bootstrapAdminAndCheckBlock(u)
                                         if (!allowed) {

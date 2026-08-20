@@ -36,9 +36,15 @@ object PostRepository {
         } else {
             repo.set(repo.ref("${Paths.following(me.uid)}/$targetUid"), JsonPrimitive(true))
             repo.set(repo.ref("${Paths.followers(targetUid)}/$me.uid"), JsonPrimitive(true))
-            sendNotif(targetUid, me.displayName ?: "Seseorang", "mulai mengikuti Anda")
-            WalletRepository.awardPoints(me.uid, AppConstants.POINTS_FOLLOW, "follow $targetUid")
-            BonusRepository.recordFriend(me.uid)
+            // Side effects (notif, poin, bonus) must never crash the follow
+            // action itself — a failure here previously killed the coroutine
+            // on the Main dispatcher and force-closed the app.
+            runCatching { sendNotif(targetUid, me.displayName ?: "Seseorang", "mulai mengikuti Anda") }
+                .onFailure { android.util.Log.e("PostRepository", "follow notif failed", it) }
+            runCatching { WalletRepository.awardPoints(me.uid, AppConstants.POINTS_FOLLOW, "follow $targetUid") }
+                .onFailure { android.util.Log.e("PostRepository", "follow points failed", it) }
+            runCatching { BonusRepository.recordFriend(me.uid) }
+                .onFailure { android.util.Log.e("PostRepository", "follow bonus failed", it) }
         }
         return !following // new state
     }

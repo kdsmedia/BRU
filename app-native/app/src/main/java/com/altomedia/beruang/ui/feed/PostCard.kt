@@ -57,6 +57,7 @@ fun PostCard(
     post: PostItem,
     myUid: String,
     isFollowing: Boolean,
+    isFriend: Boolean,
     isAdmin: Boolean,
     onLike: () -> Unit,
     onComment: (text: String, replyToUid: String?, replyToName: String?) -> Unit,
@@ -116,7 +117,7 @@ fun PostCard(
                 )
             }
             if (post.authorUid != myUid) {
-                FollowButton(following = isFollowing, onClick = onToggleFollow)
+                FollowButton(following = isFollowing, friend = isFriend, onClick = onToggleFollow)
             }
         }
 
@@ -310,9 +311,13 @@ fun PostCard(
 }
 
 @Composable
-private fun FollowButton(following: Boolean, onClick: () -> Unit) {
+private fun FollowButton(following: Boolean, friend: Boolean, onClick: () -> Unit) {
     Text(
-        if (following) "Mengikuti" else "Ikuti",
+        when {
+            friend && following -> "Teman"
+            following -> "Mengikuti"
+            else -> "Ikuti"
+        },
         color = if (following) TextMuted else BrandYellow,
         fontWeight = FontWeight.Bold,
         fontSize = 13.sp,

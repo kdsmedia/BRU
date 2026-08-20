@@ -201,12 +201,23 @@ fun ProfileScreen(
                             // Action buttons
                             if (!isSelf) {
                                 Row(modifier = Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    // Mutual follow => "Teman"; one-way => "Mengikuti".
+                                    val isFriend = state.isFollowing && state.followsMe
                                     ActionPill(
-                                        if (state.isFollowing) "Mengikuti" else "Ikuti",
+                                        when {
+                                            isFriend -> "Teman"
+                                            state.isFollowing -> "Mengikuti"
+                                            else -> "Ikuti"
+                                        },
                                         color = if (state.isFollowing) TextMuted else BrandYellow,
                                         onClick = {
                                             scope.launch {
-                                                val now = PostRepository.toggleFollow(me, target, state.username)
+                                                val now = runCatching {
+                                                    PostRepository.toggleFollow(me, target, state.username)
+                                                }.onFailure {
+                                                    android.util.Log.e("ProfileScreen", "toggleFollow failed", it)
+                                                    showToast(context, "Gagal memproses. Periksa koneksi lalu coba lagi.")
+                                                }.getOrNull() ?: return@launch
                                                 showToast(context, if (now) "Mengikuti ${state.username}" else "Berhenti mengikuti")
                                             }
                                         },

@@ -71,7 +71,7 @@ object NodesRepository {
             filter {
                 or {
                     eq("path", r.path)
-                    like("path", "$${r.path}/%")
+                    like("path", "${r.path}/%")
                 }
             }
         }
@@ -101,7 +101,7 @@ object NodesRepository {
             filter {
                 or {
                     eq("path", r.path)
-                    like("path", "$${r.path}/%")
+                    like("path", "${r.path}/%")
                 }
             }
         }

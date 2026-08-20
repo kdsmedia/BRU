@@ -24,10 +24,17 @@ class AuthViewModel : ViewModel() {
     private val _currentUser = MutableStateFlow<AuthUser?>(null)
     val currentUser: StateFlow<AuthUser?> = _currentUser
 
+    /** True once the persisted session has been restored/refreshed on launch.
+     *  The nav host waits for this before choosing a start destination,
+     *  otherwise a stored session would briefly route to the auth screen. */
+    private val _authReady = MutableStateFlow(false)
+    val authReady: StateFlow<Boolean> = _authReady
+
     init {
         viewModelScope.launch {
             SupabaseProvider.refreshSession()
             _currentUser.value = AuthRepository.currentUser()
+            _authReady.value = true
         }
     }
 

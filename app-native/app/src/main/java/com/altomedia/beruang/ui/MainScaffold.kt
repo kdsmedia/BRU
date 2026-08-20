@@ -79,12 +79,15 @@ enum class Tab(val route: String, val label: String, val icon: ImageVector, val 
 fun MainScaffold(
     me: AuthUser,
     onLogout: () -> Unit,
-    authVm: AuthViewModel = viewModel(),
+    authVm: AuthViewModel,
 ) {
     var current by remember { mutableStateOf(Tab.Home) }
     var isAdmin by remember { mutableStateOf(false) }
     // Chat window overlay state: when non-null, a ChatScreen is shown on top.
     var chatTarget by remember { mutableStateOf<Pair<String, String>?>(null) }
+    // Remember whether the open chat was started from the messages list, so
+    // backing out of the chat returns to the list instead of the bare tab.
+    var chatFromList by remember { mutableStateOf(false) }
     // Profile visit overlay: when non-null, ProfileScreen is shown on top.
     var profileTarget by remember { mutableStateOf<String?>(null) }
     // Admin panel overlay (admin only).
@@ -165,7 +168,7 @@ fun MainScaffold(
                     me = me,
                     targetUid = null,
                     onBack = {},
-                    onMessage = { uid -> chatTarget = uid to "" },
+                    onMessage = { uid -> chatFromList = false; chatTarget = uid to "" },
                     onEdit = {},
                     onSettings = {},
                     onShowMyQr = {},
@@ -184,7 +187,13 @@ fun MainScaffold(
                     me = me,
                     targetUid = uid,
                     targetName = name,
-                    onBack = { chatTarget = null },
+                    onBack = {
+                        chatTarget = null
+                        if (chatFromList) {
+                            chatFromList = false
+                            showMessages = true
+                        }
+                    },
                     onVisitProfile = { profileTarget = it },
                 )
             }
@@ -195,7 +204,7 @@ fun MainScaffold(
                     me = me,
                     targetUid = uid,
                     onBack = { profileTarget = null },
-                    onMessage = { puid -> chatTarget = puid to ""; profileTarget = null },
+                    onMessage = { puid -> chatFromList = false; chatTarget = puid to ""; profileTarget = null },
                     onEdit = {},
                     onSettings = {},
                     onShowMyQr = {},
@@ -215,10 +224,14 @@ fun MainScaffold(
             }
 
             // Quick-access Messages overlay (opened from Home header icon).
-            if (showMessages) {
+            if (showMessages && chatTarget == null) {
                 ChatListScreen(
                     myUid = me.uid,
-                    onOpenChat = { uid, name -> chatTarget = uid to name },
+                    onOpenChat = { uid, name ->
+                        chatFromList = true
+                        showMessages = false
+                        chatTarget = uid to name
+                    },
                     onVisitProfile = { profileTarget = it },
                     onClose = { showMessages = false },
                 )
