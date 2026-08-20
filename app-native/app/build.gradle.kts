@@ -15,8 +15,8 @@ android {
         applicationId = "com.altomedia.beruang"
         minSdk = 23
         targetSdk = 37
-        versionCode = 11
-        versionName = "2.4.3"
+        versionCode = 12
+        versionName = "2.4.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }

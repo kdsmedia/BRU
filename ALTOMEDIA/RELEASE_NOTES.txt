@@ -1,6 +1,6 @@
 RELEASE NOTES — BERUANG
 ==================================================
-Versi: 2.4.3 (versionCode 11)
+Versi: 2.4.4 (versionCode 12)
 Tanggal rilis: 20 Agustus 2026
 Package: com.altomedia.beruang
 Developer: ALTOMEDIA
@@ -8,24 +8,19 @@ Developer: ALTOMEDIA
 ------------------------------------------------------------
 BAHASA INDONESIA
 ------------------------------------------------------------
-BERUANG v2.4.3 — Splashscreen Berlogo & Naik Kelas Anti-Turun
+BERUANG v2.4.4 — Story 24 Jam Otomatis & Preview Popup
 
-Pembaruan v2.4.3 memperbaiki 2 keluhan pengguna seputar tampilan saat
-aplikasi dibuka dan fitur Naik Kelas (tier).
+Pembaruan v2.4.4 memperbaiki fitur Story sesuai keluhan pengguna.
 
-Yang diperbaiki di v2.4.3:
-- LOGO ANDROID DEFAULT SAAT APLIKASI DIBUKA (fix splashscreen): tema
-  splash bawaan Android memakai ikon aplikasi generik ketika ikon splash
-  tidak diatur secara eksplisit, sehingga pengguna melihat "logo Android
-  default" sesaat sebelum aplikasi tampil. Kini ikon splash secara
-  eksplisit memakai logo BERUANG: aplikasi langsung menampilkan
-  splashscreen berlogo BERUANG lalu berlanjut mulus ke layar memuat.
-- NAIK KELAS TIDAK BISA DOWNGRADE: sebelumnya pengguna bisa berpindah ke
-  tier yang lebih rendah lewat tombol "Gunakan" di lembar Naik Kelas.
-  Kini tier bersifat satu arah (hanya bisa naik): tier yang sudah
-  terlampaui ditampilkan sebagai "Terlampaui" dan tidak bisa dipilih,
-  dan repository menolak setiap upaya penurunan kelas ("Kelas akun tidak
-  bisa diturunkan").
+Yang diperbaiki di v2.4.4:
+- STORY OTOMATIS TERHAPUS SETELAH 24 JAM: story kini dibatasi usia 24
+  jam. Pembersihan berjalan otomatis di latar (saat feed dimuat) sehingga
+  story kedaluwarsa dihapus untuk semua pengguna, dan daftar story hanya
+  menampilkan story yang masih berlaku (< 24 jam).
+- PREVIEW STORY DENGAN POPUP: sebelumnya mengetuk story tidak melakukan
+  apa-apa ("view story" belum diimplementasikan). Kini mengetuk story
+  membukanya dalam popup layar penuh yang sama seperti preview gambar
+  postingan — dengan pinch-to-zoom, double-tap zoom, dan tombol tutup.
 
 Catatan teknis:
 - Android minSdk 23 (Android 6.0+) sampai targetSdk/compileSdk 37.
@@ -39,25 +34,21 @@ Catatan:
 - Dukungan: altomediaindonesia@gmail.com.
 
 ------------------------------------------------------------
-ENGLISH — v2.4.3
+ENGLISH — v2.4.4
 ------------------------------------------------------------
-BERUANG v2.4.3 — Branded Splash Screen & One-Way Tier Upgrades
+BERUANG v2.4.4 — 24-Hour Stories & Popup Preview
 
-The v2.4.3 update fixes 2 user-reported issues around the app launch
-experience and the Tier Upgrade (Naik Kelas) feature.
+The v2.4.4 update fixes Story behavior based on user reports.
 
-Fixed in v2.4.3:
-- DEFAULT ANDROID LOGO ON APP LAUNCH (splash fix): the stock Android
-  splash theme falls back to a generic app icon when the splash icon is
-  not set explicitly, so users briefly saw the "default Android logo".
-  The splash icon now explicitly uses the BERUANG logo: the app opens
-  straight into a BERUANG-branded splash and hands off smoothly to the
-  loading screen.
-- NO TIER DOWNGRADE: users could previously switch back to a lower tier
-  via the "Gunakan" button in the Tier Upgrade sheet. Tiers are now
-  one-way (upgrade only): passed tiers are shown as "Terlampaui" and
-  cannot be selected, and the repository rejects any downgrade attempt
-  ("Kelas akun tidak bisa diturunkan").
+Fixed in v2.4.4:
+- STORIES AUTO-DELETED AFTER 24 HOURS: stories are now limited to 24
+  hours. Cleanup runs automatically in the background (when the feed
+  loads), so expired stories are removed for everyone, and the stories
+  list only shows still-valid stories (< 24 hours).
+- STORY PREVIEW WITH A POPUP: previously tapping a story did nothing
+  (the "view story" action was not implemented). Tapping a story now
+  opens it in a full-screen popup identical to the post-image preview —
+  with pinch-to-zoom, double-tap zoom, and a close button.
 
 Technical notes:
 - Android minSdk 23 (Android 6.0+) up to targetSdk/compileSdk 37.
@@ -73,6 +64,8 @@ Notes:
 ==================================================
 RIWAYAT VERSI SEBELUMNYA (arsip)
 ==================================================
+- v2.4.3 (versionCode 11): Splash berlogo BERUANG eksplisit (iktan
+  default Android dihapus), dan Naik Kelas anti-turun (tier satu arah).
 - v2.4.2 (versionCode 10): Fix blank putih setelah login, ID akun user
   baru (self-heal saat login), pesan tertutup overlay daftar, force close
   saat klik Ikuti, label "Teman" untuk saling mengikuti, email edit profil

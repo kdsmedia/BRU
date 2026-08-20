@@ -94,6 +94,13 @@ class FeedViewModel : ViewModel() {
     }
 
     private fun rebuildStories(raw: kotlinx.serialization.json.JsonElement?) {
+        // Delete expired (>24h) stories in the background (best-effort), so
+        // old stories disappear automatically for everyone.
+        viewModelScope.launch {
+            runCatching { PostRepository.deleteExpiredStories() }
+                .onFailure { android.util.Log.e("FeedViewModel", "story cleanup failed", it) }
+        }
+        val cutoff = System.currentTimeMillis() - PostRepository.STORY_MAX_AGE_MS
         val obj = raw?.asObject() ?: run { _stories.value = emptyList(); return }
         _stories.value = obj.entries
             .map { (id, s) ->
@@ -105,6 +112,7 @@ class FeedViewModel : ViewModel() {
                     timestamp = o.long("timestamp") ?: 0L,
                 )
             }
+            .filter { it.timestamp >= cutoff }
             .sortedByDescending { it.timestamp }
             .take(20)
     }

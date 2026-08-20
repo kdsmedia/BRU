@@ -29,8 +29,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.getValue
+import com.altomedia.beruang.ui.feed.StoryItem
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import com.altomedia.beruang.ui.feed.ImagePreview
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -78,6 +82,9 @@ fun HomeScreen(
     val followingMap = remember { mutableStateMapOf<String, Boolean>() }
     val followsMeMap = remember { mutableStateMapOf<String, Boolean>() }
     val activity = rememberActivity()
+    // Story preview popup state — declared at the screen level (inside the
+    // LazyColumn builder it wouldn't be valid).
+    var previewStory by remember { mutableStateOf<StoryItem?>(null) }
     val quota = com.altomedia.beruang.ads.rememberRewardedQuotaPrompt(activity)
 
     LaunchedEffect(me.uid) { vm.start(me) }
@@ -104,7 +111,7 @@ fun HomeScreen(
             contentPadding = PaddingValues(bottom = 16.dp),
         ) {
             item { HomeHeader(onOpenMessages = onOpenMessages, onOpenNotif = onOpenNotif) }
-            item { StoriesRow(stories = stories, onAdd = onAddStory) }
+            item { StoriesRow(stories = stories, onAdd = onAddStory, onOpen = { previewStory = it }) }
             item {
                 Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
                     com.altomedia.beruang.ads.BannerAdBlock()
@@ -201,6 +208,10 @@ fun HomeScreen(
             }
         }
     }
+    // Story image preview popup (reuses ImagePreview, like post-image preview).
+    previewStory?.let { s ->
+        ImagePreview(url = s.imageUrl, onDismiss = { previewStory = null })
+    }
     quota.Render(me.uid)
 }
 
@@ -247,9 +258,10 @@ fun rememberActivity(): android.app.Activity {
     error("No Activity in context chain")
 }
 
-/** Horizontal stories row — port of `.stories-wrapper` (add button + thumbnails). */
+/** Horizontal stories row — port of `.stories-wrapper` (add button + thumbnails).
+ *  [onOpen] shows the tapped story in a full-screen popup, like post-image review. */
 @Composable
-fun StoriesRow(stories: List<StoryItem>, onAdd: () -> Unit) {
+fun StoriesRow(stories: List<StoryItem>, onAdd: () -> Unit, onOpen: (StoryItem) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -289,7 +301,7 @@ fun StoriesRow(stories: List<StoryItem>, onAdd: () -> Unit) {
                 modifier = Modifier
                     .size(65.dp)
                     .clip(CircleShape)
-                    .clickable { /* view story — full-screen viewer added later */ },
+                    .clickable { onOpen(s) },
             )
         }
     }

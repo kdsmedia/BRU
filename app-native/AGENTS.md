@@ -23,7 +23,7 @@ Migration of the BERUANG social app from Capacitor + HTML wrapper to **native An
     `storeFile=ALTOMEDIA/ALTOMEDIA.jks`, alias `kdsmedia`; the `.jks` is tracked
   - Outputs: `app/build/outputs/apk/release/app-release.apk` and
     `app/build/outputs/bundle/release/app-release.aab`
-  - Current: versionCode 11, versionName "2.4.3"
+  - Current: versionCode 12, versionName "2.4.4"
 
 ## Dependencies
 - Supabase Kotlin SDK **3.0.0** (`postgrest-kt-android-debug`, `auth-kt`, `realtime-kt`, `storage-kt`) — has breaking API changes (see below)

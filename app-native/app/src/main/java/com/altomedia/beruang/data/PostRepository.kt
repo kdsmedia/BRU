@@ -119,12 +119,28 @@ object PostRepository {
     }
 
     // ---- stories ------------------------------------------------------
+    /** Stories live for 24 hours, then expire and are deleted. */
+    const val STORY_MAX_AGE_MS = 24L * 60 * 60 * 1000
+
     suspend fun createStory(me: AuthUser, imageUrl: String) {
         repo.push(repo.ref(Paths.stories()), buildJsonObject {
             put("uid", me.uid)
             put("image", imageUrl)
             put("timestamp", System.currentTimeMillis())
         })
+    }
+
+    /** True if a story object is older than [STORY_MAX_AGE_MS]. */
+    private fun isStoryExpired(s: kotlinx.serialization.json.JsonObject): Boolean {
+        val ts = s.long("timestamp") ?: 0L
+        return System.currentTimeMillis() - ts > STORY_MAX_AGE_MS
+    }
+
+    /** Delete expired (>24h) stories under /stories. Best-effort. */
+    suspend fun deleteExpiredStories() {
+        val obj = repo.readValue(Paths.stories())?.asObject() ?: return
+        val expired = obj.entries.filter { (_, s) -> isStoryExpired(s.asObject()) }
+        expired.forEach { (id, _) -> repo.remove(repo.ref("${Paths.stories()}/$id")) }
     }
 
     // ---- user lookup --------------------------------------------------
