@@ -11,15 +11,19 @@ Migration of the BERUANG social app from Capacitor + HTML wrapper to **native An
 - Backend data model is the `nodes` table (key/path → JSON tree), accessed via `NodesRepository`.
 
 ## Build environment
-- JDK 17 at `/home/openhands/jdk-17.0.13+11`
+- JDK 17/21 (Debian `openjdk-21-jdk` works: `/usr/lib/jvm/java-21-openjdk-amd64`)
 - Android SDK at `/home/openhands/Android/Sdk`
   - `platforms;android-37.0`, `build-tools;35.0.0`, `platform-tools`, `cmdline-tools;latest`
 - `local.properties` → `sdk.dir=/home/openhands/Android/Sdk` (NOT committed)
 - AGP 8.13.2, Gradle 8.14.3, Kotlin 2.0.21, compileSdk/targetSdk 37, minSdk 23
 - `gradle.properties`: `android.suppressUnsupportedCompileSdk=37.0`
-- Build command:
-  `JAVA_HOME=/home/openhands/jdk-17.0.13+11 ANDROID_HOME=/home/openhands/Android/Sdk PATH=$JAVA_HOME/bin:$PATH ./gradlew :app:assembleDebug`
-- Output: `app/build/outputs/apk/debug/app-debug.apk` (~25 MB)
+- Debug build: `./gradlew :app:assembleDebug`
+- Release build: `./gradlew :app:assembleRelease :app:bundleRelease`
+  - Signing reads `../ALTOMEDIA/keystore.properties` (gitignored → create locally):
+    `storeFile=ALTOMEDIA/ALTOMEDIA.jks`, alias `kdsmedia`; the `.jks` is tracked
+  - Outputs: `app/build/outputs/apk/release/app-release.apk` and
+    `app/build/outputs/bundle/release/app-release.aab`
+  - Current: versionCode 9, versionName "2.4.1"
 
 ## Dependencies
 - Supabase Kotlin SDK **3.0.0** (`postgrest-kt-android-debug`, `auth-kt`, `realtime-kt`, `storage-kt`) — has breaking API changes (see below)
@@ -41,10 +45,10 @@ Migration of the BERUANG social app from Capacitor + HTML wrapper to **native An
 - ViewModels expose `StateFlow`; screens use `collectAsState()`.
 
 ## Status (current)
-- ✅ Kotlin `:app:compileDebugKotlin` — BUILD SUCCESSFUL
-- ✅ Full `:app:assembleDebug` — BUILD SUCCESSFUL (APK generated)
-- ✅ Supabase 3.0 API mismatches resolved (select/upsert/importSession/postgresChangeFlow)
-- ✅ Realtime schema bug fixed
+- ✅ `:app:assembleDebug` — BUILD SUCCESSFUL
+- ✅ `:app:assembleRelease` + `:app:bundleRelease` signed with ALTOMEDIA.jks — BUILD SUCCESSFUL
+- ✅ 4 real bugs fixed in v2.4.1 (vc9): CAS txn path projection (wallet silent failures),
+  duplicate comment points, realtime leaf Insert/Delete subscription, blocked-account on register
 - 🔄 Runtime/feature parity review in progress
 
 ## Git

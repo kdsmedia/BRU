@@ -1,40 +1,38 @@
 RELEASE NOTES — BERUANG
 ==================================================
-Versi: 2.3.0 (versionCode 7)
-Tanggal rilis: 18 Agustus 2026
+Versi: 2.4.1 (versionCode 9)
+Tanggal rilis: 20 Agustus 2026
 Package: com.altomedia.beruang
 Developer: ALTOMEDIA
 
 ------------------------------------------------------------
 BAHASA INDONESIA
 ------------------------------------------------------------
-BERUANG v2.3.0 — Perbaikan Bug Checkin/Iklan, Ikon Tier, AI Gratis & Saldo
+BERUANG v2.4.1 — Perbaikan Ekonomi Poin, Realtime & Pendaftaran
 
-Pembaruan v2.3.0 memperbaiki sejumlah bug kritis (crash checkin & tonton
-iklan, interstitial terlalu sering, saldo admin gagal), menambah ikon
-kelas, menyempurnakan layar Pesan, dan mengganti AI ke provider gratis.
+Pembaruan v2.4.1 memperbaiki 4 bug serius di sekitar ekonomi poin
+(wallet), langganan realtime, dan alur pendaftaran.
 
-Yang baru & diperbaiki di v2.3.0:
-- CHECK-IN HARIAN (fix crash): klik tombol check-in tidak lagi crash.
-  Penyebab: toast ditampilkan dari background thread → kini thread-safe.
-- TONTON IKLAN (fix crash): crash setelah iklan reward selesai diperbaiki
-  (root cause sama: toast dari IO thread).
-- INTERSTITIAL 30 MENIT (akurat): iklan interstitial kini tampil tepat
-  30 menit sekali. Cooldown disimpan di SharedPreferences agar tidak reset
-  saat app ditutup/dibuka ulang (sebelumnya bisa tampil lagi ~1 menit).
-- IKON KELAS (naik kelas): tiap tier kini menampilkan ikon Material yang
-  sesuai — Star, Bronze (WorkspacePremium), Silver, Gold (EmojiEvents),
-  Master (MilitaryTech) — pada pill profil & kartu sheet "Naik Kelas".
-- ATUR SALDO ADMIN (fix gagal): saldo kini selalu terperbarui setelah klik
-  OKE. Sebelumnya gagal untuk wallet yang belum punya node saldo; kini
-  fallback ke read-then-set bila transaksi CAS tidak commit.
-- LAYAR PESAN (penyempurnaan): daftar kontak realtime (update otomatis),
-  kolom pencarian teman, empty state, jumlah kontak di header, urut
-  (admin/AI/alfabetis), area ketuk profil lebih besar.
-- AI GRATIS (Groq, OpenAI-compatible): backend AI kini default memakai
-  Groq — provider OpenAI-compatible GRATIS selamanya (API key gratis dari
-  console.groq.com, tanpa kartu kredit/billing, model open-source).
-  Tidak perlu lagi akun OpenAI berbayar. (Bisa tetap pakai OpenAI via env.)
+Yang diperbaiki di v2.4.1:
+- POIN SEKARANG TERHITUNG BENAR (fix kritis): transaksi baca-tulis
+  (compare-and-swap) di `NodesRepository` dulu salah memproyeksikan kolom
+  `path`, sehingga nilai selalu hilang dan semua aksi poin (check-in,
+  like, follow, referral, invite, reward iklan, transfer, naik kelas)
+  gagal commit tanpa suara. Kini proyeksi menyertakan kolom `path` dan
+  mengembalikan nilai CAS yang benar.
+- POIN KOMENTAR TAK LAGI GANDA (fix aritmatika): `HomeScreen` sebelumnya
+  menambahkan poin komentar dua kali (UI + PostRepository). Kini hanya
+  satu sumber (repository) yang mengaward, pemakaian kuota tetap tercatat.
+- REALTIME LENGKAP (fix subscribe): langganan realtime pada leaf persis
+  (`path = 'p'`) sebelumnya hanya menangapi UPDATE, sehingga insert/hapus
+  pertama kali (PIN wallet, inviteReward, dsb.) tidak memicu refresh UI.
+  Kini INSERT/UPDATE/DELETE disubscribe untuk filter EQ juga.
+- PENDAFTARAN (fix blokir): hasil `bootstrapAdminAndCheckBlock` sebelumnya
+  diabaikan saat daftar akun baru, sehingga akun yang diblokir tetap
+  bisa masuk. Kini, sama seperti alur login, akun diblokir ditolak.
+- VERSI & SIGNING: bump ke 2.4.1 (code 9); `.gitignore` kini mengabaikan
+  `ALTOMEDIA/keystore.properties` agar kredensial tanda tangan lokal
+  aman; build dirilis dengan keystore `ALTOMEDIA.jks` (alias `kdsmedia`)
 
 Catatan teknis:
 - Android minSdk 23 (Android 6.0+) sampai targetSdk/compileSdk 37.
@@ -47,35 +45,33 @@ Catatan:
 - Dukungan: altomediaindonesia@gmail.com.
 
 ------------------------------------------------------------
-ENGLISH — v2.3.0
+ENGLISH — v2.4.1
 ------------------------------------------------------------
-BERUANG v2.3.0 — Bug Fixes (Checkin/Ads), Tier Icons, Free AI & Saldo
+BERUANG v2.4.1 — Points Economy, Realtime & Registration Fixes
 
-The v2.3.0 update fixes several critical bugs (checkin & rewarded-ad
-crashes, interstitial too frequent, admin saldo failing), adds tier icons,
-refines the Messages screen, and switches AI to a free provider.
+The v2.4.1 update fixes 4 serious bugs spanning the points (wallet)
+economy, realtime subscriptions, and the registration flow.
 
-What's new / fixed in v2.3.0:
-- DAILY CHECK-IN (crash fix): tapping the check-in button no longer
-  crashes. Cause: toast shown from a background thread → now thread-safe.
-- WATCH-AD (crash fix): crash after the rewarded ad completed is fixed
-  (same root cause: toast from the IO thread).
-- INTERSTITIAL 30 MIN (accurate): interstitials now show exactly every 30
-  minutes. The cooldown is persisted in SharedPreferences so it survives
-  app restarts (previously could re-show after ~1 minute).
-- TIER ICONS (class upgrade): each tier now shows a matching Material icon
-  — Star, Bronze (WorkspacePremium), Silver, Gold (EmojiEvents), Master
-  (MilitaryTech) — on the profile pill & "Naik Kelas" sheet cards.
-- ADMIN SALDO (fail fix): the balance now always updates after tapping OK.
-  Previously failed for wallets with no balance node yet; now falls back to
-  read-then-set when the CAS transaction doesn't commit.
-- MESSAGES SCREEN (refinement): realtime contact list (auto-updates), a
-  friend search field, empty state, contact count in the header, sorting
-  (admin/AI/alphabetical), larger profile tap target.
-- FREE AI (Groq, OpenAI-compatible): the AI backend now defaults to Groq
-  — an OpenAI-compatible provider that is FREE forever (free API key from
-  console.groq.com, no credit card/billing, open-source models). No paid
-  OpenAI account needed anymore. (OpenAI still usable via env override.)
+Fixed in v2.4.1:
+- POINTS COUNTED CORRECTLY (critical fix): the compare-and-swap
+  read-write transaction in `NodesRepository` projected the wrong columns
+  (`path` omitted), so row data was always discarded and every points
+  action (check-in, like, follow, referral, invite, rewarded ads,
+  transfer, tier purchase) silently failed. Now the projection includes
+  `path` and returns correct CAS results.
+- COMMENT POINTS NO LONGER DOUBLED (arithmetic fix): `HomeScreen` used to
+  award the comment points twice (UI + PostRepository). Now only the
+  repository awards; quota usage tracking remains intact.
+- COMPLETE REALTIME (subscribe fix): subscriptions to an exact leaf
+  (`path = 'p'`) previously only handled UPDATE, so first-time inserts or
+  deletes (wallet PIN, inviteReward, etc.) never triggered UI refreshes.
+  INSERT/UPDATE/DELETE are now subscribed for the EQ filter too.
+- REGISTRATION CHECK (block fix): the `bootstrapAdminAndCheckBlock` result
+  was ignored during registration, so blocked accounts could still get in.
+  Now, as with login, blocked accounts are rejected with an error message.
+- VERSION & SIGNING: bumped to 2.4.1 (code 9); `.gitignore` now ignores
+  `ALTOMEDIA/keystore.properties` so local signing credentials stay safe;
+  release signed with `ALTOMEDIA.jks` (alias `kdsmedia`)
 
 Technical notes:
 - Android minSdk 23 (Android 6.0+) up to targetSdk/compileSdk 37.
@@ -90,6 +86,10 @@ Notes:
 ==================================================
 RIWAYAT VERSI SEBELUMNYA (arsip)
 ==================================================
+- v2.3.0 (versionCode 7): Fix crash check-in & tonton iklan; interstitial
+  30 menit akurat; ikon kelas di pill profil & sheet Naik Kelas; atur
+  saldo admin gagal-selalu (fallback read-then-set); layar Pesan
+  disempurnakan; AI default Groq gratis (OpenAI-compatible).
 - v2.2.0 (versionCode 6): Tugas bonus undang 10 teman (5000 poin) +
   tombol Bagikan/Klaim; tombol kembali (⬅️) + BackHandler di semua
   halaman/popup; edit saldo admin (mode Tambah/Kurangi + nominal + catatan

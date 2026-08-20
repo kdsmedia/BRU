@@ -119,7 +119,7 @@ object NodesRepository {
         val table = pg.from("nodes")
         repeat(8) {
             val row = runCatching {
-                table.select(Columns.list("value", "ts")) {
+                table.select(Columns.list("path", "value", "ts")) {
                     filter { eq("path", r.path) }
                     limit(1)
                 }.decodeSingle<NodeRowSafe>().takeIf { it.path != null }

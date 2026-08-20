@@ -182,8 +182,15 @@ fun LoginScreen(
                                     error = err
                                 } else {
                                     val u = AuthRepository.currentUser()
-                                    if (u != null) AuthRepository.bootstrapAdminAndCheckBlock(u)
-                                    authVm.setUser(AuthRepository.currentUser())
+                                    if (u != null) {
+                                        val allowed = AuthRepository.bootstrapAdminAndCheckBlock(u)
+                                        if (!allowed) {
+                                            error = "Akun Anda diblokir oleh admin."
+                                            authVm.setUser(null)
+                                        } else {
+                                            authVm.setUser(u)
+                                        }
+                                    }
                                 }
                             }
                         },

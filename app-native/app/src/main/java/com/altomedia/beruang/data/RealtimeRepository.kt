@@ -74,10 +74,26 @@ object RealtimeRepository {
                 }.collect { schedule() }
             }
         }
-        // Exact leaf: UPDATE on path = 'p'.
+        // Exact leaf: INSERT/UPDATE/DELETE on path = 'p' — otherwise leaf
+        // creations/removals (e.g. wallet PIN set for the first time) never
+        // retrigger the debounced re-read.
+        collectors += scope.launch {
+            runCatching {
+                channel.postgresChangeFlow<PostgresAction.Insert>("public") {
+                    table = "nodes"; filter("path", FilterOperator.EQ, path)
+                }.collect { schedule() }
+            }
+        }
         collectors += scope.launch {
             runCatching {
                 channel.postgresChangeFlow<PostgresAction.Update>("public") {
+                    table = "nodes"; filter("path", FilterOperator.EQ, path)
+                }.collect { schedule() }
+            }
+        }
+        collectors += scope.launch {
+            runCatching {
+                channel.postgresChangeFlow<PostgresAction.Delete>("public") {
                     table = "nodes"; filter("path", FilterOperator.EQ, path)
                 }.collect { schedule() }
             }

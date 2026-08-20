@@ -150,7 +150,6 @@ fun HomeScreen(
                                 }
                                 PostRepository.postComment(me, post.id, post.authorUid, text, replyToUid, replyToName)
                                 com.altomedia.beruang.data.WalletRepository.recordUsage(me.uid, usage, "comments")
-                                com.altomedia.beruang.data.WalletRepository.awardPoints(me.uid, com.altomedia.beruang.data.AppConstants.POINTS_COMMENT, "comment")
                                 showToast(context, "+${com.altomedia.beruang.data.AppConstants.POINTS_COMMENT} poin (berkomentar)")
                                 vm.refresh()
                             }
