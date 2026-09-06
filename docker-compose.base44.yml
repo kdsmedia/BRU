@@ -1,0 +1,18 @@
+# Base44 dev environment for BERUANG.
+# The current repo is a native Android app (Kotlin/Compose) which cannot run
+# in a web browser. The servable web asset is the older Capacitor HTML
+# frontend (extracted from capacitor-backup.zip into ./web), a self-contained
+# single-page app that talks to the real Supabase cloud backend.
+services:
+  web:
+    image: nginx:alpine
+    ports:
+      - "3000:80"
+    volumes:
+      - ./web:/usr/share/nginx/html:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80/"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
